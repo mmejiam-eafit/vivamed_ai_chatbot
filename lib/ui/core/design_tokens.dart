@@ -1,0 +1,650 @@
+import 'package:flutter/material.dart';
+
+// ============================================================================
+// Design Tokens — Radiologist Helper Chatbot
+// ============================================================================
+// Base palette from: https://colorhunt.co/palette/0c2b4e1a3d641d546cf4f4f4
+//
+//   #0C2B4E  Deep Navy      — primary brand
+//   #1A3D64  Medium Navy    — secondary brand
+//   #1D546C  Teal Blue      — accent / interactive
+//   #F4F4F4  Off-White      — light ground
+//
+// All public tokens are named by PURPOSE, not by color.
+// Raw hex values live in `_Palette` (library-private).
+// ============================================================================
+
+// ── Raw palette (library-private) ───────────────────────────────────────────
+// Never reference `_Palette` in widget code. Use `AppColors` instead.
+
+abstract final class _Palette {
+  // Brand
+  static const Color deepNavy = Color(0xFF0C2B4E);
+  static const Color mediumNavy = Color(0xFF1A3D64);
+  static const Color tealBlue = Color(0xFF1D546C);
+  static const Color offWhite = Color(0xFFF4F4F4);
+
+  // Deep Navy scale
+  static const Color deepNavy900 = Color(0xFF061625);
+  // ignore: unused_field
+  static const Color deepNavy700 = Color(0xFF123A68);
+  // ignore: unused_field
+  static const Color deepNavy600 = Color(0xFF184A82);
+  // ignore: unused_field
+  static const Color deepNavy100 = Color(0xFFD4DEE9);
+  static const Color deepNavy50 = Color(0xFFECF0F5);
+
+  // Medium Navy scale
+  static const Color mediumNavy800 = Color(0xFF0F2640);
+  // ignore: unused_field
+  static const Color mediumNavy600 = Color(0xFF245486);
+  // ignore: unused_field
+  static const Color mediumNavy400 = Color(0xFF4A7AAE);
+  // ignore: unused_field
+  static const Color mediumNavy100 = Color(0xFFD6E1ED);
+  static const Color mediumNavy50 = Color(0xFFEDF1F7);
+
+  // Teal Blue scale
+  static const Color tealBlue800 = Color(0xFF0F3545);
+  static const Color tealBlue600 = Color(0xFF267390);
+  static const Color tealBlue400 = Color(0xFF3D95B8);
+  // ignore: unused_field
+  static const Color tealBlue300 = Color(0xFF6DB3CE);
+  // ignore: unused_field
+  static const Color tealBlue100 = Color(0xFFCDE5EE);
+  static const Color tealBlue50 = Color(0xFFE9F3F7);
+
+  // Neutral scale
+  static const Color gray900 = Color(0xFF1A1A1A);
+  // ignore: unused_field
+  static const Color gray800 = Color(0xFF2E2E2E);
+  static const Color gray700 = Color(0xFF4A4A4A);
+  static const Color gray600 = Color(0xFF636363);
+  static const Color gray500 = Color(0xFF7D7D7D);
+  static const Color gray400 = Color(0xFFA0A0A0);
+  static const Color gray300 = Color(0xFFC4C4C4);
+  static const Color gray200 = Color(0xFFDCDCDC);
+  static const Color gray100 = Color(0xFFEEEEEE);
+  static const Color white = Color(0xFFFFFFFF);
+
+  // Status
+  static const Color green700 = Color(0xFF2E7D4F);
+  static const Color green50 = Color(0xFFD9F0E3);
+  static const Color amber700 = Color(0xFFD4910A);
+  static const Color amber50 = Color(0xFFFFF4D6);
+  static const Color red700 = Color(0xFFC62828);
+  static const Color red50 = Color(0xFFFFE0E0);
+  static const Color blue700 = Color(0xFF0277BD);
+  static const Color blue50 = Color(0xFFDCEEF9);
+}
+
+// ============================================================================
+// Semantic Colors
+// ============================================================================
+// Every token answers: "What is this color FOR?" — not "What color IS it?"
+
+abstract final class AppColors {
+  // ── Surfaces ────────────────────────────────────────────────────────────
+  // Backgrounds and fill areas.
+
+  /// Main scaffold / page background.
+  static const Color surfacePage = _Palette.offWhite;
+
+  /// Default card, dialog, and input fill.
+  static const Color surface = _Palette.white;
+
+  /// Subtle alternate surface: striped rows, hover fills, empty states.
+  static const Color surfaceSubdued = _Palette.gray100;
+
+  /// Primary brand dark surface: hero sections, headers.
+  static const Color surfaceBrand = _Palette.deepNavy;
+
+  /// Secondary brand dark surface: drawer panels, section accents.
+  static const Color surfaceBrandSecondary = _Palette.mediumNavy;
+
+  /// Accent-tinted light surface: selected items, highlighted rows, chips.
+  static const Color surfaceAccent = _Palette.tealBlue50;
+
+  /// Primary brand tinted light surface: selected primary items, info banners.
+  static const Color surfaceBrandSubdued = _Palette.deepNavy50;
+
+  /// Secondary brand tinted light surface: secondary selections.
+  static const Color surfaceBrandSecondarySubdued = _Palette.mediumNavy50;
+
+  // ── Text ────────────────────────────────────────────────────────────────
+  // Foreground colors for readable text.
+
+  /// Primary body text on light surfaces.
+  static const Color textPrimary = _Palette.gray900;
+
+  /// Secondary text: subtitles, descriptions, less-prominent copy.
+  static const Color textSecondary = _Palette.gray700;
+
+  /// Tertiary text: helper text, supplementary labels.
+  static const Color textTertiary = _Palette.gray600;
+
+  /// Placeholder text inside input fields.
+  static const Color textPlaceholder = _Palette.gray400;
+
+  /// Disabled text: inactive labels, unavailable options.
+  static const Color textDisabled = _Palette.gray400;
+
+  /// Timestamps, fine print, low-priority metadata.
+  static const Color textMuted = _Palette.gray500;
+
+  /// Text on brand-dark surfaces (surfaceBrand, surfaceBrandSecondary).
+  static const Color textOnBrand = _Palette.offWhite;
+
+  /// Text inside accent-tinted surfaces (surfaceAccent).
+  static const Color textOnAccent = _Palette.tealBlue800;
+
+  /// Text inside primary brand-tinted surfaces (surfaceBrandSubdued).
+  static const Color textOnBrandSubdued = _Palette.deepNavy900;
+
+  /// Text inside secondary brand-tinted surfaces.
+  static const Color textOnBrandSecondarySubdued = _Palette.mediumNavy800;
+
+  /// Link text and inline interactive text.
+  static const Color textLink = _Palette.tealBlue600;
+
+  // ── Icons ───────────────────────────────────────────────────────────────
+
+  /// Default icon tint on light surfaces.
+  static const Color icon = _Palette.gray600;
+
+  /// Icon tint on brand-dark surfaces.
+  static const Color iconOnBrand = _Palette.offWhite;
+
+  /// Accent icon tint: active states, selected tabs.
+  static const Color iconAccent = _Palette.tealBlue;
+
+  /// Disabled icon tint.
+  static const Color iconDisabled = _Palette.gray400;
+
+  // ── Borders ─────────────────────────────────────────────────────────────
+
+  /// Default border: cards, containers, sections.
+  static const Color border = _Palette.gray300;
+
+  /// Subtle border: light separators, inner dividers.
+  static const Color borderSubdued = _Palette.gray200;
+
+  /// Focused input border.
+  static const Color borderFocused = _Palette.tealBlue400;
+
+  /// Strong border: selected items, active outlines.
+  static const Color borderSelected = _Palette.tealBlue;
+
+  // ── Interactive ─────────────────────────────────────────────────────────
+  // Colors for actionable elements: buttons, toggles, links.
+
+  /// Primary action fill: main CTA buttons.
+  static const Color interactivePrimary = _Palette.tealBlue;
+
+  /// Text/icon on primary action fill.
+  static const Color interactivePrimaryForeground = _Palette.offWhite;
+
+  /// Secondary action fill: outlined / subdued buttons.
+  static const Color interactiveSecondary = _Palette.white;
+
+  /// Text/icon on secondary action fill.
+  static const Color interactiveSecondaryForeground = _Palette.tealBlue;
+
+  /// Hover/pressed tint for interactive elements.
+  static const Color interactiveHover = _Palette.tealBlue600;
+
+  /// Mid-tone interactive accent: progress bars, sliders, active indicators.
+  static const Color interactiveAccent = _Palette.tealBlue400;
+
+  /// Disabled interactive element fill.
+  static const Color interactiveDisabled = _Palette.gray200;
+
+  /// Text on disabled interactive elements.
+  static const Color interactiveDisabledForeground = _Palette.gray500;
+
+  // ── Status ──────────────────────────────────────────────────────────────
+  // App-level operational status. NOT for clinical severity (use SeverityTokens).
+
+  /// Success: uploads complete, operations confirmed.
+  static const Color statusSuccess = _Palette.green700;
+  static const Color statusSuccessSubdued = _Palette.green50;
+
+  /// Warning: low confidence, connectivity issues, stale data.
+  static const Color statusWarning = _Palette.amber700;
+  static const Color statusWarningSubdued = _Palette.amber50;
+
+  /// Error: failed operations, invalid input, server errors.
+  static const Color statusError = _Palette.red700;
+  static const Color statusErrorSubdued = _Palette.red50;
+
+  /// Info: tips, non-actionable notices, informational banners.
+  static const Color statusInfo = _Palette.tealBlue400;
+  static const Color statusInfoSubdued = _Palette.tealBlue50;
+
+  // ── Brand reference ─────────────────────────────────────────────────────
+  // Exposed for rare cases where the raw brand color is needed semantically
+  // (e.g., logo rendering, brand-specific illustrations).
+
+  /// Primary brand color — prefer surfaceBrand for backgrounds.
+  static const Color brandPrimary = _Palette.deepNavy;
+
+  /// Secondary brand color — prefer surfaceBrandSecondary for backgrounds.
+  static const Color brandSecondary = _Palette.mediumNavy;
+
+  /// Accent brand color — prefer interactivePrimary for buttons.
+  static const Color brandAccent = _Palette.tealBlue;
+
+  /// Brand light ground — prefer surfacePage for scaffold backgrounds.
+  static const Color brandLight = _Palette.offWhite;
+}
+
+// ============================================================================
+// Spacing
+// ============================================================================
+// Scale values are standard (xs–huge). Size names are appropriate here because
+// spacing is inherently a relative-size decision, not a purpose decision — the
+// same token can be padding, margin, or gap depending on context.
+
+abstract final class AppSpacing {
+  static const double xxs = 2.0;
+  static const double xs = 4.0;
+  static const double sm = 8.0;
+  static const double md = 12.0;
+  static const double lg = 16.0;
+  static const double xl = 24.0;
+  static const double xxl = 32.0;
+  static const double xxxl = 48.0;
+  static const double huge = 64.0;
+}
+
+// ============================================================================
+// Border Radius — semantic by component role
+// ============================================================================
+
+abstract final class AppRadius {
+  // ── Semantic tokens ─────────────────────────────────────────────────────
+
+  /// Inline code blocks, table cells, tiny tags.
+  static const double inlineElement = 4.0;
+
+  /// Buttons, chips, small interactive controls.
+  static const double button = 8.0;
+
+  /// Standard cards, containers, dialogs.
+  static const double card = 12.0;
+
+  /// Large cards, image containers, panels.
+  static const double panel = 16.0;
+
+  /// Bottom sheets, modals, large overlays.
+  static const double sheet = 24.0;
+
+  /// Text inputs, search bars, fully rounded action buttons.
+  static const double input = 999.0;
+
+  // ── Pre-built BorderRadius objects ──────────────────────────────────────
+
+  static final BorderRadius borderInlineElement = BorderRadius.circular(inlineElement);
+  static final BorderRadius borderButton = BorderRadius.circular(button);
+  static final BorderRadius borderCard = BorderRadius.circular(card);
+  static final BorderRadius borderPanel = BorderRadius.circular(panel);
+  static final BorderRadius borderSheet = BorderRadius.circular(sheet);
+  static final BorderRadius borderInput = BorderRadius.circular(input);
+}
+
+// ============================================================================
+// Elevation / Shadows — semantic by surface role
+// ============================================================================
+
+abstract final class AppElevation {
+  /// Flat: no shadow. Elements that rely on border or background for separation.
+  static const List<BoxShadow> flat = [];
+
+  /// Resting card: default elevated surface at rest (cards, list items).
+  static const List<BoxShadow> card = [
+    BoxShadow(
+      color: Color(0x0D000000),
+      blurRadius: 4,
+      offset: Offset(0, 1),
+    ),
+  ];
+
+  /// Raised interactive: hovered cards, floating action buttons, popovers.
+  static const List<BoxShadow> raised = [
+    BoxShadow(
+      color: Color(0x14000000),
+      blurRadius: 8,
+      offset: Offset(0, 2),
+    ),
+  ];
+
+  /// Overlay: dialogs, dropdown menus, tooltips.
+  static const List<BoxShadow> overlay = [
+    BoxShadow(
+      color: Color(0x1F000000),
+      blurRadius: 16,
+      offset: Offset(0, 4),
+    ),
+  ];
+
+  /// Modal: full-screen modal sheets, image viewers, top-level overlays.
+  static const List<BoxShadow> modal = [
+    BoxShadow(
+      color: Color(0x29000000),
+      blurRadius: 24,
+      offset: Offset(0, 8),
+    ),
+  ];
+}
+
+// ============================================================================
+// Typography
+// ============================================================================
+// Already semantic: names describe text ROLE (display, heading, body, label,
+// caption, mono) not visual properties.
+
+abstract final class AppTypography {
+  // ── Font families ─────────────────────────────────────────────────────────
+  static const String fontFamilyDisplay = 'PlusJakartaSans';
+  static const String fontFamilyBody = 'SourceSans3';
+  static const String fontFamilyMono = 'JetBrainsMono';
+
+  // ── Scale ─────────────────────────────────────────────────────────────────
+  static const TextStyle displayLg = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    height: 1.25,
+    letterSpacing: -0.5,
+  );
+
+  static const TextStyle displayMd = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    height: 1.29,
+    letterSpacing: -0.3,
+  );
+
+  static const TextStyle displaySm = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    height: 1.33,
+  );
+
+  static const TextStyle headingLg = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+  );
+
+  static const TextStyle headingMd = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    height: 1.44,
+  );
+
+  static const TextStyle headingSm = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.5,
+  );
+
+  static const TextStyle bodyLg = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+  );
+
+  static const TextStyle bodyMd = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.57,
+  );
+
+  static const TextStyle bodySm = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 1.67,
+  );
+
+  static const TextStyle caption = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 11,
+    fontWeight: FontWeight.w400,
+    height: 1.45,
+    letterSpacing: 0.2,
+  );
+
+  static const TextStyle labelLg = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 1.43,
+    letterSpacing: 0.1,
+  );
+
+  static const TextStyle labelMd = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 1.5,
+    letterSpacing: 0.1,
+  );
+
+  static const TextStyle labelSm = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    height: 1.6,
+    letterSpacing: 0.2,
+  );
+
+  static const TextStyle mono = TextStyle(
+    fontFamily: fontFamilyMono,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1.54,
+  );
+}
+
+// ============================================================================
+// Chat-specific tokens
+// ============================================================================
+// Already semantic — updated to reference AppColors semantic layer.
+
+abstract final class ChatTokens {
+  // Bubble colors
+  static const Color userBubble = AppColors.interactivePrimary;
+  static const Color userBubbleText = AppColors.interactivePrimaryForeground;
+  static const Color assistantBubble = AppColors.surface;
+  static const Color assistantBubbleText = AppColors.textPrimary;
+  static const Color assistantBubbleBorder = AppColors.borderSubdued;
+
+  // Input field
+  static const Color inputBackground = AppColors.surface;
+  static const Color inputBorder = AppColors.border;
+  static const Color inputBorderFocused = AppColors.borderFocused;
+  static const Color inputPlaceholder = AppColors.textPlaceholder;
+  static const Color inputText = AppColors.textPrimary;
+
+  // Misc
+  static const Color timestamp = AppColors.textMuted;
+  static const Color typingIndicator = AppColors.interactiveAccent;
+  static const double bubbleRadius = 18.0;
+  static const double bubbleMaxWidthFraction = 0.78;
+
+  static const BorderRadius bubbleRadiusUser = BorderRadius.only(
+    topLeft: Radius.circular(bubbleRadius),
+    topRight: Radius.circular(bubbleRadius),
+    bottomLeft: Radius.circular(bubbleRadius),
+    bottomRight: Radius.circular(4),
+  );
+
+  static const BorderRadius bubbleRadiusAssistant = BorderRadius.only(
+    topLeft: Radius.circular(4),
+    topRight: Radius.circular(bubbleRadius),
+    bottomLeft: Radius.circular(bubbleRadius),
+    bottomRight: Radius.circular(bubbleRadius),
+  );
+}
+
+// ============================================================================
+// Navigation tokens
+// ============================================================================
+// Already semantic — updated to reference AppColors semantic layer.
+
+abstract final class NavigationTokens {
+  static const Color appBarBackground = AppColors.surfaceBrand;
+  static const Color appBarForeground = AppColors.textOnBrand;
+  static const Color drawerBackground = AppColors.surfaceBrandSecondary;
+  static const Color drawerForeground = AppColors.textOnBrand;
+  static const Color bottomNavBackground = AppColors.surface;
+  static const Color bottomNavSelected = AppColors.iconAccent;
+  static const Color bottomNavUnselected = AppColors.textMuted;
+  static const double appBarElevation = 0;
+}
+
+// ============================================================================
+// Severity tokens (radiology-specific)
+// ============================================================================
+// Clinical finding severity — NOT app-level status.
+// These reference _Palette directly because their meaning is domain-specific
+// and deliberately separate from the general-purpose AppColors status tokens.
+
+abstract final class SeverityTokens {
+  /// No pathology detected, healthy findings.
+  static const Color normal = _Palette.green700;
+  static const Color normalBg = _Palette.green50;
+
+  /// Minor observations, low clinical significance.
+  static const Color mild = _Palette.blue700;
+  static const Color mildBg = _Palette.blue50;
+
+  /// Findings requiring attention or follow-up.
+  static const Color moderate = _Palette.amber700;
+  static const Color moderateBg = _Palette.amber50;
+
+  /// Urgent findings, immediate action needed.
+  static const Color critical = _Palette.red700;
+  static const Color criticalBg = _Palette.red50;
+}
+
+// ============================================================================
+// Motion — semantic by interaction type
+// ============================================================================
+
+abstract final class AppMotion {
+  // ── Durations by interaction type ─────────────────────────────────────────
+
+  /// Micro-interactions: icon color change, checkbox toggle, ripple.
+  static const Duration microInteraction = Duration(milliseconds: 150);
+
+  /// Standard transitions: page fade, card expand, tab switch.
+  static const Duration transition = Duration(milliseconds: 250);
+
+  /// Complex transitions: bottom sheet slide, image viewer open.
+  static const Duration complexTransition = Duration(milliseconds: 400);
+
+  /// Onboarding animations, first-launch reveals, hero entrances.
+  static const Duration reveal = Duration(milliseconds: 600);
+
+  // ── Curves by motion intent ───────────────────────────────────────────────
+
+  /// General-purpose: balanced ease for most animations.
+  static const Curve standard = Curves.easeInOut;
+
+  /// Element appearing on screen: decelerates into place.
+  static const Curve enter = Curves.easeOut;
+
+  /// Element leaving the screen: accelerates out.
+  static const Curve exit = Curves.easeIn;
+
+  /// Dramatic emphasis: hero transitions, feature reveals.
+  static const Curve emphasis = Curves.easeInOutCubicEmphasized;
+}
+
+// ============================================================================
+// ThemeData builder
+// ============================================================================
+
+ThemeData buildAppTheme() {
+  return ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColors.surfacePage,
+    colorScheme: const ColorScheme(
+      brightness: Brightness.light,
+      primary: AppColors.brandPrimary,
+      onPrimary: AppColors.textOnBrand,
+      primaryContainer: AppColors.surfaceBrandSubdued,
+      onPrimaryContainer: AppColors.textOnBrandSubdued,
+      secondary: AppColors.brandAccent,
+      onSecondary: AppColors.interactivePrimaryForeground,
+      secondaryContainer: AppColors.surfaceAccent,
+      onSecondaryContainer: AppColors.textOnAccent,
+      tertiary: AppColors.brandSecondary,
+      onTertiary: AppColors.textOnBrand,
+      error: AppColors.statusError,
+      onError: _Palette.white,
+      errorContainer: AppColors.statusErrorSubdued,
+      onErrorContainer: AppColors.statusError,
+      surface: AppColors.surface,
+      onSurface: AppColors.textPrimary,
+      surfaceContainerHighest: AppColors.surfaceSubdued,
+      outline: AppColors.border,
+      outlineVariant: AppColors.borderSubdued,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: NavigationTokens.appBarBackground,
+      foregroundColor: NavigationTokens.appBarForeground,
+      elevation: NavigationTokens.appBarElevation,
+      centerTitle: true,
+    ),
+    cardTheme: CardThemeData(
+      color: AppColors.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.borderCard),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: ChatTokens.inputBackground,
+      border: OutlineInputBorder(
+        borderRadius: AppRadius.borderInput,
+        borderSide: const BorderSide(color: ChatTokens.inputBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: AppRadius.borderInput,
+        borderSide: const BorderSide(color: ChatTokens.inputBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: AppRadius.borderInput,
+        borderSide: const BorderSide(color: ChatTokens.inputBorderFocused, width: 2),
+      ),
+      hintStyle: AppTypography.bodyMd.copyWith(color: ChatTokens.inputPlaceholder),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.interactivePrimary,
+        foregroundColor: AppColors.interactivePrimaryForeground,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderButton),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: AppSpacing.md,
+        ),
+        textStyle: AppTypography.labelLg,
+      ),
+    ),
+  );
+}

@@ -1,0 +1,37 @@
+name: radiologist_helper
+description: Radiologist Helper — AI-powered chatbot for DICOM study review.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+# Font assets must be added to assets/fonts/ before uncommenting these declarations.
+# flutter:
+#   fonts:
+#     - family: PlusJakartaSans
+#       fonts:
+#         - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+#         - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+#           weight: 600
+#         - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+#           weight: 700
+#     - family: SourceSans3
+#       fonts:
+#         - asset: assets/fonts/SourceSans3-Regular.ttf
+#     - family: JetBrainsMono
+#       fonts:
+#         - asset: assets/fonts/JetBrainsMono-Regular.ttf
+
+flutter:
+  uses-material-design: true
