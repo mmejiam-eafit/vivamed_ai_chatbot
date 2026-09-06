@@ -147,6 +147,12 @@ abstract final class AppColors {
   /// Link text and inline interactive text.
   static const Color textLink = _Palette.tealBlue600;
 
+  /// Link text on pointer hover (web).
+  static const Color textLinkHover = _Palette.tealBlue400;
+
+  /// Already-visited link text.
+  static const Color textLinkVisited = _Palette.tealBlue800;
+
   // ── Icons ───────────────────────────────────────────────────────────────
 
   /// Default icon tint on light surfaces.
@@ -284,7 +290,8 @@ abstract final class AppRadius {
 
   // ── Pre-built BorderRadius objects ──────────────────────────────────────
 
-  static final BorderRadius borderInlineElement = BorderRadius.circular(inlineElement);
+  static final BorderRadius borderInlineElement =
+      BorderRadius.circular(inlineElement);
   static final BorderRadius borderButton = BorderRadius.circular(button);
   static final BorderRadius borderCard = BorderRadius.circular(card);
   static final BorderRadius borderPanel = BorderRadius.circular(panel);
@@ -345,17 +352,53 @@ abstract final class AppElevation {
 
 abstract final class AppTypography {
   // ── Font families ─────────────────────────────────────────────────────────
-  static const String fontFamilyDisplay = 'PlusJakartaSans';
-  static const String fontFamilyBody = 'SourceSans3';
-  static const String fontFamilyMono = 'JetBrainsMono';
+  // Three voices — see design_language.md §4.
+  //   Display: structure and authority.
+  //   Body:    sustained clinical reading.
+  //   Mono:    machine truth — anything a human might transcribe.
+  //
+  // Measured x-heights (em): Plex Sans 0.516, Inter 0.546, Plex Mono 0.516.
+  // Inter's is the largest, so the display scale sits ABOVE the body scale
+  // rather than overlapping it — at equal size, Inter would out-measure a
+  // heading and invert the hierarchy. This is why headingSm is 18, not 16.
+  static const String fontFamilyDisplay = 'IBMPlexSans';
+  static const String fontFamilyBody = 'Inter';
+  static const String fontFamilyMono = 'IBMPlexMono';
 
-  // ── Scale ─────────────────────────────────────────────────────────────────
+  // ── OpenType features ─────────────────────────────────────────────────────
+  // Flutter does not enable these implicitly; an unrequested feature is inert.
+
+  /// For identifiers, measurements, dates, and any numeric column.
+  ///
+  /// Inter's digits are PROPORTIONAL by default (advance widths 833–1323 per
+  /// 2048 em — `1` is far narrower than `0`), so a table of numbers jitters
+  /// column to column without `tnum`. `ss02` is Inter's disambiguation set:
+  /// it separates `I`/`l`/`1` and slashes the zero.
+  ///
+  /// Deliberately NOT applied to prose — tabular figures read wrong mid-
+  /// sentence, and disambiguated letterforms are a distraction in running text.
+  // `FontFeature.stylisticSet(2)` is a factory, not a const constructor, so the
+  // raw tag is used to keep these styles compile-time constants.
+  static const List<FontFeature> tabularFeatures = <FontFeature>[
+    FontFeature.tabularFigures(),
+    FontFeature('ss02'),
+  ];
+
+  /// Plex Mono is monospaced, so its figures are already tabular (every digit
+  /// advances 600/1000 em). Only the slashed zero has to be asked for.
+  static const List<FontFeature> monoFeatures = <FontFeature>[
+    FontFeature.slashedZero(),
+  ];
+
+  // ── Display scale ─────────────────────────────────────────────────────────
+  // IBM Plex Sans. Plex needs less negative tracking than a geometric face.
+
   static const TextStyle displayLg = TextStyle(
     fontFamily: fontFamilyDisplay,
     fontSize: 32,
     fontWeight: FontWeight.w700,
     height: 1.25,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   );
 
   static const TextStyle displayMd = TextStyle(
@@ -363,7 +406,7 @@ abstract final class AppTypography {
     fontSize: 28,
     fontWeight: FontWeight.w700,
     height: 1.29,
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   );
 
   static const TextStyle displaySm = TextStyle(
@@ -371,34 +414,41 @@ abstract final class AppTypography {
     fontSize: 24,
     fontWeight: FontWeight.w600,
     height: 1.33,
+    letterSpacing: -0.1,
   );
 
   static const TextStyle headingLg = TextStyle(
     fontFamily: fontFamilyDisplay,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: FontWeight.w600,
-    height: 1.4,
+    height: 1.36,
   );
 
   static const TextStyle headingMd = TextStyle(
+    fontFamily: fontFamilyDisplay,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    height: 1.40,
+  );
+
+  /// 18, not 16 — the smallest heading must still out-measure `bodyLg`.
+  static const TextStyle headingSm = TextStyle(
     fontFamily: fontFamilyDisplay,
     fontSize: 18,
     fontWeight: FontWeight.w600,
     height: 1.44,
   );
 
-  static const TextStyle headingSm = TextStyle(
-    fontFamily: fontFamilyDisplay,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    height: 1.5,
-  );
+  // ── Body scale ────────────────────────────────────────────────────────────
+  // Inter. Slight negative tracking at 14+ per the typeface's own guidance;
+  // neutral at 12 and positive below, where tighter tracking hurts legibility.
 
   static const TextStyle bodyLg = TextStyle(
     fontFamily: fontFamilyBody,
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
+    letterSpacing: -0.18,
   );
 
   static const TextStyle bodyMd = TextStyle(
@@ -406,6 +456,7 @@ abstract final class AppTypography {
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.57,
+    letterSpacing: -0.08,
   );
 
   static const TextStyle bodySm = TextStyle(
@@ -415,13 +466,19 @@ abstract final class AppTypography {
     height: 1.67,
   );
 
+  /// Non-clinical metadata only. The 12 px floor applies to any string a
+  /// clinician has to read — see design_language.md §4.
   static const TextStyle caption = TextStyle(
     fontFamily: fontFamilyBody,
     fontSize: 11,
     fontWeight: FontWeight.w400,
     height: 1.45,
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   );
+
+  // ── Label scale ───────────────────────────────────────────────────────────
+  // Plex Sans at w600. Rank is carried by weight here, not size, so these sit
+  // at the same sizes as body text by design.
 
   static const TextStyle labelLg = TextStyle(
     fontFamily: fontFamilyDisplay,
@@ -444,15 +501,55 @@ abstract final class AppTypography {
     fontSize: 10,
     fontWeight: FontWeight.w600,
     height: 1.6,
-    letterSpacing: 0.2,
+    letterSpacing: 0.4,
   );
 
+  // ── Data ──────────────────────────────────────────────────────────────────
+
+  /// DICOM tags, study UIDs, accession numbers, technical output.
+  /// 14, not 13 — Plex Mono's x-height is 6% below JetBrains Mono's, and this
+  /// sits inline with `bodyMd`.
   static const TextStyle mono = TextStyle(
     fontFamily: fontFamilyMono,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.54,
+    height: 1.5,
+    fontFeatures: monoFeatures,
   );
+
+  /// Measurements, dates, and confidence values inside tables and rows —
+  /// body voice, but with figures that align in a column.
+  static const TextStyle numeric = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.57,
+    letterSpacing: -0.08,
+    fontFeatures: tabularFeatures,
+  );
+}
+
+// ============================================================================
+// Icon Sizes
+// ============================================================================
+// A semantic scale so icon sizes are consistent and not scattered as magic
+// numbers across widget files.
+
+abstract final class AppIconSize {
+  /// Tiny indicator icons inside dense components (12 px).
+  static const double xs = 12.0;
+
+  /// Small icons in list rows, chips, badges (16 px).
+  static const double sm = 16.0;
+
+  /// Standard content icons: rows, banners, nav items (20 px).
+  static const double md = 20.0;
+
+  /// Default icon size for buttons and app bars (24 px).
+  static const double lg = 24.0;
+
+  /// Large icons for empty states and illustration spots (32 px).
+  static const double xl = 32.0;
 }
 
 // ============================================================================
@@ -478,8 +575,20 @@ abstract final class ChatTokens {
   // Misc
   static const Color timestamp = AppColors.textMuted;
   static const Color typingIndicator = AppColors.interactiveAccent;
+
+  // Input focus / selection (wired into buildAppTheme via textSelectionTheme)
+  /// Blinking text cursor inside the chat input.
+  static const Color inputCursorColor = AppColors.interactivePrimary;
+
+  /// Text selection highlight inside the chat input.
+  static const Color inputSelectionColor = AppColors.surfaceAccent;
+
+  /// Input fill color when focused — subtle brand tint.
+  static const Color inputFocusedBackground = AppColors.surfaceAccent;
   static const double bubbleRadius = 18.0;
   static const double bubbleMaxWidthFraction = 0.78;
+  // Hard cap so bubbles never span the full page on wide desktop screens.
+  static const double bubbleMaxAbsoluteWidth = 480.0;
 
   static const BorderRadius bubbleRadiusUser = BorderRadius.only(
     topLeft: Radius.circular(bubbleRadius),
@@ -509,6 +618,27 @@ abstract final class NavigationTokens {
   static const Color bottomNavBackground = AppColors.surface;
   static const Color bottomNavSelected = AppColors.iconAccent;
   static const Color bottomNavUnselected = AppColors.textMuted;
+  // Side navigation (web / desktop sidebar)
+  static const Color sideNavBackground = AppColors.surfaceBrandSecondary;
+  static const Color sideNavSelected = AppColors.interactivePrimary;
+  static const Color sideNavUnselected = AppColors.iconOnBrand;
+
+  /// Hover fill on an unselected sidebar item (on brand-dark background).
+  static const Color sideNavHoverColor = _Palette.mediumNavy600;
+
+  /// Border radius applied to each sidebar nav item pill.
+  static const double sideNavItemBorderRadius = AppRadius.button;
+
+  // Navigation dimensions
+  /// Standard drawer width for mobile slide-over drawer.
+  static const double drawerWidth = 280.0;
+
+  /// Persistent sidebar width on web/desktop.
+  static const double sideNavWidth = 240.0;
+
+  /// Icon-only collapsed sidebar width.
+  static const double sideNavCollapsedWidth = 64.0;
+
   static const double appBarElevation = 0;
 }
 
@@ -572,6 +702,134 @@ abstract final class AppMotion {
 }
 
 // ============================================================================
+// Responsive Layout
+// ============================================================================
+// Breakpoints follow Material Design 3 adaptive layout guidance.
+// Use with LayoutBuilder or MediaQuery to select layout tiers.
+
+abstract final class AppLayout {
+  // ── Breakpoints ─────────────────────────────────────────────────────────
+  static const double mobileMaxWidth = 599.0;
+  static const double tabletMinWidth = 600.0;
+  static const double tabletMaxWidth = 959.0;
+  static const double desktopMinWidth = 960.0;
+  static const double wideMinWidth = 1440.0;
+
+  /// Shared breakpoint for two-pane template layouts (e.g. list/grid or tabs/row).
+  static const double templateSplitWidth = 768.0;
+
+  // ── Content constraints ──────────────────────────────────────────────────
+
+  /// Max width of the primary content column on wide screens.
+  /// Prevents the chat + panel area from stretching across an ultra-wide display.
+  static const double contentMaxWidth = 840.0;
+
+  /// Max width for side panels (findings list, study info card) on desktop.
+  static const double panelMaxWidth = 360.0;
+}
+
+// ============================================================================
+// Interactive States
+// ============================================================================
+// Opacity and geometry tokens for hover, focus, press, and disabled states.
+// Web: apply hover/focus overlays via MouseRegion.
+// Mobile: InkWell handles press feedback natively; hover tokens are no-ops.
+
+abstract final class AppInteraction {
+  // ── Overlay opacities ────────────────────────────────────────────────────
+
+  /// Alpha applied to an element surface when the pointer hovers (web only).
+  static const double hoverOverlayOpacity = 0.06;
+
+  /// Alpha applied on pointer press / tap.
+  static const double pressedOverlayOpacity = 0.12;
+
+  /// Opacity multiplier for fully disabled elements.
+  static const double disabledOpacity = 0.5;
+
+  // ── Focus ring ───────────────────────────────────────────────────────────
+
+  /// Focus ring outline color (keyboard navigation, accessibility).
+  static const Color focusRingColor = AppColors.borderFocused;
+
+  /// Focus ring stroke width.
+  static const double focusRingWidth = 2.0;
+
+  /// Gap between the element boundary and the focus ring.
+  static const double focusRingOffset = 2.0;
+
+  // ── Mouse cursors (web / desktop) ────────────────────────────────────────
+  // Pass these to MouseRegion.cursor; mobile platforms ignore them.
+
+  /// Pointer hand — clickable elements: buttons, links, tappable cards.
+  static const MouseCursor mousePointer = SystemMouseCursors.click;
+
+  /// I-beam — text fields and selectable text.
+  static const MouseCursor mouseText = SystemMouseCursors.text;
+
+  /// Slash circle — disabled interactive elements.
+  static const MouseCursor mouseForbidden = SystemMouseCursors.forbidden;
+
+  /// Grab hand — draggable panels or image viewers.
+  static const MouseCursor mouseGrab = SystemMouseCursors.grab;
+}
+
+// ============================================================================
+// Scrollbar
+// ============================================================================
+// Web/desktop shows scrollbars persistently; mobile shows them transiently.
+// Wired into buildAppTheme() via ScrollbarThemeData.
+
+abstract final class AppScrollbar {
+  /// Default scrollbar thumb width.
+  static const double thickness = 10.0;
+
+  /// Thumb width while hovered.
+  static const double thicknessHovered = 12.0;
+
+  /// Scrollbar track (background channel).
+  static const Color trackColor = _Palette.gray100;
+
+  /// Resting scrollbar thumb — subtle, not distracting.
+  static const Color thumbColor = _Palette.gray300;
+
+  /// Hovered scrollbar thumb — darker for clear pointer feedback.
+  static const Color thumbHoverColor = _Palette.gray500;
+
+  /// Corner radius of the scrollbar thumb pill.
+  static const double thumbRadius = AppRadius.button;
+}
+
+// ============================================================================
+// Tooltip tokens
+// ============================================================================
+// Medical tools benefit from inline hover-help on every control and field.
+// Wired into buildAppTheme() via TooltipThemeData.
+
+abstract final class TooltipTokens {
+  /// Dark brand surface — authoritative, matches app header palette.
+  static const Color background = _Palette.deepNavy900;
+
+  /// Off-white text on the dark tooltip background.
+  static const Color foreground = _Palette.offWhite;
+
+  /// Corner radius — matches the inline element token.
+  static const double borderRadius = AppRadius.inlineElement;
+
+  /// Max tooltip width before text wraps to the next line.
+  static const double maxWidth = 280.0;
+
+  /// Internal padding.
+  static const EdgeInsets padding = EdgeInsets.symmetric(
+    horizontal: AppSpacing.md,
+    vertical: AppSpacing.sm,
+  );
+
+  /// Vertical offset between the trigger element and the tooltip.
+  static const double verticalOffset = AppSpacing.sm;
+}
+
+// ============================================================================
 // ThemeData builder
 // ============================================================================
 
@@ -626,9 +884,11 @@ ThemeData buildAppTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: AppRadius.borderInput,
-        borderSide: const BorderSide(color: ChatTokens.inputBorderFocused, width: 2),
+        borderSide:
+            const BorderSide(color: ChatTokens.inputBorderFocused, width: 2),
       ),
-      hintStyle: AppTypography.bodyMd.copyWith(color: ChatTokens.inputPlaceholder),
+      hintStyle:
+          AppTypography.bodyMd.copyWith(color: ChatTokens.inputPlaceholder),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
@@ -645,6 +905,35 @@ ThemeData buildAppTheme() {
         ),
         textStyle: AppTypography.labelLg,
       ),
+    ),
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: ChatTokens.inputCursorColor,
+      selectionColor: ChatTokens.inputSelectionColor,
+      selectionHandleColor: AppColors.interactivePrimary,
+    ),
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(
+        color: TooltipTokens.background,
+        borderRadius: BorderRadius.circular(TooltipTokens.borderRadius),
+        boxShadow: AppElevation.overlay,
+      ),
+      textStyle: AppTypography.bodySm.copyWith(color: TooltipTokens.foreground),
+      padding: TooltipTokens.padding,
+      verticalOffset: TooltipTokens.verticalOffset,
+    ),
+    scrollbarTheme: ScrollbarThemeData(
+      thickness: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.hovered)
+            ? AppScrollbar.thicknessHovered
+            : AppScrollbar.thickness,
+      ),
+      thumbColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.hovered)
+            ? AppScrollbar.thumbHoverColor
+            : AppScrollbar.thumbColor,
+      ),
+      trackColor: WidgetStateProperty.all(AppScrollbar.trackColor),
+      radius: const Radius.circular(AppScrollbar.thumbRadius),
     ),
   );
 }
