@@ -14,24 +14,38 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
-# Font assets must be added to assets/fonts/ before uncommenting these declarations.
-# flutter:
-#   fonts:
-#     - family: PlusJakartaSans
-#       fonts:
-#         - asset: assets/fonts/PlusJakartaSans-Regular.ttf
-#         - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
-#           weight: 600
-#         - asset: assets/fonts/PlusJakartaSans-Bold.ttf
-#           weight: 700
-#     - family: SourceSans3
-#       fonts:
-#         - asset: assets/fonts/SourceSans3-Regular.ttf
-#     - family: JetBrainsMono
-#       fonts:
-#         - asset: assets/fonts/JetBrainsMono-Regular.ttf
-
+# Type stack — see design_language.md §4. Every weight below is a real file:
+# Flutter synthesizes missing weights silently, and faux-bold degrades the
+# stroke contrast that makes identifiers legible. Never request a weight that
+# is not declared here.
 flutter:
+  fonts:
+    # Display — structure and authority. SIL OFL 1.1.
+    - family: IBMPlexSans
+      fonts:
+        - asset: assets/fonts/IBMPlexSans-Regular.ttf
+        - asset: assets/fonts/IBMPlexSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSans-Bold.ttf
+          weight: 700
+    # Body — sustained clinical reading. SIL OFL 1.1.
+    # Digits are PROPORTIONAL by default; numeric styles must request tnum.
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+    # Mono — machine truth: identifiers, measurements, DICOM tags. SIL OFL 1.1.
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+        - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexMono-Bold.ttf
+          weight: 700
+
   uses-material-design: true
