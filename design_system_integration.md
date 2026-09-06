@@ -1,6 +1,8 @@
 # Design System Integration — Tokens × Atomic Design
 
-This document bridges `design_tokens.md` (what visual values to use) with `atomic_design.md` (where widgets live in the hierarchy). Read those two documents first — this one assumes familiarity with both and adds no new rules, only the mapping between them.
+This document bridges `design_tokens.md` (what visual values to use) with `atomic_design.md` (where widgets live in the hierarchy). Read those two documents first — this one assumes familiarity with both and adds no new rules, only the mapping between them. For *why* a value is what it is, see [`design_language.md`](design_language.md).
+
+**Standing rule: this document never restates a numeric value that lives in a token.** Name the token instead. Two hardcoded numbers here had already drifted out of sync with `AppLayout`; naming tokens is what stops that recurring.
 
 ---
 
@@ -64,11 +66,11 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 
 | Widget | Tokens applied |
 |---|---|
-| `ChatTemplate` | `AppColors.surfacePage` scaffold background, `AppSpacing.lg` zone padding on wide screens, breakpoint at 768px for side panel |
+| `ChatTemplate` | `AppColors.surfacePage` scaffold background, `AppSpacing.lg` zone padding on wide screens; side panel gated on `AppLayout.threePaneMinWidth` (see `design_tokens.md` §9) |
 | `StudyReviewTemplate` | Same scaffold background, `AppSpacing.xl` between top and bottom zones |
 | `SettingsTemplate` | `AppSpacing.lg` horizontal padding, `AppSpacing.xxl` between setting sections |
 | `OnboardingTemplate` | No page-level padding (full-bleed), `AppSpacing.xl` bottom action area padding |
-| `AuthTemplate` | Centered card with `AppElevation.overlay`, `AppRadius.borderPanel`, max width 400px |
+| `AuthTemplate` | Centered card with `AppElevation.overlay`, `AppRadius.borderPanel`, capped at `AppLayout.formMaxWidth` |
 
 ### Pages
 

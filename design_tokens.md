@@ -1,14 +1,18 @@
-# Design Tokens — Radiologist Helper Chatbot
+# Design Tokens — Radiologist Helper
 
-This document is the single source of truth for visual styling in the Flutter app. Every widget you create, modify, or refactor **must** use the tokens defined in `design_tokens.dart`. Never hard-code colors, font sizes, spacing values, or shadow definitions inline.
+The technical reference for the design system: every token class, what it is for, and how to apply it.
 
-## File location
+## Authority
 
-```
-lib/ui/core/design_tokens.dart
-```
+This document is **normative**. [`lib/ui/core/design_tokens.dart`](lib/ui/core/design_tokens.dart) implements it. Where the two disagree, the Dart is wrong.
 
-Import it as:
+The reasoning behind these values lives in [`design_language.md`](design_language.md). This document says *what*; that one says *why*. Sections here reference it as **DL §n** — follow those links before changing a value, because most of these numbers are load-bearing for a stated principle.
+
+To change a design decision: amend `design_language.md`, then this document, then the Dart.
+
+**Reading paths.** Adding a widget → §2 through §8. Questioning a value → `design_language.md`. Making something responsive → §9. Looking for what is broken → §12.
+
+## Import
 
 ```dart
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
@@ -16,405 +20,477 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 ---
 
-## Token classes at a glance
+## 1. Token classes at a glance
 
-| Class | Purpose |
-|---|---|
-| `AppColors` | Semantic color tokens organized by purpose: surfaces, text, icons, borders, interactive, status, brand |
-| `AppSpacing` | Consistent padding, margin, and gap values |
-| `AppRadius` | Corner radii named by component role, with pre-built `BorderRadius` objects |
-| `AppElevation` | Box shadow presets named by surface role (card, raised, overlay, modal) |
-| `AppTypography` | Text styles with font family, size, weight, height, and letter-spacing |
-| `ChatTokens` | Colors, radii, and layout constants specific to the chat interface |
-| `NavigationTokens` | AppBar, drawer, and bottom navigation bar colors |
-| `SeverityTokens` | Foreground + background pairs for radiology finding severity badges |
-| `AppMotion` | Animation durations (by interaction type) and curves (by motion intent) |
-| `buildAppTheme()` | Pre-wired `ThemeData` — pass to `MaterialApp(theme:)` |
+| Class | Purpose | Mode-dependent? |
+|---|---|---|
+| `AppColors` | Semantic colors by purpose: surfaces, text, icons, borders, interactive, status, brand | Yes — planned |
+| `AppTypography` | Text styles, font families, OpenType feature sets | No |
+| `AppSpacing` | Padding, margin, gap values | No |
+| `AppRadius` | Corner radii by component role, plus pre-built `BorderRadius` | No |
+| `AppElevation` | Shadow presets by surface role | Geometry no, rendering yes — planned |
+| `AppIconSize` | Icon size scale | No |
+| `AppMotion` | Durations by interaction type, curves by intent | No |
+| `AppLayout` | Breakpoints and content constraints | No |
+| `AppInteraction` | Hover/focus/press opacities, focus ring, cursors | Partly |
+| `AppScrollbar` | Scrollbar geometry and colors | Yes — planned |
+| `ChatTokens` | Chat-specific colors, radii, layout | Yes — planned |
+| `NavigationTokens` | App bar, drawer, side nav, bottom nav | Yes — planned |
+| `SeverityTokens` | Clinical finding severity pairs | Yes — planned |
+| `TooltipTokens` | Tooltip surface and text | Yes — planned |
+| `buildAppTheme()` | Pre-wired `ThemeData` for `MaterialApp` | — |
 
-Raw hex values are stored in `_Palette`, a library-private class. Never reference `_Palette` in widget code — always go through the semantic `AppColors` layer.
+Raw hex values live in `_Palette`, which is library-private. **Never reference `_Palette` in widget code** — always go through the semantic layer.
+
+"Planned" marks classes that become mode-dependent under §10. They are `static const` today.
 
 ---
 
-## Color system
+## 2. Color
 
-### Architecture
+### 2.1 How to choose a token
 
-The color system has two layers. `_Palette` holds raw hex values organized by color family — this is the internal foundation and is never used directly in widgets. `AppColors` sits on top and exposes every color by **purpose**, organized into six semantic categories: surfaces, text, icons, borders, interactive, and status.
+Ask **"what is this color FOR?"** and find the token whose name answers. Never ask "what color do I want?" and scan for a hex value.
 
-When you need a color, ask "what is this color FOR?" and find the matching token name. Never ask "what color do I want?" and scan for a hex value.
+The palette is closed (**DL §3.3**). If the exact color you want does not exist, the correct move is to find the token whose *purpose* matches your intent — not to add one.
 
-### Surfaces
+### 2.2 Surfaces
 
-Background and fill colors for containers, pages, and panels.
-
-| Token | When to use |
+| Token | Use for |
 |---|---|
-| `AppColors.surfacePage` | Main scaffold / page background |
-| `AppColors.surface` | Default card, dialog, and input fill |
-| `AppColors.surfaceSubdued` | Subtle alternate: striped rows, hover fills, empty states |
-| `AppColors.surfaceBrand` | Primary brand dark surface: hero sections, headers |
-| `AppColors.surfaceBrandSecondary` | Secondary brand dark surface: drawer panels, section accents |
-| `AppColors.surfaceAccent` | Accent-tinted light surface: selected items, highlighted rows, chips |
-| `AppColors.surfaceBrandSubdued` | Primary brand-tinted light surface: selected primary items, info banners |
-| `AppColors.surfaceBrandSecondarySubdued` | Secondary brand-tinted light surface: secondary selections |
+| `surfacePage` | Scaffold / page background |
+| `surface` | Default card, dialog, input fill |
+| `surfaceSubdued` | Striped rows, hover fills, empty states |
+| `surfaceBrand` | Primary brand dark surface: hero sections, headers |
+| `surfaceBrandSecondary` | Secondary brand dark surface: drawers, section accents |
+| `surfaceAccent` | Accent-tinted light surface: selected items, highlighted rows |
+| `surfaceBrandSubdued` | Primary brand-tinted light surface: selected items, info banners |
+| `surfaceBrandSecondarySubdued` | Secondary brand-tinted light surface |
 
-### Text
+The page is intentionally darker than a card, so cards read as raised without a border (**DL §3.4**).
 
-Foreground colors for readable text. Each token describes the text's role, not its visual weight.
+### 2.3 Text
 
-| Token | When to use |
+Each token names the text's **role**, not its appearance.
+
+| Token | Use for |
 |---|---|
-| `AppColors.textPrimary` | Primary body text on light surfaces |
-| `AppColors.textSecondary` | Subtitles, descriptions, less-prominent copy |
-| `AppColors.textTertiary` | Helper text, supplementary labels |
-| `AppColors.textPlaceholder` | Placeholder text inside input fields |
-| `AppColors.textDisabled` | Inactive labels, unavailable options |
-| `AppColors.textMuted` | Timestamps, fine print, low-priority metadata |
-| `AppColors.textOnBrand` | Text on brand-dark surfaces (`surfaceBrand`, `surfaceBrandSecondary`) |
-| `AppColors.textOnAccent` | Text inside accent-tinted surfaces (`surfaceAccent`) |
-| `AppColors.textOnBrandSubdued` | Text inside primary brand-tinted surfaces (`surfaceBrandSubdued`) |
-| `AppColors.textOnBrandSecondarySubdued` | Text inside secondary brand-tinted surfaces |
-| `AppColors.textLink` | Link text and inline interactive text |
+| `textPrimary` | Body text on light surfaces |
+| `textSecondary` | Subtitles, descriptions |
+| `textTertiary` | Helper text, supplementary labels — **AA but not AAA, so not for clinical strings** (DL §8.2) |
+| `textPlaceholder` | Input placeholders |
+| `textDisabled` | Inactive labels |
+| `textMuted` | Timestamps, fine print |
+| `textOnBrand` | Text on `surfaceBrand` / `surfaceBrandSecondary` |
+| `textOnAccent` | Text on `surfaceAccent` |
+| `textOnBrandSubdued` | Text on `surfaceBrandSubdued` |
+| `textOnBrandSecondarySubdued` | Text on `surfaceBrandSecondarySubdued` |
+| `textLink` / `textLinkHover` / `textLinkVisited` | Inline interactive text |
 
-### Icons
+**The pairing rule:** use the text token whose **name** matches the surface you are on. Never pick by how the value looks — that reasoning breaks the moment dark mode lands, because the token that "looks right" on a light page is the wrong one on a dark page while the *name* stays correct in both.
 
-| Token | When to use |
+### 2.4 Icons, borders, interactive
+
+| Group | Tokens |
 |---|---|
-| `AppColors.icon` | Default icon tint on light surfaces |
-| `AppColors.iconOnBrand` | Icon tint on brand-dark surfaces |
-| `AppColors.iconAccent` | Active states, selected tabs |
-| `AppColors.iconDisabled` | Disabled, unavailable icons |
+| Icons | `icon`, `iconOnBrand`, `iconAccent`, `iconDisabled` |
+| Borders | `border`, `borderSubdued`, `borderFocused`, `borderSelected` |
+| Interactive | `interactivePrimary` / `…Foreground`, `interactiveSecondary` / `…Foreground`, `interactiveHover`, `interactiveAccent`, `interactiveDisabled` / `…Foreground` |
 
-### Borders
+### 2.5 Status — app operations only
 
-| Token | When to use |
+**Not** for clinical severity (**DL §3.5**). Pair the subdued variant as container with the base as foreground.
+
+| Pair | Use for |
 |---|---|
-| `AppColors.border` | Default border: cards, containers, sections |
-| `AppColors.borderSubdued` | Subtle separators, inner dividers |
-| `AppColors.borderFocused` | Focused input fields |
-| `AppColors.borderSelected` | Selected items, active outlines |
+| `statusSuccess` / `statusSuccessSubdued` | Upload complete, study processed |
+| `statusWarning` / `statusWarningSubdued` | Low-confidence result, connection issue, stale data |
+| `statusError` / `statusErrorSubdued` | Failed upload, invalid input, server error |
+| `statusInfo` / `statusInfoSubdued` | Informational banners, non-actionable notices |
 
-### Interactive
+### 2.6 Severity — clinical findings only
 
-Colors for actionable elements: buttons, toggles, links.
+A separate system from status, and the separation is deliberate even where hues coincide (**DL §3.5**).
 
-| Token | When to use |
-|---|---|
-| `AppColors.interactivePrimary` | Primary action fill: main CTA buttons |
-| `AppColors.interactivePrimaryForeground` | Text/icon on primary action fill |
-| `AppColors.interactiveSecondary` | Secondary action fill: outlined / subdued buttons |
-| `AppColors.interactiveSecondaryForeground` | Text/icon on secondary action fill |
-| `AppColors.interactiveHover` | Hover/pressed tint for interactive elements |
-| `AppColors.interactiveAccent` | Progress bars, sliders, active indicators |
-| `AppColors.interactiveDisabled` | Disabled interactive element fill |
-| `AppColors.interactiveDisabledForeground` | Text on disabled interactive elements |
+| Level | Tokens | Meaning |
+|---|---|---|
+| Normal | `normal` / `normalBg` | No pathology detected |
+| Mild | `mild` / `mildBg` | Minor observation, low significance |
+| Moderate | `moderate` / `moderateBg` | Requires attention or follow-up |
+| Critical | `critical` / `criticalBg` | Urgent, immediate action |
 
-### Status
+**Never hue alone (DL §3.6).** A severity indicator must carry a text label *and* a distinct icon shape. A bare dot as sole carrier is a defect.
 
-App-level operational status. **NOT** for clinical severity — use `SeverityTokens` for that.
+### 2.7 Brand reference
 
-| Token pair | When to use |
-|---|---|
-| `AppColors.statusSuccess` / `statusSuccessSubdued` | Upload complete, study processed, positive confirmation |
-| `AppColors.statusWarning` / `statusWarningSubdued` | Low-confidence AI result, connection issue, stale data |
-| `AppColors.statusError` / `statusErrorSubdued` | Failed upload, invalid input, server error |
-| `AppColors.statusInfo` / `statusInfoSubdued` | Informational banners, tips, non-actionable notices |
+`brandPrimary`, `brandSecondary`, `brandAccent`, `brandLight` exist for cases where the purpose is literally "render the brand" — a logo or brand illustration. For anything else prefer the semantic surface or interactive token. These four do **not** change with theme mode.
 
-Pattern: use the subdued variant as the container background and the base as the text/icon color.
+### 2.8 Forbidden
 
-```dart
-Container(
-  color: AppColors.statusWarningSubdued,
-  child: Text('Low confidence', style: TextStyle(color: AppColors.statusWarning)),
-)
-```
-
-### Brand reference
-
-For rare cases where the purpose is literally "show the brand color" — logo rendering, brand illustrations, marketing elements.
-
-| Token | When to use |
-|---|---|
-| `AppColors.brandPrimary` | Prefer `surfaceBrand` for backgrounds |
-| `AppColors.brandSecondary` | Prefer `surfaceBrandSecondary` for backgrounds |
-| `AppColors.brandAccent` | Prefer `interactivePrimary` for buttons |
-| `AppColors.brandLight` | Prefer `surfacePage` for scaffold backgrounds |
-
-### Hard rules
-
-1. **Never use `Colors.black` or `Colors.white`** from Flutter's material library. Use `AppColors.textPrimary` for dark text and `AppColors.surface` for white fills.
-2. **Never use `Color(0xFF...)` inline and never add new colors to `design_tokens.dart`.** The palette is closed. If the exact color you want doesn't exist, find the token whose *semantic meaning* best matches your intent — don't try to guess by hex value. Ask yourself: "Is this a surface? Text? A border? A status indicator?" Then pick the token that answers that question. For example, a subtle highlighted row uses `AppColors.surfaceAccent`, not an invented hex.
-3. **Never reference `_Palette` in widget code.** It is library-private and exists only as the foundation for `AppColors`.
-4. **Never use `Theme.of(context).colorScheme` directly for one-off styling.** It's there for Material widgets that read it automatically. When you style custom widgets, reference `AppColors` or the domain-specific token class.
+1. **Never** `Colors.black` or `Colors.white`.
+2. **Never** an inline `Color(0xFF…)`, and never add a color to `design_tokens.dart`.
+3. **Never** reference `_Palette` outside the token file.
+4. **Never** `Theme.of(context).colorScheme.X` in a custom widget — Material's scheme is not our semantic layer. (This is distinct from reading *our* tokens from context, which §10 makes mandatory.)
 
 ---
 
-## Typography
+## 3. Typography
 
-### Font families
+### 3.1 The three voices
 
-| Constant | Family | Use for |
+| Constant | Family | Role |
 |---|---|---|
-| `AppTypography.fontFamilyDisplay` | Plus Jakarta Sans | Headings, display text, labels, buttons |
-| `AppTypography.fontFamilyBody` | Source Sans 3 | Body copy, descriptions, form fields |
-| `AppTypography.fontFamilyMono` | JetBrains Mono | DICOM metadata, technical IDs, code snippets |
+| `fontFamilyDisplay` | IBM Plex Sans | Headings, labels, buttons — structure |
+| `fontFamilyBody` | Inter | Body copy, descriptions, form fields |
+| `fontFamilyMono` | IBM Plex Mono | DICOM tags, identifiers, technical output |
 
-### Type scale and when to use each level
+All three are SIL OFL 1.1; license files sit beside the fonts in `assets/fonts/`. Rationale: **DL §4.1**. Rejected candidates and why: **DL §4.8**.
 
-| Style | Size | Use case |
+### 3.2 Scale
+
+Display and body are **separate ladders that do not overlap in size**. Inter's x-height (0.546 em) exceeds Plex Sans's (0.516 em), so a heading set at body size is out-measured by body text and the hierarchy inverts (**DL §5.1**, D-007).
+
+| Style | Family | Size | Weight | Use for |
+|---|---|---|---|---|
+| `displayLg` | Display | 32 | 700 | App title, welcome screens |
+| `displayMd` | Display | 28 | 700 | Major section headers |
+| `displaySm` | Display | 24 | 600 | Page titles in scrollable content |
+| `headingLg` | Display | 22 | 600 | Card and dialog titles |
+| `headingMd` | Display | 20 | 600 | Subsection headings |
+| `headingSm` | Display | 18 | 600 | List group headers — **18, not 16** |
+| `bodyLg` | Body | 16 | 400 | Primary body text, chat messages |
+| `bodyMd` | Body | 14 | 400 | Secondary body text, descriptions |
+| `bodySm` | Body | 12 | 400 | Captions, metadata |
+| `caption` | Body | 11 | 400 | **Non-clinical metadata only** — below the 12px clinical floor (DL §4.5) |
+| `labelLg` | Display | 14 | 600 | Button text, tab labels, nav items |
+| `labelMd` | Display | 12 | 600 | Chips, small buttons |
+| `labelSm` | Display | 10 | 600 | Badge counts, overline |
+| `mono` | Mono | 14 | 400 | DICOM tags, UIDs, technical output |
+| `numeric` | Body | 14 | 400 | Measurements, dates, confidence in tables |
+
+Labels intentionally share sizes with body text: rank is carried by weight, scope by size (**DL §4.4**).
+
+### 3.3 OpenType features
+
+Features are **inert unless requested** (**DL §4.3**). Two prepared sets:
+
+| Set | Contains | Apply to |
 |---|---|---|
-| `displayLg` | 32 | App title on welcome/onboarding screens only |
-| `displayMd` | 28 | Major section headers (e.g., "Case Review") |
-| `displaySm` | 24 | Page titles in scrollable content |
-| `headingLg` | 20 | Card titles, dialog titles |
-| `headingMd` | 18 | Subsection headings inside cards |
-| `headingSm` | 16 | List group headers, bold inline labels |
-| `bodyLg` | 16 | Primary body text, chat messages |
-| `bodyMd` | 14 | Secondary body text, descriptions |
-| `bodySm` | 12 | Captions, metadata, footnotes |
-| `caption` | 11 | Timestamps, fine print, attribution |
-| `labelLg` | 14 | Button text, tab labels, nav items |
-| `labelMd` | 12 | Chips, small buttons, tag text |
-| `labelSm` | 10 | Badge counts, overline text |
-| `mono` | 13 | DICOM tags, study UIDs, technical output |
+| `AppTypography.tabularFeatures` | `tnum`, `ss02` | Identifiers, measurements, dates, any numeric column |
+| `AppTypography.monoFeatures` | `zero` | Already applied to `mono` |
 
-### Applying color to text
+**Inter's digits are proportional by default** — its `1` is far narrower than its `0`, so an unfeatured numeric column shifts horizontally as values change. Use `numeric` (which carries the set) for numbers in tables and rows.
 
-Text styles in `AppTypography` do **not** include color. Apply color via `.copyWith()`:
+**Do not put `tabularFeatures` on prose.** Tabular figures read wrong mid-sentence and the disambiguation set alters letterforms distractingly in running text. `bodyMd` deliberately does not carry them, and a test enforces this.
+
+Plex Mono needs no `tnum`: monospaced, so its figures are already tabular.
+
+### 3.4 Color is applied separately
+
+Styles carry no color. Apply via `copyWith`:
 
 ```dart
-Text(
-  'Findings Summary',
-  style: AppTypography.headingLg.copyWith(color: AppColors.textPrimary),
-)
+Text('Findings Summary',
+  style: AppTypography.headingLg.copyWith(color: AppColors.textPrimary))
 ```
 
-On dark backgrounds:
+Pick the color token whose **name** matches the surface — see §2.3.
 
-```dart
-Text(
-  'Radiologist Helper',
-  style: AppTypography.displayMd.copyWith(color: AppColors.textOnBrand),
-)
-```
+### 3.5 Weights
+
+Only 400, 600, and 700 exist as real files, for all three families. **Requesting any other weight produces a synthesized face** — see **DL §4.7** for why that is banned. Registration lives in `pubspec.yaml`.
+
+### 3.6 Overflow
+
+Truncation is a content decision, not a styling one (**DL §4.6**).
+
+| Content | Policy |
+|---|---|
+| Identifiers, measurements, values | **Never truncate.** Wrap, or give the layout room. |
+| Descriptive clinical text | May clamp to a line count **only** with the full value reachable — tooltip, expand, or detail view — and exposed intact to assistive technology. |
+| Wayfinding text — conversation titles, nav labels, section headers | Truncate freely. |
+
+Any value a human might transcribe also renders in `mono`, not `bodyMd` (**DL §4.2**). Those two rules travel together: a transcribable value in the wrong voice *and* clipped is the failure case **DL §4.6** describes.
+
+### 3.7 Text scaling
+
+The OS text-scale setting is honoured in full, to 200% and beyond, with **no cap** (**DL §8.6**). Implications for token use:
+
+- **Never set a fixed height on a box containing text.** Height follows content. `AppSpacing` values are padding, not row heights.
+- **Never combine a single-line clamp with a fixed width** on text that can grow.
+- **Tier selection reads the scaled dimension.** A 1280px window at 200% scale has the effective content width of a 640px one and should get that tier's layout — see §9.
+- Touch-target minimums (**DL §8.5**) are floors that scale up, never ceilings that scale down.
 
 ---
 
-## Spacing
+## 4. Spacing
 
-Use `AppSpacing` for all padding, margin, `SizedBox` gaps, and layout spacing. Never write a bare numeric literal for spacing.
+Never write a bare numeric spacing literal.
 
-| Token | Value | Guidance |
+| Token | Value | Use for |
 |---|---|---|
-| `xxs` | 2 | Hairline gaps (icon-to-badge offset) |
-| `xs` | 4 | Tight inline spacing (icon-to-label in a chip) |
-| `sm` | 8 | Default gap between related elements in a row |
-| `md` | 12 | Inner padding for compact containers (chips, small cards) |
-| `lg` | 16 | Standard content padding, list item vertical padding |
+| `xxs` | 2 | Hairline gaps |
+| `xs` | 4 | Icon-to-label in a chip |
+| `sm` | 8 | Default gap between related elements |
+| `md` | 12 | Inner padding, compact containers |
+| `lg` | 16 | Standard content padding, list item padding |
 | `xl` | 24 | Section spacing, card internal padding |
-| `xxl` | 32 | Major section breaks within a scroll view |
-| `xxxl` | 48 | Screen-level vertical padding, hero spacing |
-| `huge` | 64 | Top/bottom padding on welcome or empty-state screens |
+| `xxl` | 32 | Major section breaks |
+| `xxxl` | 48 | Screen-level vertical padding |
+| `huge` | 64 | Welcome and empty-state screens |
 
-Example pattern:
+Which end of the scale to reach for is a **task** question, not a screen-size question — dense for scanning, generous for deciding (**DL §7.1**).
 
-```dart
-Padding(
-  padding: const EdgeInsets.symmetric(
-    horizontal: AppSpacing.lg,
-    vertical: AppSpacing.xl,
-  ),
-  child: Column(
-    spacing: AppSpacing.md, // Flutter 3.27+ Column.spacing
-    children: [...],
-  ),
-)
+---
+
+## 5. Radius
+
+Named by the **component role** that receives the radius, not by size. Each has a matching pre-built `BorderRadius` (`borderCard`, `borderButton`, …).
+
+| Token | Value | Use for |
+|---|---|---|
+| `inlineElement` | 4 | Table cells, inline code, tiny tags |
+| `button` | 8 | Buttons, chips, small controls |
+| `card` | 12 | Cards, containers, dialogs |
+| `panel` | 16 | Large cards, image containers |
+| `sheet` | 24 | Bottom sheets, modals |
+| `input` | 999 | Text inputs, search bars, pill buttons |
+
+Radius is geometry, so it does not change with theme mode (**DL §6.2**).
+
+---
+
+## 6. Elevation
+
+Named by the **surface role**. Never stack shadows from multiple levels.
+
+| Token | Use for | Max at level |
+|---|---|---|
+| `flat` | Relies on border or background for separation | Atom |
+| `card` | Resting elevated surface | Molecule |
+| `raised` | Hovered cards, FABs, popovers | Organism |
+| `overlay` | Dialogs, dropdowns, tooltips | Template (overlays) |
+| `modal` | Full-screen sheets, image viewers | Template (overlays) |
+
+**Elevation splits under dark mode.** Its *geometry* is mode-independent, but shadows are nearly invisible on a dark ground, so depth is rendered there as a step up in surface lightness plus a hairline border at the top steps (**DL §6.3**). The rule above is unchanged in form: "do not stack shadows" becomes "do not stack lightness steps."
+
+---
+
+## 7. Icon sizes
+
+| Token | Value | Use for |
+|---|---|---|
+| `xs` | 12 | Indicators inside dense components |
+| `sm` | 16 | List rows, chips, badges |
+| `md` | 20 | Content icons, banners, nav items |
+| `lg` | 24 | Buttons, app bars |
+| `xl` | 32 | Empty states, illustration spots |
+
+---
+
+## 8. Motion
+
+Motion signals state change and never decorates (**DL §7.2**).
+
+| Duration | Value | Use for |
+|---|---|---|
+| `microInteraction` | 150ms | Icon color change, toggle, ripple |
+| `transition` | 250ms | Page fade, card expand, tab switch |
+| `complexTransition` | 400ms | Sheet slide, viewer open |
+| `reveal` | 600ms | Onboarding, first-launch |
+
+| Curve | Value | Use for |
+|---|---|---|
+| `standard` | easeInOut | General purpose |
+| `enter` | easeOut | Elements appearing |
+| `exit` | easeIn | Elements leaving |
+| `emphasis` | easeInOutCubicEmphasized | Hero transitions |
+
+---
+
+## 9. Responsive
+
+> **Status: specified, not yet implemented.** `AppLayout` currently exposes a single `templateSplitWidth` of 768 plus five unused breakpoints. This section defines the replacement.
+
+### 9.1 Two independent mechanisms
+
+**Tiers** drive nav pattern and density. **Pane minimums** drive layout. Keeping them separate is the whole point (**DL D-011**).
+
+A single breakpoint fails because it cannot see composition. At exactly 768px with navigation and a findings panel present, the chat column computes to `768 − 240 − 360 = 168px`. The breakpoint was satisfied; the layout was unusable. A template must branch on whether the panes it wants actually *fit*, not on how wide the window is.
+
+### 9.2 Tiers
+
+| Tier | Range | Posture |
+|---|---|---|
+| `compact` | < 600 | Phone — triage glance |
+| `medium` | 600–1023 | Tablet portrait, small window |
+| `expanded` | 1024–1599 | Workstation, tablet landscape |
+| `ultrawide` | ≥ 1600 | Dual-monitor reading room |
+
+### 9.3 Pane minimums
+
+```
+primaryColumnMin   480
+panelMinWidth      320      panelMaxWidth 360
+sideNavWidth       240      sideNavRailWidth 64
+twoPaneMinWidth    900      = rail 64 + primary 480 + panel 360, rounded
+threePaneMinWidth  1120     = nav 240 + primary 480 + panel 360, with slack
+contentMaxWidth    840      text measure cap
+formMaxWidth       400      auth card
 ```
 
----
+**Content caps govern text measure, never images.** A diagnostic viewer absorbs all available width; a paragraph does not.
 
-## Border radius
+### 9.4 Disposition of existing tokens
 
-`AppRadius` tokens are named by the **component role** that receives the radius, not by relative size.
-
-| Token | Value | Use case |
-|---|---|---|
-| `inlineElement` / `borderInlineElement` | 4 | Table cells, inline code blocks, tiny tags |
-| `button` / `borderButton` | 8 | Buttons, chips, small interactive controls |
-| `card` / `borderCard` | 12 | Standard cards, containers, dialogs |
-| `panel` / `borderPanel` | 16 | Large cards, image containers, panels |
-| `sheet` / `borderSheet` | 24 | Bottom sheets, modals, large overlays |
-| `input` / `borderInput` | 999 | Text inputs, search bars, fully rounded action buttons |
-
----
-
-## Elevation / Shadows
-
-`AppElevation` tokens are named by the **surface role** they apply to, not by relative size.
-
-| Token | Use case |
+| Token | Fate |
 |---|---|
-| `flat` | Elements that rely on border or background for separation |
-| `card` | Default elevated surface at rest: cards, list items |
-| `raised` | Hovered or focused cards, floating action buttons, popovers |
-| `overlay` | Dialogs, dropdown menus, tooltips |
-| `modal` | Full-screen modal sheets, image viewers, top-level overlays |
+| `mobileMaxWidth` 599 | Delete — a boundary is one number |
+| `tabletMinWidth` 600 | Rename → `mediumMinWidth` |
+| `tabletMaxWidth` 959 | Delete — redundant |
+| `desktopMinWidth` 960 | Retune + rename → `expandedMinWidth` 1024 |
+| `wideMinWidth` 1440 | Retune + rename → `ultrawideMinWidth` 1600 |
+| `templateSplitWidth` 768 | Delete after migration |
 
-```dart
-Container(
-  decoration: BoxDecoration(
-    color: AppColors.surface,
-    borderRadius: AppRadius.borderCard,
-    boxShadow: AppElevation.card,
-  ),
-)
-```
+Six breakpoints (five unused) become three tier boundaries and two pane minimums, all used.
 
----
+### 9.5 Per-page specification
 
-## Chat interface tokens
+| Page | compact | medium | expanded / ultrawide | Density |
+|---|---|---|---|---|
+| **Login** | Full-bleed card minus `lg`, no shadow, scrolls above keyboard | Centered card at `formMaxWidth` | As medium, centered in a 640 column | Generous |
+| **Onboarding** | Full-bleed carousel; image top, copy below | Content capped 560 | Two columns — image left, copy right, capped `contentMaxWidth` | Generous |
+| **Chat** | Conversations in overlay drawer; findings in draggable bottom sheet | Conversations collapse to 64px rail; findings slide over above `twoPaneMinWidth` | Three panes: nav │ chat │ findings, gated at `threePaneMinWidth` | Comfortable chat, compact findings |
+| **Study Review** | Viewer 4:3 on top, `Findings │ Chat` tabs below | Viewer left / tabs right above `twoPaneMinWidth`, else viewer top | Three zones, gated at `threePaneMinWidth`. **Ultrawide: viewer and findings side by side, viewer absorbs the extra width** | Comfortable → compact |
+| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity. Ultrawide adds columns, caps 1440 | Comfortable → compact → dense |
+| **Heatmap Viewer** | Full-screen canvas, controls in bottom bar over scrim | As compact, 56px control bar | Canvas centered, controls in a 280px right rail | 44px touch to `expanded`, then 32px |
+| **Settings** | Single-column section list | Single column capped 640 | Two columns — 200px index left, content right capped 720 | Generous |
 
-All chat UI must use `ChatTokens`. Do not mix in raw `AppColors` for chat-specific elements.
+Case List switching from grid to table at `expanded` is deliberate: a worklist is a scanning task, and scanning tasks want tables (**DL §7.1**).
 
-### Message bubbles
+Settings gains an **Appearance** section at every tier for the theme control (§10.4).
 
-- **User messages**: `ChatTokens.userBubble` background, `ChatTokens.userBubbleText` text, `ChatTokens.bubbleRadiusUser` border radius (tail on bottom-right).
-- **Assistant messages**: `ChatTokens.assistantBubble` background, `ChatTokens.assistantBubbleText` text, 1px `ChatTokens.assistantBubbleBorder` outline, `ChatTokens.bubbleRadiusAssistant` border radius (tail on top-left).
-- Max width: `ChatTokens.bubbleMaxWidthFraction` (78% of screen width).
+### 9.6 Where responsive logic lives
 
-```dart
-Container(
-  constraints: BoxConstraints(
-    maxWidth: MediaQuery.of(context).size.width * ChatTokens.bubbleMaxWidthFraction,
-  ),
-  decoration: BoxDecoration(
-    color: isUser ? ChatTokens.userBubble : ChatTokens.assistantBubble,
-    borderRadius: isUser ? ChatTokens.bubbleRadiusUser : ChatTokens.bubbleRadiusAssistant,
-    border: isUser ? null : Border.all(color: ChatTokens.assistantBubbleBorder),
-  ),
-  padding: const EdgeInsets.symmetric(
-    horizontal: AppSpacing.lg,
-    vertical: AppSpacing.md,
-  ),
-  child: Text(
-    message,
-    style: AppTypography.bodyLg.copyWith(
-      color: isUser ? ChatTokens.userBubbleText : ChatTokens.assistantBubbleText,
-    ),
-  ),
-)
-```
-
-### Input field
-
-The `buildAppTheme()` function already configures `InputDecorationTheme` with the chat input tokens (pill radius, focused accent border). If you build a custom input, read from `ChatTokens.input*` constants.
-
-### Timestamps and indicators
-
-- Timestamps below bubbles: `AppTypography.caption` + `ChatTokens.timestamp`.
-- Typing indicator dots: `ChatTokens.typingIndicator`.
+**Templates only.** Branch on `LayoutBuilder` constraints, never on `MediaQuery.of(context).size` — window size is not the size of the box your widget occupies. See §12 for the current violation.
 
 ---
 
-## Navigation tokens
+## 10. Theming
 
-| Token | Use |
+> **Status: specified, not yet implemented.** The app is light-only today: `buildAppTheme()` hardcodes `Brightness.light` and `MaterialApp` sets no `darkTheme` or `themeMode`.
+
+### 10.1 The split
+
+| Stays `static const` | Becomes context-aware |
 |---|---|
-| `NavigationTokens.appBarBackground` / `appBarForeground` | Already wired into `buildAppTheme()`. Use for custom app bars too. |
-| `NavigationTokens.drawerBackground` / `drawerForeground` | Side drawer / conversation history panel. |
-| `NavigationTokens.bottomNavBackground` | Bottom navigation bar fill. |
-| `NavigationTokens.bottomNavSelected` / `bottomNavUnselected` | Icon + label colors for active/inactive tabs. |
+| `AppSpacing`, `AppRadius`, `AppIconSize` | `AppColors` |
+| `AppMotion`, `AppLayout` | `ChatTokens`, `NavigationTokens` |
+| Typography metrics | `SeverityTokens`, `TooltipTokens`, `AppScrollbar` |
+| Elevation *geometry* | Elevation *rendering* |
 
----
+Structural tokens are brightness-invariant by definition (**DL §6.2**), and keeping them const preserves `const` constructors at most call sites.
 
-## Severity tokens (radiology domain)
+### 10.2 Mechanism: `ThemeExtension`
 
-Use `SeverityTokens` when displaying clinical finding severity — typically in chips, badges, or inline indicators next to AI-generated findings. These are **separate** from `AppColors.status*` tokens, which are for app-level operational status.
-
-| Level | Foreground | Background | When to use |
-|---|---|---|---|
-| Normal | `SeverityTokens.normal` | `SeverityTokens.normalBg` | No pathology detected, healthy findings |
-| Mild | `SeverityTokens.mild` | `SeverityTokens.mildBg` | Minor observations, low clinical significance |
-| Moderate | `SeverityTokens.moderate` | `SeverityTokens.moderateBg` | Findings requiring attention or follow-up |
-| Critical | `SeverityTokens.critical` | `SeverityTokens.criticalBg` | Urgent findings, immediate action needed |
-
-Pattern for a severity chip:
+Color-bearing tokens move into immutable `ThemeExtension` data classes, reached through a context accessor:
 
 ```dart
-Container(
-  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-  decoration: BoxDecoration(
-    color: SeverityTokens.moderateBg,
-    borderRadius: AppRadius.borderButton,
-  ),
-  child: Text(
-    'MODERATE',
-    style: AppTypography.labelSm.copyWith(color: SeverityTokens.moderate),
-  ),
-)
+extension AppThemeContext on BuildContext {
+  AppColorsData get colors   => Theme.of(this).extension<AppColorsData>() ?? AppColorsData.light;
+  SeverityData  get severity => Theme.of(this).extension<SeverityData>()  ?? SeverityData.light;
+}
 ```
+
+`context.colors.textPrimary` reads the same as `AppColors.textPrimary` and is one token longer.
+
+Chosen over a bespoke `InheritedWidget` for three reasons, the third decisive:
+
+1. `MaterialApp`'s `theme` / `darkTheme` / `themeMode` already solves mode resolution and system-brightness following.
+2. `ThemeData` interpolates extensions, so a mode switch cross-fades custom widgets in step with Material ones instead of snapping.
+3. **The forced-dark subtree** required by **DL §6.5** works with no widget changes: the viewer wraps its canvas in `Theme(data: …copyWith(extensions: darkSet))` and every descendant follows. This subsumes the hand-rolled dark surface in `heatmap_viewer_template.dart`.
+
+### 10.3 Atom role enums
+
+Atoms take a **role** rather than a `Color`, so call sites stay `const` and become mode-correct for free:
+
+```dart
+const AppText('Sign in to your account', role: AppTextRole.secondary)
+```
+
+`Color?` remains as an escape hatch. Molecules and above read `context.colors` directly — they own composition, not primitives.
+
+### 10.4 Dark palette derivation
+
+No new brand. **Hue is invariant; chroma and lightness move.**
+
+- **The dark ground is a desaturated deep-navy derivative**, not deep navy itself — the brand navy is too chromatic for a full-screen ground and too light to let surfaces step above it. Roughly L\* 9–12, never `#000000` (**DL §6.4**).
+- **Elevation becomes a four-step lightness ladder**, ~4 L\* apart.
+- **`surfaceBrand` inverts its relationship, not its role.** Dark navy chrome on a dark page has no separation, so in dark mode it becomes *elevated* navy — lighter than the page.
+- **Severity and status invert their construction**: a light tint of the hue as foreground, a deeply darkened low-chroma version as container. Reusing the light-mode foregrounds fails contrast badly on a dark ground.
+- **Brand reference tokens do not change** (§2.7).
+- Most of the currently unused `_Palette` entries get consumed, so the private palette barely grows.
+
+Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
+
+### 10.5 Runtime
+
+`buildAppTheme(Brightness)`; `MaterialApp` gets `theme`, `darkTheme`, and `themeMode`; default follows system; the Settings Appearance section exposes System / Light / Dark.
 
 ---
 
-## Motion
+## 11. Rules and review
 
-Use `AppMotion` for all animation durations and curves. Do not hard-code `Duration(milliseconds: 300)` or use `Curves.linear`.
+### 11.1 Forbidden patterns
 
-### Durations (by interaction type)
+| Never | Instead |
+|---|---|
+| `Color(0xFF…)` inline | Semantic token |
+| `Colors.black` / `Colors.white` | `textPrimary` / `surface` |
+| `_Palette.anything` | The semantic layer |
+| `Theme.of(context).colorScheme.X` | Our tokens — see §2.8 |
+| `SizedBox(height: 16)` | `AppSpacing.lg` |
+| `BorderRadius.circular(12)` | `AppRadius.borderCard` |
+| `TextStyle(fontSize: 14)` | `AppTypography.bodyMd` |
+| `Duration(milliseconds: 250)` | `AppMotion.transition` |
+| A font weight with no real file | 400, 600, or 700 only |
+| `MediaQuery.of(context).size` for layout | `LayoutBuilder` constraints, in a template |
+| Adding a color | Find the token whose purpose matches |
 
-| Token | Value | Use case |
+### 11.2 Checklist
+
+- [ ] No hex literals, `_Palette` references, or new colors.
+- [ ] No bare spacing numbers, inline radii, inline `TextStyle`, or raw `Duration`.
+- [ ] Text color token **name** matches its surface (§2.3).
+- [ ] Chat UI uses `ChatTokens`; navigation uses `NavigationTokens`.
+- [ ] Clinical severity uses `SeverityTokens`; app operations use `AppColors.status*`. Never both in one component.
+- [ ] Every severity indicator carries a label **and** a distinct shape (**DL §3.6**).
+- [ ] At most one Layer-5 element in the viewport (**DL §5.2**).
+- [ ] Elevation within the level's maximum; no stacking.
+- [ ] Numbers in columns use `numeric`; prose does not.
+- [ ] Only registered font weights requested.
+- [ ] No identifier, measurement, or value truncates; anything transcribable uses `mono` (§3.6).
+- [ ] No fixed heights on text containers; layout survives 200% text scale (§3.7).
+- [ ] Responsive branching lives in a template and reads `LayoutBuilder` constraints.
+
+---
+
+## 12. Known gaps
+
+Live defects and unimplemented specifications. Delete entries as they close.
+
+| # | Gap | Where |
 |---|---|---|
-| `AppMotion.microInteraction` | 150ms | Icon color change, checkbox toggle, ripple |
-| `AppMotion.transition` | 250ms | Page fade, card expand, tab switch |
-| `AppMotion.complexTransition` | 400ms | Bottom sheet slide, image viewer open |
-| `AppMotion.reveal` | 600ms | Onboarding animations, first-launch reveals |
-
-### Curves (by motion intent)
-
-| Token | Value | Use case |
-|---|---|---|
-| `AppMotion.standard` | easeInOut | General-purpose balanced ease |
-| `AppMotion.enter` | easeOut | Elements appearing on screen |
-| `AppMotion.exit` | easeIn | Elements leaving the screen |
-| `AppMotion.emphasis` | easeInOutCubicEmphasized | Hero transitions, dramatic reveals |
-
-```dart
-AnimatedContainer(
-  duration: AppMotion.transition,
-  curve: AppMotion.standard,
-  // ...
-)
-```
-
----
-
-## Using `buildAppTheme()`
-
-Call it once at the root of the app:
-
-```dart
-MaterialApp(
-  theme: buildAppTheme(),
-  // ...
-)
-```
-
-This pre-configures `ColorScheme`, `AppBarTheme`, `CardTheme`, `InputDecorationTheme`, and `ElevatedButtonTheme` from the tokens. Material widgets that read from `Theme.of(context)` will automatically pick up these values. You should still use the token classes directly for custom widgets, non-Material components, and any property not covered by `ThemeData`.
-
----
-
-## Checklist for code review
-
-Before submitting any UI code, verify:
-
-1. No hex color literals (`Color(0xFF...)`) appear anywhere — not inline, not added to `design_tokens.dart`.
-2. No references to `_Palette` in widget code — only `AppColors` and domain-specific token classes.
-3. No bare numeric spacing values (`SizedBox(height: 16)`) — use `AppSpacing.*`.
-4. No inline `BorderRadius.circular(...)` calls — use `AppRadius.border*`.
-5. No inline `TextStyle(fontSize: ...)` definitions — use `AppTypography.*` and `.copyWith()`.
-6. No `Duration(milliseconds: ...)` literals — use `AppMotion.*`.
-7. Chat UI exclusively uses `ChatTokens`, not raw `AppColors`.
-8. Clinical severity badges use `SeverityTokens`, not `AppColors.status*`.
-9. Text on dark surfaces uses `textOnBrand` — never `Colors.white`.
-10. Text on light surfaces uses `textPrimary` / `textSecondary` / `textTertiary` — never `Colors.black`.
-11. No new colors have been introduced — if a needed color wasn't in `AppColors`, the closest semantic match was used instead.
+| 1 | **Dark mode unimplemented.** §10 is specification only; tokens are `static const` and the app is light-only. | `design_tokens.dart`, `app.dart` |
+| 2 | **Responsive tiers unimplemented.** §9 is specification only. One breakpoint at 768; five dead tokens. | `AppLayout`, all templates |
+| 3 | **The 168px chat column.** At 768 with nav and panel present, the primary column collapses. Fixed by §9.3. | `chat_template.dart`, `study_review_template.dart` |
+| 4 | **Chat bubble measures the window, not its box.** Uses `MediaQuery.of(context).size.width`, so a bubble inside a 360px panel is sized off the whole screen. Violates §9.6. | `chat_bubble.dart:27` |
+| 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. | `heatmap_viewer_template.dart` |
+| 6 | **`AppInteraction` hover tokens unwired.** Documented as web-only, but no `MouseRegion` anywhere reads them. | all levels |
+| 7 | **Default border fails 3:1** (1.74:1 on white). Acceptable decoratively, not for any border carrying meaning. | `AppColors.border` |
+| 8 | **Severity contrast remediation not applied to Dart.** Values specified in **DL §8.7**; `_Palette` still holds the failing originals. | `_Palette`, `SeverityTokens` |
+| 9 | **Organism test coverage at 2 of 8.** | `test/ui/organisms/` |
+| 10 | **Templates with no responsive handling:** settings, onboarding, heatmap viewer. | `templates/` |
+| 11 | **DICOM values truncate, in the wrong voice.** Renders `value` as `bodyMd` with `maxLines: 1` and an ellipsis — a clipped study UID reads as a complete one. Violates **DL §4.2** and **DL §4.6**. Should be `mono`, wrapping. | `metadata_field.dart:26-33` |
+| 12 | **Finding description clamps with no way to see the rest.** Single-line ellipsis on a clinical string with no tooltip or expand affordance. Clamping is permitted; clamping without a reachable full value is not (**DL §4.6**). | `finding_row.dart:56-61` |
+| 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
