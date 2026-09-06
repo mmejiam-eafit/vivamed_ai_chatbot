@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
@@ -85,8 +83,3 @@ class _Dot extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'typing indicator', wrapper: previewWrapper)
-Widget previewTypingIndicator() => const TypingIndicator();

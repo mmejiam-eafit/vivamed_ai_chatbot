@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class AppBadge extends StatelessWidget {
   const AppBadge({
@@ -35,22 +33,3 @@ class AppBadge extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'default', wrapper: previewWrapper)
-Widget previewAppBadgeDefault() => const AppBadge(label: '42');
-
-@Preview(name: 'error', wrapper: previewWrapper)
-Widget previewAppBadgeError() => const AppBadge(
-      label: 'Error',
-      backgroundColor: AppColors.statusError,
-      textColor: AppColors.surface,
-    );
-
-@Preview(name: 'success', wrapper: previewWrapper)
-Widget previewAppBadgeSuccess() => const AppBadge(
-      label: 'Done',
-      backgroundColor: AppColors.statusSuccess,
-      textColor: AppColors.surface,
-    );

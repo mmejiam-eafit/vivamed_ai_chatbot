@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 // Inlines the severity chip display to avoid importing a sibling molecule.
 class FindingRow extends StatelessWidget {
@@ -97,24 +95,3 @@ class FindingRow extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'collapsed — moderate', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewFindingRowCollapsed() => const FindingRow(
-      name: 'Right lower lobe consolidation',
-      severity: SeverityLevel.moderate,
-    );
-
-@Preview(name: 'expanded — critical', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewFindingRowExpanded() => const FindingRow(
-      name: 'Tension pneumothorax',
-      severity: SeverityLevel.critical,
-      isExpanded: true,
-    );
-
-@Preview(name: 'normal severity', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewFindingRowNormal() => const FindingRow(
-      name: 'Cardiac silhouette — within normal limits',
-      severity: SeverityLevel.normal,
-    );

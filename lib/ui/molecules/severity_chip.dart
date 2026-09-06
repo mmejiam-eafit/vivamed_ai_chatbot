@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class SeverityChip extends StatelessWidget {
   const SeverityChip({
@@ -60,21 +58,3 @@ class SeverityChip extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'normal', wrapper: previewWrapper)
-Widget previewSeverityChipNormal() =>
-    const SeverityChip(severity: SeverityLevel.normal);
-
-@Preview(name: 'mild', wrapper: previewWrapper)
-Widget previewSeverityChipMild() =>
-    const SeverityChip(severity: SeverityLevel.mild);
-
-@Preview(name: 'moderate', wrapper: previewWrapper)
-Widget previewSeverityChipModerate() =>
-    const SeverityChip(severity: SeverityLevel.moderate);
-
-@Preview(name: 'critical', wrapper: previewWrapper)
-Widget previewSeverityChipCritical() =>
-    const SeverityChip(severity: SeverityLevel.critical);

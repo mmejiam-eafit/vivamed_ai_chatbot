@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 // Uses Image.network. Swap for CachedNetworkImage once cached_network_image
 // is declared in pubspec.yaml.
@@ -63,20 +61,3 @@ class AppImage extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'plain — 200×150', size: Size(200, 150), wrapper: previewWrapper)
-Widget previewAppImagePlain() => const AppImage(
-      url: 'https://picsum.photos/200/150',
-      width: 200,
-      height: 150,
-    );
-
-@Preview(name: 'rounded — 200×150', size: Size(200, 150), wrapper: previewWrapper)
-Widget previewAppImageRounded() => AppImage(
-      url: 'https://picsum.photos/200/150',
-      width: 200,
-      height: 150,
-      borderRadius: AppRadius.borderCard,
-    );

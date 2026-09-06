@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 // Styling is handled by buildAppTheme()'s InputDecorationTheme.
 // This atom owns only structure and behavior — no manual decoration tokens needed.
@@ -55,26 +53,3 @@ class AppTextField extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'empty with hint', size: Size(320, 56), wrapper: previewWrapper)
-Widget previewAppTextFieldEmpty() =>
-    AppTextField(controller: TextEditingController(), hintText: 'Search…');
-
-@Preview(name: 'with prefix icon', size: Size(320, 56), wrapper: previewWrapper)
-Widget previewAppTextFieldPrefix() => AppTextField(
-      controller: TextEditingController(),
-      hintText: 'Search…',
-      prefixIcon: const Icon(Icons.search),
-    );
-
-@Preview(name: 'disabled', size: Size(320, 56), wrapper: previewWrapper)
-Widget previewAppTextFieldDisabled() => AppTextField(
-      controller: TextEditingController(text: 'Read-only'),
-      enabled: false,
-    );
-
-@Preview(name: 'multiline', size: Size(320, 120), wrapper: previewWrapper)
-Widget previewAppTextFieldMultiline() =>
-    AppTextField(controller: TextEditingController(), hintText: 'Notes…', maxLines: 4);

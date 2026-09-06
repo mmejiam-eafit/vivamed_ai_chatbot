@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class AppAvatar extends StatelessWidget {
   const AppAvatar({
@@ -43,14 +41,3 @@ class AppAvatar extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'initials — default', wrapper: previewWrapper)
-Widget previewAppAvatarInitials() => const AppAvatar(initials: 'JD');
-
-@Preview(name: 'fallback icon', wrapper: previewWrapper)
-Widget previewAppAvatarFallback() => const AppAvatar();
-
-@Preview(name: 'large initials', wrapper: previewWrapper)
-Widget previewAppAvatarLarge() => const AppAvatar(initials: 'AB', radius: 36.0);

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 enum AppButtonVariant { primary, secondary, ghost, iconOnly }
 
@@ -123,39 +121,3 @@ class AppButton extends StatelessWidget {
     };
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'primary', wrapper: previewWrapper)
-Widget previewAppButtonPrimary() =>
-    AppButton(label: 'Confirm', onPressed: () {});
-
-@Preview(name: 'secondary', wrapper: previewWrapper)
-Widget previewAppButtonSecondary() => AppButton(
-      label: 'Cancel',
-      variant: AppButtonVariant.secondary,
-      onPressed: () {},
-    );
-
-@Preview(name: 'ghost', wrapper: previewWrapper)
-Widget previewAppButtonGhost() =>
-    AppButton(label: 'Skip', variant: AppButtonVariant.ghost, onPressed: () {});
-
-@Preview(name: 'icon-only', wrapper: previewWrapper)
-Widget previewAppButtonIconOnly() => AppButton(
-      icon: Icons.send,
-      variant: AppButtonVariant.iconOnly,
-      onPressed: () {},
-    );
-
-@Preview(name: 'primary with icon', wrapper: previewWrapper)
-Widget previewAppButtonWithIcon() =>
-    AppButton(label: 'Upload', icon: Icons.upload, onPressed: () {});
-
-@Preview(name: 'loading', wrapper: previewWrapper)
-Widget previewAppButtonLoading() =>
-    AppButton(label: 'Saving…', isLoading: true, onPressed: () {});
-
-@Preview(name: 'disabled', wrapper: previewWrapper)
-Widget previewAppButtonDisabled() =>
-    const AppButton(label: 'Unavailable', onPressed: null);

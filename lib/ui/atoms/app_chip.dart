@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class AppChip extends StatelessWidget {
   const AppChip({
@@ -60,22 +58,3 @@ class AppChip extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'display chip', wrapper: previewWrapper)
-Widget previewAppChipDisplay() => const AppChip(label: 'Radiology');
-
-@Preview(name: 'filter — unselected', wrapper: previewWrapper)
-Widget previewAppChipFilterOff() =>
-    AppChip(label: 'Chest X-Ray', onSelected: (_) {});
-
-@Preview(name: 'filter — selected', wrapper: previewWrapper)
-Widget previewAppChipFilterOn() =>
-    AppChip(label: 'Chest X-Ray', selected: true, onSelected: (_) {});
-
-@Preview(name: 'with avatar icon', wrapper: previewWrapper)
-Widget previewAppChipAvatar() => const AppChip(
-      label: 'CT',
-      avatar: Icon(Icons.radio, size: 16),
-    );

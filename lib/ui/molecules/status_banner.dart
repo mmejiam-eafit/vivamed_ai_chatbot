@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 enum StatusBannerVariant { info, warning, error, success }
 
@@ -81,29 +79,3 @@ class StatusBanner extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'info', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewStatusBannerInfo() =>
-    const StatusBanner(message: 'AI analysis is running…');
-
-@Preview(name: 'warning', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewStatusBannerWarning() => const StatusBanner(
-      message: 'Low confidence — manual review recommended.',
-      variant: StatusBannerVariant.warning,
-    );
-
-@Preview(name: 'error — with action', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewStatusBannerError() => StatusBanner(
-      message: 'Upload failed.',
-      variant: StatusBannerVariant.error,
-      actionLabel: 'Retry',
-      onAction: () {},
-    );
-
-@Preview(name: 'success', size: Size(360, 56), wrapper: previewWrapper)
-Widget previewStatusBannerSuccess() => const StatusBanner(
-      message: 'Report saved successfully.',
-      variant: StatusBannerVariant.success,
-    );
