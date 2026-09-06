@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_text_field.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class ChatInput extends StatelessWidget {
   const ChatInput({
@@ -13,6 +11,7 @@ class ChatInput extends StatelessWidget {
     this.onAttach,
     this.isLoading = false,
     this.hintText = 'Ask about the study…',
+    this.maxLines = 1,
   });
 
   final TextEditingController controller;
@@ -20,6 +19,9 @@ class ChatInput extends StatelessWidget {
   final VoidCallback? onAttach;
   final bool isLoading;
   final String hintText;
+  /// Number of lines the input can grow to. Set to a value > 1 on web/desktop
+  /// to allow multi-line messages before sending.
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +45,10 @@ class ChatInput extends StatelessWidget {
             child: AppTextField(
               controller: controller,
               hintText: hintText,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => onSubmit(),
+              maxLines: maxLines,
+              textInputAction:
+                  maxLines > 1 ? TextInputAction.newline : TextInputAction.send,
+              onSubmitted: maxLines > 1 ? null : (_) => onSubmit(),
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
@@ -59,23 +63,3 @@ class ChatInput extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'default', size: Size(400, 64), wrapper: previewWrapper)
-Widget previewChatInputDefault() =>
-    ChatInput(controller: TextEditingController(), onSubmit: () {});
-
-@Preview(name: 'with attach button', size: Size(400, 64), wrapper: previewWrapper)
-Widget previewChatInputAttach() => ChatInput(
-      controller: TextEditingController(),
-      onSubmit: () {},
-      onAttach: () {},
-    );
-
-@Preview(name: 'loading', size: Size(400, 64), wrapper: previewWrapper)
-Widget previewChatInputLoading() => ChatInput(
-      controller: TextEditingController(),
-      onSubmit: () {},
-      isLoading: true,
-    );

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_badge.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class ImageThumbnail extends StatelessWidget {
   const ImageThumbnail({
@@ -23,8 +21,9 @@ class ImageThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: AppRadius.borderCard,
       child: ClipRRect(
         borderRadius: AppRadius.borderCard,
         child: Stack(
@@ -47,24 +46,3 @@ class ImageThumbnail extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'plain thumbnail', size: Size(80, 80), wrapper: previewWrapper)
-Widget previewImageThumbnailPlain() => const ImageThumbnail(
-      url: 'https://picsum.photos/80/80',
-    );
-
-@Preview(name: 'with findings badge', size: Size(80, 80), wrapper: previewWrapper)
-Widget previewImageThumbnailBadge() => const ImageThumbnail(
-      url: 'https://picsum.photos/80/80',
-      badgeLabel: '3',
-    );
-
-@Preview(name: 'large — 160×120', size: Size(160, 120), wrapper: previewWrapper)
-Widget previewImageThumbnailLarge() => const ImageThumbnail(
-      url: 'https://picsum.photos/160/120',
-      width: 160,
-      height: 120,
-      badgeLabel: '7 findings',
-    );

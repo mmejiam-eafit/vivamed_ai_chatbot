@@ -1,9 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_avatar.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class ChatBubble extends StatelessWidget {
   const ChatBubble({
@@ -23,8 +23,10 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxWidth =
-        MediaQuery.of(context).size.width * ChatTokens.bubbleMaxWidthFraction;
+    final maxWidth = math.min(
+      MediaQuery.of(context).size.width * ChatTokens.bubbleMaxWidthFraction,
+      ChatTokens.bubbleMaxAbsoluteWidth,
+    );
     final hasAvatar = avatarImageUrl != null || avatarInitials != null;
 
     final bubbleBox = Container(
@@ -97,29 +99,3 @@ class ChatBubble extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-@Preview(name: 'user bubble', size: Size(360, 80), wrapper: previewWrapper)
-Widget previewChatBubbleUser() =>
-    const ChatBubble(message: 'Is there any consolidation visible?', isUser: true);
-
-@Preview(name: 'assistant bubble', size: Size(360, 100), wrapper: previewWrapper)
-Widget previewChatBubbleAssistant() => const ChatBubble(
-      message: 'Yes, there is a right lower lobe consolidation.',
-      isUser: false,
-    );
-
-@Preview(name: 'user — with timestamp', size: Size(360, 96), wrapper: previewWrapper)
-Widget previewChatBubbleTimestamp() => const ChatBubble(
-      message: 'Thanks!',
-      isUser: true,
-      timestamp: '10:42 AM',
-    );
-
-@Preview(name: 'assistant — with avatar', size: Size(360, 100), wrapper: previewWrapper)
-Widget previewChatBubbleAvatar() => const ChatBubble(
-      message: 'Analysis complete.',
-      isUser: false,
-      avatarInitials: 'AI',
-    );
