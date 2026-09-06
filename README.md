@@ -79,7 +79,29 @@ Pages → Templates → Organisms → Molecules → Atoms
 
 ### Current status
 
-Atoms, molecules, and organisms are implemented and have widget tests under `test/ui/`. Templates and pages are defined in the catalog but not yet built — see below.
+All five atomic levels are implemented. Atoms, molecules, organisms, templates, and pages have widget tests under `test/ui/`.
+
+| Level | Status |
+|---|---|
+| Atoms | ✅ Complete |
+| Molecules | ✅ Complete |
+| Organisms | ✅ Complete |
+| Templates | ✅ Complete |
+| **Pages** | ✅ Placeholder wiring complete (provider/service integration deferred) |
+
+**Implemented pages and routes** (defined in `lib/app.dart`):
+
+| Page | Route | Template |
+|---|---|---|
+| `LoginPage` | `/` | `AuthTemplate` |
+| `OnboardingPage` | `/onboarding` | `OnboardingTemplate` |
+| `ChatPage` | `/chat` | `ChatTemplate` |
+| `StudyReviewPage` | `/study-review` | `StudyReviewTemplate` |
+| `CaseListPage` | `/cases` | `CaseListTemplate` |
+| `HeatmapViewerPage` | `/heatmap` | `HeatmapViewerTemplate` |
+| `SettingsPage` | `/settings` | `SettingsTemplate` |
+
+Each page instantiates exactly one template and passes organism/atom placeholders for all required slots. Provider integration, service calls, and real data wiring are a subsequent phase.
 
 ### Key rules
 
@@ -106,13 +128,10 @@ Walk through these questions in order:
 
 ## Running the app
 
-> **Note:** This section applies once templates and pages are implemented. The app does not have a runnable entry point yet.
-
 ### Prerequisites
 
 1. **Font assets** — add the font files to `assets/fonts/` and uncomment the `fonts:` block in [pubspec.yaml](pubspec.yaml).
-2. **Entry point** — create `lib/main.dart` with a `MaterialApp` (or `GoRouter`) wiring the initial route to the first page.
-3. **State management** — initialise whatever provider (Riverpod, Bloc, Provider) is chosen at the root of the widget tree in `main.dart`.
+2. **State management** — initialise whatever provider (Riverpod, Bloc, Provider) is chosen at the root of the widget tree in `lib/app.dart` when the data layer is ready.
 
 ### Start the app
 
@@ -149,6 +168,8 @@ flutter test
 flutter test test/ui/atoms/
 flutter test test/ui/molecules/
 flutter test test/ui/organisms/
+flutter test test/ui/templates/
+flutter test test/ui/pages/
 
 # Run a single file
 flutter test test/ui/organisms/study_info_card_test.dart

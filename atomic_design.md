@@ -111,7 +111,9 @@ A template is a layout skeleton. It defines **where organisms go on screen** —
 | Template | Layout zones | Description |
 |---|---|---|
 | `ChatTemplate` | App bar zone, main body (chat panel), optional side panel (findings) | The primary layout. On narrow screens, the chat panel fills the body and findings appear as a bottom sheet. On wide screens, findings sit in a side panel. |
+| `CaseListTemplate` | App bar zone, optional status/header zone, case content zone | Layout for case discovery/history views. Uses list on narrow screens and grid on wide screens. |
 | `StudyReviewTemplate` | App bar zone, study info zone (top), findings zone (bottom/side) | Layout for reviewing a completed study outside the chat context. |
+| `HeatmapViewerTemplate` | App bar zone, image canvas zone, bottom control zone | Layout for rendering base study image and optional heatmap overlay with externally owned opacity control. |
 | `SettingsTemplate` | App bar zone, scrollable content zone | Single-column layout for settings sections. |
 | `OnboardingTemplate` | Full-bleed content zone, bottom action zone | Edge-to-edge layout for the onboarding carousel with a bottom "Get Started" area. |
 | `AuthTemplate` | Centered content zone | Vertically and horizontally centered card for login/registration flows. |
@@ -187,6 +189,8 @@ lib/ui/
 │   └── onboarding_carousel.dart
 ├── templates/
 │   ├── chat_template.dart
+│   ├── case_list_template.dart
+│   ├── heatmap_viewer_template.dart
 │   ├── study_review_template.dart
 │   ├── settings_template.dart
 │   ├── onboarding_template.dart
