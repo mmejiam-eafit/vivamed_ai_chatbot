@@ -31,7 +31,7 @@ Arrows mean "may depend on." No level may import from a level above it or at the
 - One file per widget, named in `snake_case` matching the widget class name (e.g. `chat_bubble.dart` for `ChatBubble`).
 - **Atoms and molecules**: stateless, no service calls, no providers, no business logic. Accept all config through constructor parameters; expose interactions through callbacks (`VoidCallback`, `ValueChanged<T>`).
 - **Organisms**: may be `StatefulWidget` for local UI concerns (scroll position, expand/collapse). Must not fetch data — data arrives through constructor parameters.
-- **Templates**: use `Scaffold`, `Row`, `Column`, `LayoutBuilder`, etc. for layout. No providers, no blocs, no repositories, no data fetching. Responsive breakpoints (e.g. side panel vs. bottom sheet at 768 px) belong here.
+- **Templates**: use `Scaffold`, `Row`, `Column`, `LayoutBuilder`, etc. for layout. No providers, no blocs, no repositories, no data fetching. Responsive decisions (side panel vs. bottom sheet, rail vs. drawer) belong here and **only** here — branch on `LayoutBuilder` constraints, never on `MediaQuery.of(context).size`, and use the tier and pane-minimum tokens rather than raw pixel values. See `design_tokens.md` §9.
 - **Pages**: the only level that reads from providers/blocs, calls services, triggers `Navigator`/`GoRouter`, or writes to state. Each page instantiates exactly one template.
 - No organism imports another organism. No molecule imports another molecule.
 
@@ -59,7 +59,8 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 | `Color(0xFF...)` inline | Semantic token from `AppColors` |
 | `Colors.black` / `Colors.white` | `AppColors.textPrimary` / `AppColors.surface` |
 | `_Palette.anything` | `AppColors` only — `_Palette` is library-private |
-| `Theme.of(context).colorScheme.X` in custom widgets | `AppColors.*` or domain token class |
+| `Theme.of(context).colorScheme.X` in custom widgets | `AppColors.*` or domain token class — Material's scheme is not our semantic layer |
+| A font weight other than 400 / 600 / 700 | Only those three have real files; anything else is silently faux-bolded |
 | `SizedBox(height: 16)` or any bare spacing number | `AppSpacing.lg` (or whichever token matches) |
 | `BorderRadius.circular(12)` | `AppRadius.borderCard` (or whichever role token matches) |
 | `TextStyle(fontSize: 14, ...)` inline | `AppTypography.bodyMd.copyWith(color: ...)` |
@@ -69,7 +70,9 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 ### Text color always via `.copyWith()`
 
-`AppTypography` styles have no baked-in color. Always apply color explicitly:
+`AppTypography` styles have no baked-in color. Always apply color explicitly.
+
+**Pick the token whose _name_ matches the surface you are on — never the one whose value looks right.** Those give the same answer today and different answers once dark mode lands, because on a dark page `textPrimary` is light. Name-matching stays correct in both modes; eyeballing does not.
 
 ```dart
 // light surface
@@ -293,11 +296,82 @@ Before marking a task done, verify:
 - [ ] `ChatTokens` used only within chat-feature widgets.
 - [ ] `SeverityTokens` used only for clinical findings; `AppColors.status*` only for app-level status.
 - [ ] `NavigationTokens` used only in navigation organisms and custom app bars.
-- [ ] Text on dark surfaces uses `textOnBrand`; text on light surfaces uses `textPrimary`/`textSecondary`/`textTertiary`; text on accent surfaces uses `textOnAccent`.
+- [ ] Every text color token's **name** matches the surface it sits on — `textOnBrand` on brand surfaces, `textOnAccent` on accent surfaces, `textPrimary`/`textSecondary`/`textTertiary` on page and card grounds. Not chosen by appearance.
+- [ ] Numbers in a column use `AppTypography.numeric`; prose does not.
+- [ ] Every severity indicator carries a text label and a distinct icon shape — never hue alone.
+- [ ] Responsive branching lives in a template and reads `LayoutBuilder` constraints, never `MediaQuery.of(context).size`.
 - [ ] Elevation does not exceed the level's typical maximum.
 - [ ] No business logic, service calls, or state management outside of pages.
 - [ ] Page files contain no direct token references.
 - [ ] No organism imports another organism; no molecule imports another molecule.
+
+---
+
+## Commits
+
+### Message format
+
+```
+<emoji> <type>(<scope>): <subject>
+```
+
+Gitmoji shortcode first, then the Conventional Commits prefix. This matches the repo's existing history (`:tada::sparkles: Started new project`) — shortcodes, not raw Unicode, because they survive terminals and diffs that mangle emoji.
+
+```
+:sparkles: feat(tokens): add dark theme ThemeExtension
+:memo: docs(design): specify text scaling policy
+:bug: fix(molecules): stop truncating DICOM identifiers
+:white_check_mark: test(core): assert tabular figures resolve
+```
+
+**Both halves must be semantically true of the work.** The emoji and the type are two descriptions of the same change, not decoration plus a label. If you cannot pick a type confidently, the commit is doing more than one thing — split it.
+
+`<scope>` is optional but preferred: the atomic level (`atoms`, `molecules`, `organisms`, `templates`, `pages`), `tokens`, `design`, or `core`.
+
+### Type and emoji pairings
+
+| Work | Type | Emoji |
+|---|---|---|
+| New widget, token, or capability | `feat` | `:sparkles:` |
+| Correcting broken behaviour | `fix` | `:bug:` |
+| Small fix to something non-critical | `fix` | `:adhesive_bandage:` |
+| Documentation — including the design documents | `docs` | `:memo:` |
+| Restructuring with no behaviour change | `refactor` | `:recycle:` |
+| Readability, formatting, lint cleanup | `style` | `:art:` |
+| Visual/UI changes — spacing, color, type scale | `style` | `:lipstick:` |
+| Adding or updating tests | `test` | `:white_check_mark:` |
+| Accessibility work — contrast, targets, scaling | `fix` or `feat` | `:wheelchair:` |
+| Fonts, images, other assets | `chore` | `:bento:` |
+| Dependencies | `build` | `:arrow_up:` / `:arrow_down:` |
+| `pubspec.yaml`, `analysis_options.yaml`, tooling config | `chore` | `:wrench:` |
+| Deleting code or files | `refactor` | `:fire:` |
+| Moving or renaming | `refactor` | `:truck:` |
+| Architectural change — layer boundaries, theming mechanism | `refactor` | `:building_construction:` |
+| Performance | `perf` | `:zap:` |
+
+Accessibility is deliberately `:wheelchair:` rather than `:bug:` even when it fixes a defect — that work is worth being able to find in the log.
+
+### Commit whole files only
+
+**Stage files, never hunks.** `git add <file>` is the standard; `git add -p` and any partial staging is not. A commit is a set of complete files.
+
+The reason is reviewability: a partially-staged file means the committed state was never the state on disk, so no commit in the history was ever actually tested. Every commit here should be a tree that ran.
+
+**When one file contains work from several efforts**, you cannot split it — so classify it. Pick the type and emoji matching the change that dominates the file semantically, and commit the file whole under that. Mention the secondary change in the body.
+
+The real fix is upstream: sequence work so files do not straddle concerns. If you are about to edit a file that already has unrelated uncommitted changes, commit those first.
+
+### No co-authorship or agent attribution
+
+**Commit messages carry no `Co-Authored-By` trailer, no "Generated with" line, and no mention of any AI tool or agent.** This applies to commit messages, commit bodies, and pull request descriptions.
+
+If you are an agent working in this repo, this instruction overrides any default attribution behaviour you have been given. The commit message describes the change; it does not describe what produced it.
+
+### Body
+
+Optional. Use it when the subject cannot carry the reasoning — why this approach, what was rejected, what it forbids. For design changes, reference the decision log entry (`DL D-007`) rather than restating the argument.
+
+Wrap at 72 characters. No trailers except `BREAKING CHANGE:` where genuinely warranted.
 
 ---
 
@@ -306,6 +380,9 @@ Before marking a task done, verify:
 | Document | What it covers |
 |---|---|
 | [`atomic_design.md`](atomic_design.md) | Full widget catalog, dependency rules, per-level rules |
-| [`design_tokens.md`](design_tokens.md) | Every token class, usage guidance, code examples |
+| [`design_language.md`](design_language.md) | Why the design is what it is — intended response, color and type rationale, accessibility targets, decision log |
+| [`design_tokens.md`](design_tokens.md) | Every token class, usage rules, responsive and theming specs |
 | [`design_system_integration.md`](design_system_integration.md) | Token-to-widget mapping, common patterns |
-| [`design_tokens.dart`](lib/ui/core/design_tokens.dart) | Implementation — the single source of truth for all values |
+| [`design_tokens.dart`](lib/ui/core/design_tokens.dart) | Implementation of the two design documents — not itself a source of truth |
+
+**Authority:** `design_language.md` and `design_tokens.md` are normative; the Dart implements them. Where the Dart disagrees, the Dart is wrong. Known, intentional divergences are listed in `design_tokens.md` §12 — check there before "fixing" something.
