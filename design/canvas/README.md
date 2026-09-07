@@ -118,7 +118,10 @@ its actual content was never recoverable, so it isn't reconstructed here.
 Nothing of substance is lost: the values it was tracking were promoted into
 `design_tokens.md` §10.4, which is the authoritative record of the final
 palette, the contrast ratio for every pair, and the candidates that were
-tried and failed. [`PALETTE.md`](../../PALETTE.md) at the repo root is a
-freshly compiled quick-reference sourced from §10.4 and the shipped light
-palette — not a recovery of the lost draft, but the same information in one
+tried and failed. [`PALETTE.md`](../../PALETTE.md) at the repo root is now a
+full quick-reference for every token class `design_tokens.md` defines —
+color in both modes, typography, spacing, radius, elevation, icon sizes,
+motion, responsive tiers — not a recovery of the lost draft, but the same
+underlying source (`design_tokens.md`, plus the shipped Dart for the one
+gap it has: light-mode hex isn't spelled out in the doc itself) in one
 place.
