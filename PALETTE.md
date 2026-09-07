@@ -25,13 +25,13 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 | `textSecondary` | `#4A4A4A` | Subtitles, descriptions |
 | `textTertiary` | `#636363` | Helper text — AA only, not clinical strings |
 | `textPlaceholder` / `textDisabled` | `#A0A0A0` | Input placeholders / inactive labels — under 4.5:1, but WCAG exempts inactive/placeholder text, so this is by design |
-| `textMuted` | `#7D7D7D` | Timestamps, fine print — **fails AA** (3.74:1 on page); remediation target specified but no hex chosen yet (§12 gap 8) |
+| `textMuted` | `#7D7D7D` | Timestamps, fine print — **fails AA** (3.74:1 on page). Specified fix: `#6E6E6E`, 4.64:1 (§12 gap 8) |
 | `textOnBrand` | `#F4F4F4` | Text on `surfaceBrand` / `surfaceBrandSecondary` |
 | `textOnAccent` | `#0F3545` | Text on `surfaceAccent` |
 | `textOnBrandSubdued` | `#061625` | Text on `surfaceBrandSubdued` |
 | `textOnBrandSecondarySubdued` | `#0F2640` | Text on `surfaceBrandSecondarySubdued` |
 | `textLink` | `#267390` | Inline interactive text |
-| `textLinkHover` | `#3D95B8` | Link hover — **fails 4.5:1** (3.08:1 on page); newly found, not in the existing accessibility audit (§12 gap 14) |
+| `textLinkHover` | `#3D95B8` | Link hover — **fails 4.5:1** (3.08:1 on page); shares this hex with `borderFocused` / `interactiveAccent` below, whose 3:1 floor it clears. Specified fix: `#275F75`, its own value, 6.41:1 (§12 gap 14) |
 | `textLinkVisited` | `#0F3545` | Link visited |
 | `icon` | `#636363` | Default icon |
 | `iconOnBrand` | `#F4F4F4` | Icon on brand surfaces |
@@ -39,7 +39,7 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 | `iconDisabled` | `#A0A0A0` | Disabled icon |
 | `border` | `#C4C4C4` | Default border — **fails 3:1** (§12 gap 7); decorative only |
 | `borderSubdued` | `#DCDCDC` | Decorative separator |
-| `borderFocused` | `#3D95B8` | Focus ring |
+| `borderFocused` | `#3D95B8` | Focus ring — unaffected by `textLinkHover`'s fix above; this token keeps the value |
 | `borderSelected` | `#1D546C` | Selected state |
 | `interactivePrimary` | `#1D546C` | Primary button / control fill |
 | `interactivePrimaryForeground` | `#F4F4F4` | Text/icon on `interactivePrimary` |
@@ -94,20 +94,29 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 Two separate systems that share hues — status is app operations, severity is
 clinical findings; never use one for the other.
 
-| Level | Light foreground | Light container | On container | Dark foreground | Dark container |
-|---|---|---|---|---|---|
-| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ | `#7FD1A0` | `#14301F` |
-| Info / Mild | `#0277BD` | `#DCEEF9` | 4.03 ✗ | `#8ECDF2` | `#12293A` |
-| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ | `#F0C070` | `#3A2A0F` |
-| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) | `#FF9A93` | `#421D1D` |
+| Level | Light foreground | Light container | On container | Light fix | Dark foreground | Dark container |
+|---|---|---|---|---|---|---|
+| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ | `#276A43` | `#7FD1A0` | `#14301F` |
+| Mild severity | `#0277BD` | `#DCEEF9` | 4.03 ✗ | `#02639E` | `#8ECDF2` | `#12293A` |
+| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ | `#855B06` | `#F0C070` | `#3A2A0F` |
+| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) | `#A42121` | `#FF9A93` | `#421D1D` |
+| Info status | `#3D95B8` | `#E9F3F7` | 3.01 ✗ | `#23566A` | — | — |
+
+**Corrected:** this table used to show one combined "Info / Mild" row using
+only Mild severity's hex — they're different colors (`statusInfo` is the
+brand teal accent, `SeverityTokens.mild` a plain blue), and Info status has
+its own row now. Its dark columns are empty on purpose: dark mode
+deliberately reuses the Mild pair for Info status (§10.4), so there's no
+separate dark value to show — a light-only asymmetry that predates any of
+this, not something introduced here.
 
 **Every light pair fails or barely clears AA** — dark's severity system was
 derived from scratch with a floor to hit; light's predates that discipline
-and was never brought up to it. `design_tokens.md` §2.8 has the full ratio
-picture; DL §8.7 specifies each fix as a target ratio, and §12 gap 8 tracks
-that no hex has been chosen to hit any of them yet. A severity indicator
-carries a label **and** a distinct shape regardless — never hue alone
-(§2.6).
+and was never brought up to it. Every "Light fix" hex above is computed and
+verified, hue held (checked in HLS, not eyeballed) — `design_tokens.md`
+§2.8 has the full ratio picture and `_Palette` still holds the failing
+originals (§12 gap 8). A severity indicator carries a label **and** a
+distinct shape regardless — never hue alone (§2.6).
 
 ## Brand reference (§2.7)
 

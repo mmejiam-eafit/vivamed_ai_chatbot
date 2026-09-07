@@ -156,7 +156,7 @@ Normative — companion to §10.4's dark values, same discipline: every ratio be
 | `textPrimary` | `#1A1A1A` | 15.82 · 17.40 |
 | `textSecondary` | `#4A4A4A` | 8.06 · 8.86 |
 | `textTertiary` | `#636363` | 5.46 · 6.01 — AA only, not clinical strings |
-| `textMuted` | `#7D7D7D` | 3.74 · 4.12 — **fails AA.** DL §8.7 already specifies the fix as a target ratio (4.64), but no hex has been chosen for it yet — the same kind of gap the dark derivation closed for its own palette, tracked here as §12 gap 8. |
+| `textMuted` | `#7D7D7D` | 3.74 · 4.12 — **fails AA.** Specified fix: `#6E6E6E`, 4.64 on page · 5.10 on surface (DL §8.7, §12 gap 8). |
 | `textPlaceholder` / `textDisabled` | `#A0A0A0` | 2.38 · 2.61 — WCAG exempts inactive/placeholder text from the 4.5:1 floor, so this is by design, not a defect |
 
 Text-on-tinted-surface pairs, each checked against its own surface:
@@ -168,7 +168,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 | `textOnBrandSubdued` | `#061625` | 15.97 on `surfaceBrandSubdued` |
 | `textOnBrandSecondarySubdued` | `#0F2640` | 13.51 on `surfaceBrandSecondarySubdued` |
 | `textLink` | `#267390` | 4.85 on page · 5.33 on surface |
-| `textLinkHover` | `#3D95B8` | 3.08 on page · 3.39 on surface — **fails the 4.5:1 text floor.** Not in DL §8.7's audit; found while compiling this table, not previously known. Tracked as §12 gap 14. |
+| `textLinkHover` | `#3D95B8` | 3.08 on page · 3.39 on surface — **fails the 4.5:1 text floor.** Found while compiling this table, not previously in DL §8.7's audit (§12 gap 14). Specified fix: **`#275F75`**, its own value, no longer sharing `#3D95B8` with `borderFocused` / `interactiveAccent` — 6.41 on page · 7.05 on surface. |
 | `textLinkVisited` | `#0F3545` | 11.82 on page · 13.00 on surface |
 
 **Icons** (§2.4) reuse hexes already in the ramp above — no separate palette:
@@ -186,7 +186,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 |---|---|---|---|
 | `border` | `#C4C4C4` | 1.59 on page · 1.74 on surface | **Fails 3:1** — decorative only (§12 gap 7) |
 | `borderSubdued` | `#DCDCDC` | 1.25 · 1.37 | Decorative, no floor |
-| `borderFocused` | `#3D95B8` | 3.08 on page · 3.39 on surface | Clears 3:1. Same hex as `textLinkHover` above — fine as a border, not as text; the two tokens need different floors. |
+| `borderFocused` | `#3D95B8` | 3.08 on page · 3.39 on surface | Clears 3:1 — fine as a border at this value. `textLinkHover` used to share this hex and fail as text; its specified fix gives it a separate value instead, so `borderFocused` is unaffected. |
 | `borderSelected` | `#1D546C` | 7.53 · 8.28 | Clears with margin |
 
 **Interactive** (§2.4):
@@ -198,20 +198,23 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 | `interactiveSecondary` | `#FFFFFF` | fill — see `interactiveSecondaryForeground` |
 | `interactiveSecondaryForeground` | `#1D546C` | 8.28 on `interactiveSecondary` |
 | `interactiveHover` | `#267390` | same value as `textLink` |
-| `interactiveAccent` | `#3D95B8` | same value as `borderFocused` / `textLinkHover` |
+| `interactiveAccent` | `#3D95B8` | same value as `borderFocused`. `textLinkHover` used to share it too; its specified fix moves it to its own value (above). |
 | `interactiveDisabled` | `#DCDCDC` | WCAG-exempt (disabled control) |
 | `interactiveDisabledForeground` | `#7D7D7D` | WCAG-exempt (disabled control) |
 
-**Status and severity** (§2.5, §2.6) — measured today, not the specified fix:
+**Status and severity** (§2.5, §2.6) — measured today, and the specified fix now that one exists:
 
-| Level | Foreground | Container | On container | Vs page | Vs surface |
+**Correction:** an earlier version of this table showed one combined "Info / Mild" row, using only `SeverityTokens.mild`'s hex. They're different colors in the Dart — `statusInfo` is `_Palette.tealBlue400` (`#3D95B8`, the brand accent, also shared with `borderFocused` and `interactiveAccent`), `SeverityTokens.mild` is `_Palette.blue700` (`#0277BD`), unrelated. Deriving real remediation colors forced the distinction back into view; both get their own row below.
+
+| Level | Foreground today | Container | On container (today → fixed) | Vs page (today → fixed) | Specified fix |
 |---|---|---|---|---|---|
-| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ | 4.59 ✓ | 5.05 ✓ |
-| Info / Mild | `#0277BD` | `#DCEEF9` | 4.03 ✗ | 4.36 ✗ | 4.80 ✓ |
-| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ | 2.43 ✗ | 2.67 ✗ |
-| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) | 5.11 ✓ | 5.62 ✓ |
+| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ → 5.43 ✓ | 4.59 ✓ → 5.91 ✓ | `#276A43` |
+| Mild severity | `#0277BD` | `#DCEEF9` | 4.03 ✗ → 5.38 ✓ | 4.36 ✗ → 5.82 ✓ | `#02639E` |
+| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ → 5.48 ✓ | 2.43 ✗ → 5.46 ✓ | `#855B06` |
+| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) → 6.03 ✓ | 5.11 ✓ → 6.78 ✓ | `#A42121` |
+| Info status | `#3D95B8` | `#E9F3F7` | 3.01 ✗ → 7.14 ✓ | 3.08 ✗ → 7.31 ✓ | `#23566A` |
 
-Every fail above is already tracked: DL §8.7 specifies the remediation as a target ratio per pair, and §12 gap 8 tracks that no hex has been chosen to hit it yet. This table exists to show what's actually shipped today, not to restate the fix — DL §8.7 is the one place that ratio lives.
+Every fixed value clears its target with hue held (checked in HLS: every hue shift under 0.4°, saturation held within 0.005 — only lightness moved) and its container unchanged; §12 gap 8 tracks that these exist as specified colors but aren't wired into `_Palette` yet. Full derivation, including why Info status needed its own value distinct from both Mild severity and `textLinkHover`'s fix above (three colors in the same hue family, each needing real separation from its neighbors, not just its own passing ratio) lives in **DL §8.7**, D-014.
 
 ### 2.9 Forbidden
 
@@ -627,10 +630,10 @@ Live defects and unimplemented specifications. Delete entries as they close.
 | 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. | `heatmap_viewer_template.dart` |
 | 6 | **`AppInteraction` hover tokens unwired.** Documented as web-only, but no `MouseRegion` anywhere reads them. | all levels |
 | 7 | **Default border fails 3:1** (1.74:1 on white). Acceptable decoratively, not for any border carrying meaning. | `AppColors.border` |
-| 8 | **Severity/status/muted-text contrast remediation has no hex yet.** **DL §8.7** specifies each fix as a target ratio (moderate 5.41, mild 5.38, normal 5.37, critical 6.03, info-status 5.05/5.26, muted text 4.64) — none has an actual darkened color chosen, so `_Palette` still holds the failing originals in every case. Two gaps in one: pick the hex, then wire it in. | `_Palette`, `SeverityTokens`, `AppColors.textMuted` |
+| 8 | **Severity/status/muted-text contrast fix is specified, not wired.** §2.8 and **DL §8.7** now give real colors — normal `#276A43`, mild `#02639E`, moderate/warning `#855B06`, critical/error `#A42121`, info status `#23566A`, muted text `#6E6E6E` — all computed, all clearing their targets. `_Palette` still holds the failing originals. | `_Palette`, `SeverityTokens`, `AppColors.textMuted` |
 | 9 | **Organism test coverage at 2 of 8.** | `test/ui/organisms/` |
 | 10 | **Templates with no responsive handling:** settings, onboarding, heatmap viewer. | `templates/` |
 | 11 | **DICOM values truncate, in the wrong voice.** Renders `value` as `bodyMd` with `maxLines: 1` and an ellipsis — a clipped study UID reads as a complete one. Violates **DL §4.2** and **DL §4.6**. Should be `mono`, wrapping. | `metadata_field.dart:26-33` |
 | 12 | **Finding description clamps with no way to see the rest.** Single-line ellipsis on a clinical string with no tooltip or expand affordance. Clamping is permitted; clamping without a reachable full value is not (**DL §4.6**). | `finding_row.dart:56-61` |
 | 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
-| 14 | **`textLinkHover` fails the 4.5:1 text floor** (3.08:1 on page, 3.39:1 on surface) — found while compiling §2.8, not previously in **DL §8.7**'s audit. Clears 3:1, so it's fine as `borderFocused` (same hex, different token, different floor) — just not as hover text. | `_Palette.tealBlue400`, `AppColors.textLinkHover` |
+| 14 | **`textLinkHover` fails the 4.5:1 text floor, fix specified.** 3.08:1 on page / 3.39:1 on surface today — found while compiling §2.8, not previously in **DL §8.7**'s audit. Specified: `#275F75`, its own value (no longer sharing `#3D95B8` with `borderFocused` / `interactiveAccent`, which stay put and are unaffected) — 6.41 on page, 7.05 on surface. | `_Palette.tealBlue400`, `AppColors.textLinkHover` |

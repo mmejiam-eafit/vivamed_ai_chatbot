@@ -279,11 +279,19 @@ This has a non-obvious consequence: elevation is not a purely structural propert
 
 Pure black around a medical image alters the perceived contrast of the image itself — the surround is part of what the eye calibrates against. And near-white text on near-black halates, blooming into the background and reducing effective sharpness.
 
-Both grounds stay off their extremes.
+Both grounds stay off their extremes. The dark ground sits at **L\* 6.1**, where primary text lands at 15.0:1 — dark enough that a dimmed room does not fight it, light enough that the text stays crisp. Below roughly L\* 5 the same text passes 15.5:1 and starts to bloom, which costs sharpness rather than adding it; that is the floor, and it is a real one, not a round number.
+
+**Every L\* figure in these documents is computed, never estimated.** The band originally written here was guessed, and nothing in the system satisfied it — see D-012.
 
 ### 6.5 Mode selection
 
-Mode follows the system setting by default and is user-overridable. **The diagnostic canvas is exempt** and stays dark in both modes, per §3.7.
+**The app opens dark, regardless of the system setting**, and the user can override it.
+
+This is a deliberate departure from the usual convention. §6.1 makes dark mode functional rather than decorative: it exists to stop the eye re-adapting between a bright panel and a dark diagnostic display. An OS preference is set for a different context — a laptop in an office, a phone outdoors — and inheriting it would mean the tool arrives bright in exactly the room it was designed for. A radiologist who wants light can say so once.
+
+The override is remembered per user, and the control lives in Settings (§9, D-013).
+
+**The diagnostic canvas is exempt** from all of this and stays dark in both modes, per §3.7.
 
 ---
 
@@ -369,21 +377,42 @@ Measured, not asserted. Every ratio below was computed from the actual token val
 | Foreground on primary action fill | 7.53 | AAA |
 | Tertiary text on page ground | 5.46 | AA — not AAA, so not for clinical strings |
 
-**Severity and status — remediation specified, not yet applied to the code.** These are not brand colors, and every one of them failed. A clinical severity label at 2.44:1 is not defensible in a medical tool. The specified values below are normative; the known-gaps table in `design_tokens.md` tracks the outstanding Dart change:
+**Severity and status — remediation now has real colors, not yet applied to the code.** These are not brand colors, and every one of them failed. A clinical severity label at 2.44:1 is not defensible in a medical tool. This table used to specify each fix as a target ratio only — no hex had actually been chosen. That gap is closed:
 
-| Pair | Measured today | Specified | On page |
-|---|---|---|---|
-| Moderate severity on its container | 2.44 ✗ | **5.41** ✓ | 5.39 ✓ |
-| Mild severity on its container | 4.03 ✗ | **5.38** ✓ | 5.82 ✓ |
-| Normal severity on its container | 4.21 ✗ | **5.37** ✓ | 5.85 ✓ |
-| Critical severity on its container | 4.55 (AA only) | **6.03** ✓ | 6.78 ✓ |
-| Warning status on white | 2.67 ✗ | **5.05** ✓ | — |
-| Info status on its container | 3.01 ✗ | **5.26** ✓ | 5.93 ✓ |
-| Muted text on page | 3.74 ✗ | **4.64** ✓ | — |
+| Pair | Color | On container | On page | Measured today |
+|---|---|---|---|---|
+| Normal severity / Success status | `#276A43` | 5.43 ✓ | 5.91 ✓ | 4.21 ✗ |
+| Mild severity | `#02639E` | 5.38 ✓ | 5.82 ✓ | 4.03 ✗ |
+| Moderate severity / Warning status | `#855B06` | 5.48 ✓ | 5.46 ✓ (6.01 ✓ on white) | 2.44 ✗ |
+| Critical severity / Error status | `#A42121` | 6.03 ✓ | 6.78 ✓ | 4.55 ✗ (AA only) |
+| Info status | `#23566A` | 7.14 ✓ | 7.31 ✓ (8.04 ✓ on white) | 3.01 ✗ |
+| Muted text | `#6E6E6E` | — | 4.64 ✓ | 3.74 ✗ |
 
-Hues were held; only the foregrounds darkened. Containers are unchanged.
+**Info status is not Mild severity.** They read as the same idea and were treated as one pair while only a ratio existed — but the code holds them as genuinely different colors (`statusInfo` is a teal-blue brand accent; `SeverityTokens.mild` is a plain blue). Deriving real hex forced the distinction back into view: Info status gets its own remediation above, independent of Mild's.
+
+Hues were held; only the foregrounds darkened, verified in HLS — every hue shift below 0.4°, saturation held within 0.005. Containers are unchanged.
+
+**A seventh pair, found while deriving these, not in the original six:** `textLinkHover` (`#3D95B8`, shared with `borderFocused` and `interactiveAccent`) measures 3.08:1 on page / 3.39:1 on surface as text — under the 4.5:1 floor, though it clears the 3:1 floor the other two tokens actually need. One raw color was doing four jobs with two different floors; giving text its own value was the only fix that didn't touch the two tokens already passing. New value: `#275F75`, 6.41 ✓ on page, 7.05 ✓ on surface.
+
+The first candidate for this one cleared 4.5:1 by itself and still failed: it landed at L 0.363 against `textLink`'s own L 0.357 — visually the same brightness as the resting link color, which would make hover unreadable as a state change even though the arithmetic passed. Contrast ratio is necessary, not sufficient, for a color that has to be *distinct from its neighbor*, not just legible on its own. The real fix holds a real gap: `#275F75` sits 0.051 below `textLink` in lightness, and the new `#23566A` for Info status sits a further 0.029 below that — a five-step ladder from `#3D95B8` (L 0.480) down to `textLinkVisited` (L 0.165) with no two steps closer than 0.029.
 
 **Open issue:** the default border color measures 1.74:1 against white. That is fine for a decorative separator and **not** fine for any border that carries meaning — a selected state, a validation boundary, an input outline. Tracked in `design_tokens.md`.
+
+**Dark scheme — every pair computed, all passing.** Values in `design_tokens.md` §10.4.
+
+| Pair | Ratio | |
+|---|---|---|
+| Primary text on page / surface / raised / overlay | 15.04 · 13.93 · 12.71 · 11.46 | AAA |
+| Secondary text, across the same four | 9.65 · 8.94 · 8.15 · 7.35 | AAA |
+| Tertiary text, across the same four | 6.66 · 6.17 · 5.63 · 5.08 | AA |
+| Muted text, across the same four | 6.09 · 5.64 · 5.15 · 4.64 | AA |
+| Text on brand surfaces | 12.26 · 10.90 | AAA |
+| Accent, link and focus ring | 6.02–7.92 | passes the 3:1 UI floor with margin |
+| Meaningful border vs surface / page | 3.15 · 3.40 | passes 3:1 |
+| Severity — normal / mild / moderate / critical on their containers | 7.83 · 8.66 · 8.22 · 7.22 | AAA, clinical target met |
+| Severity foregrounds against the page | 9.07–11.00 | chips stay legible off their containers |
+
+Two values were replaced during derivation, and the reasons generalise. **Muted text failed at 4.35:1 on the raised surface** — a text ramp that passes on the page can still fail two elevation steps up, so every level of the ladder has to be checked, not just the ground. And **a border that carries meaning has to be far lighter on a dark ground than intuition suggests**: three successive candidates failed 3:1 before `#5E6B7A` cleared it. The decorative separator is a different token and carries no floor.
 
 ---
 
@@ -456,3 +485,21 @@ Append-only. Each entry records what was decided, why, and what it forbids.
 **D-011 — Layout tiers are driven by pane-composition minimums, not a single breakpoint.**
 *Why:* A single split at 768px produced a 168px chat column once navigation and a side panel were subtracted. Tier names drive nav pattern and density; pane minimums drive layout.
 *Forbids:* Adding a raw pixel breakpoint. Making a layout decision from window size rather than local constraints.
+
+---
+
+**D-012 — The dark ground sits at L\* 6.1, and every L\* figure is computed.**
+*Why:* The range first written into `design_tokens.md` §10.4 — "roughly L\* 9–12" — was guessed before any value existed, and nothing in the system satisfied it. Raising the ground into that band would have cost reading-room benefit and broken two tokens at the higher elevation steps (a meaningful border at 2.41:1, muted text at 4.32:1). The intent behind the range survives; the number did not (§6.4).
+*Forbids:* Quoting an L\* value that has not been computed. A ground below roughly L\* 5, where primary text begins to bloom. Checking a text ramp against the page alone rather than every step of the elevation ladder.
+
+---
+
+**D-013 — The app opens dark regardless of the system setting.**
+*Why:* Dark mode here is functional, not decorative (§6.1). An OS preference is set for a different room; inheriting it delivers a bright panel into the one context the design exists to serve (§6.5).
+*Forbids:* Defaulting to the system preference. Removing the user override, or failing to remember it.
+
+---
+
+**D-014 — Severity, status, and link-hover remediation are real colors now, not target ratios.**
+*Why:* D-008 said these foregrounds "were darkened" and forbade reverting to the originals — past tense, as if done. No hex had actually been chosen; only a target ratio existed per pair (§8.7). Deriving the colors surfaced two things a ratio alone couldn't: `statusInfo` and `SeverityTokens.mild` are different colors that had been treated as one pair, and `textLinkHover` — found only now, not in D-008's original six — shares a raw value with `borderFocused` and `interactiveAccent`, tokens that need a 3:1 floor rather than text's 4.5:1. The first candidate for the shared value cleared 4.5:1 and still failed: at L 0.363 it was visually the same brightness as `textLink` (L 0.357), which would make a hover state unreadable as a state change regardless of what the ratio said.
+*Forbids:* Treating a target ratio as a closed gap when no color implements it. Deriving a replacement foreground by contrast alone without checking its lightness against every token it sits next to in the same family. Sharing one raw palette value across tokens that carry different contrast floors without checking each one separately.
