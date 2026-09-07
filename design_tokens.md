@@ -24,25 +24,25 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 | Class | Purpose | Mode-dependent? |
 |---|---|---|
-| `AppColors` | Semantic colors by purpose: surfaces, text, icons, borders, interactive, status, brand | Yes — planned |
+| `AppColors` | Semantic colors by purpose: surfaces, text, icons, borders, interactive, status, brand | Yes — values in §10.4 |
 | `AppTypography` | Text styles, font families, OpenType feature sets | No |
 | `AppSpacing` | Padding, margin, gap values | No |
 | `AppRadius` | Corner radii by component role, plus pre-built `BorderRadius` | No |
-| `AppElevation` | Shadow presets by surface role | Geometry no, rendering yes — planned |
+| `AppElevation` | Shadow presets by surface role | Geometry no; rendering yes — the dark ladder is in §10.4 |
 | `AppIconSize` | Icon size scale | No |
 | `AppMotion` | Durations by interaction type, curves by intent | No |
 | `AppLayout` | Breakpoints and content constraints | No |
 | `AppInteraction` | Hover/focus/press opacities, focus ring, cursors | Partly |
-| `AppScrollbar` | Scrollbar geometry and colors | Yes — planned |
-| `ChatTokens` | Chat-specific colors, radii, layout | Yes — planned |
-| `NavigationTokens` | App bar, drawer, side nav, bottom nav | Yes — planned |
-| `SeverityTokens` | Clinical finding severity pairs | Yes — planned |
-| `TooltipTokens` | Tooltip surface and text | Yes — planned |
+| `AppScrollbar` | Scrollbar geometry and colors | Yes — derives from §10.4 |
+| `ChatTokens` | Chat-specific colors, radii, layout | Yes — derives from §10.4 |
+| `NavigationTokens` | App bar, drawer, side nav, bottom nav | Yes — derives from §10.4 |
+| `SeverityTokens` | Clinical finding severity pairs | Yes — values in §10.4 |
+| `TooltipTokens` | Tooltip surface and text | Yes — derives from §10.4 |
 | `buildAppTheme()` | Pre-wired `ThemeData` for `MaterialApp` | — |
 
 Raw hex values live in `_Palette`, which is library-private. **Never reference `_Palette` in widget code** — always go through the semantic layer.
 
-"Planned" marks classes that become mode-dependent under §10. They are `static const` today.
+Classes marked mode-dependent take their dark values from §10.4, which is **official** — ratified, computed, verified, not a proposal. They are `static const` today regardless: the palette is closed, only the `ThemeExtension` mechanism is unbuilt (§12, gap 1).
 
 ---
 
@@ -125,7 +125,95 @@ A separate system from status, and the separation is deliberate even where hues 
 
 `brandPrimary`, `brandSecondary`, `brandAccent`, `brandLight` exist for cases where the purpose is literally "render the brand" — a logo or brand illustration. For anything else prefer the semantic surface or interactive token. These four do **not** change with theme mode.
 
-### 2.8 Forbidden
+| Token | Value |
+|---|---|
+| `brandPrimary` | `#0C2B4E` |
+| `brandSecondary` | `#1A3D64` |
+| `brandAccent` | `#1D546C` |
+| `brandLight` | `#F4F4F4` |
+
+### 2.8 Light values
+
+Normative — companion to §10.4's dark values, same discipline: every ratio below is computed, never estimated. §2.2–§2.7 give purpose; this section resolves each token to hex against the grounds that matter, so light mode stops being the one half of this document that names tokens without settling what they resolve to.
+
+**Surfaces** (§2.2):
+
+| Token | Value |
+|---|---|
+| `surfacePage` | `#F4F4F4` |
+| `surface` | `#FFFFFF` |
+| `surfaceSubdued` | `#EEEEEE` |
+| `surfaceBrand` | `#0C2B4E` |
+| `surfaceBrandSecondary` | `#1A3D64` |
+| `surfaceAccent` | `#E9F3F7` |
+| `surfaceBrandSubdued` | `#ECF0F5` |
+| `surfaceBrandSecondarySubdued` | `#EDF1F7` |
+
+**Text ramp** (§2.3) — ratio on page → surface:
+
+| Token | Value | Ratio |
+|---|---|---|
+| `textPrimary` | `#1A1A1A` | 15.82 · 17.40 |
+| `textSecondary` | `#4A4A4A` | 8.06 · 8.86 |
+| `textTertiary` | `#636363` | 5.46 · 6.01 — AA only, not clinical strings |
+| `textMuted` | `#7D7D7D` | 3.74 · 4.12 — **fails AA.** DL §8.7 already specifies the fix as a target ratio (4.64), but no hex has been chosen for it yet — the same kind of gap the dark derivation closed for its own palette, tracked here as §12 gap 8. |
+| `textPlaceholder` / `textDisabled` | `#A0A0A0` | 2.38 · 2.61 — WCAG exempts inactive/placeholder text from the 4.5:1 floor, so this is by design, not a defect |
+
+Text-on-tinted-surface pairs, each checked against its own surface:
+
+| Token | Value | Ratio |
+|---|---|---|
+| `textOnBrand` | `#F4F4F4` | 12.98 on `surfaceBrand` · 10.07 on `surfaceBrandSecondary` |
+| `textOnAccent` | `#0F3545` | 11.53 on `surfaceAccent` |
+| `textOnBrandSubdued` | `#061625` | 15.97 on `surfaceBrandSubdued` |
+| `textOnBrandSecondarySubdued` | `#0F2640` | 13.51 on `surfaceBrandSecondarySubdued` |
+| `textLink` | `#267390` | 4.85 on page · 5.33 on surface |
+| `textLinkHover` | `#3D95B8` | 3.08 on page · 3.39 on surface — **fails the 4.5:1 text floor.** Not in DL §8.7's audit; found while compiling this table, not previously known. Tracked as §12 gap 14. |
+| `textLinkVisited` | `#0F3545` | 11.82 on page · 13.00 on surface |
+
+**Icons** (§2.4) reuse hexes already in the ramp above — no separate palette:
+
+| Token | Value | Same as |
+|---|---|---|
+| `icon` | `#636363` | `textTertiary` |
+| `iconOnBrand` | `#F4F4F4` | `textOnBrand` |
+| `iconAccent` | `#1D546C` | `borderSelected` / `interactivePrimary` |
+| `iconDisabled` | `#A0A0A0` | `textPlaceholder` |
+
+**Borders** (§2.4) — meaningful borders need 3:1; decorative ones don't:
+
+| Token | Value | Ratio | Note |
+|---|---|---|---|
+| `border` | `#C4C4C4` | 1.59 on page · 1.74 on surface | **Fails 3:1** — decorative only (§12 gap 7) |
+| `borderSubdued` | `#DCDCDC` | 1.25 · 1.37 | Decorative, no floor |
+| `borderFocused` | `#3D95B8` | 3.08 on page · 3.39 on surface | Clears 3:1. Same hex as `textLinkHover` above — fine as a border, not as text; the two tokens need different floors. |
+| `borderSelected` | `#1D546C` | 7.53 · 8.28 | Clears with margin |
+
+**Interactive** (§2.4):
+
+| Token | Value | Ratio |
+|---|---|---|
+| `interactivePrimary` | `#1D546C` | fill — see `interactivePrimaryForeground` |
+| `interactivePrimaryForeground` | `#F4F4F4` | 7.53 on `interactivePrimary` |
+| `interactiveSecondary` | `#FFFFFF` | fill — see `interactiveSecondaryForeground` |
+| `interactiveSecondaryForeground` | `#1D546C` | 8.28 on `interactiveSecondary` |
+| `interactiveHover` | `#267390` | same value as `textLink` |
+| `interactiveAccent` | `#3D95B8` | same value as `borderFocused` / `textLinkHover` |
+| `interactiveDisabled` | `#DCDCDC` | WCAG-exempt (disabled control) |
+| `interactiveDisabledForeground` | `#7D7D7D` | WCAG-exempt (disabled control) |
+
+**Status and severity** (§2.5, §2.6) — measured today, not the specified fix:
+
+| Level | Foreground | Container | On container | Vs page | Vs surface |
+|---|---|---|---|---|---|
+| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ | 4.59 ✓ | 5.05 ✓ |
+| Info / Mild | `#0277BD` | `#DCEEF9` | 4.03 ✗ | 4.36 ✗ | 4.80 ✓ |
+| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ | 2.43 ✗ | 2.67 ✗ |
+| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) | 5.11 ✓ | 5.62 ✓ |
+
+Every fail above is already tracked: DL §8.7 specifies the remediation as a target ratio per pair, and §12 gap 8 tracks that no hex has been chosen to hit it yet. This table exists to show what's actually shipped today, not to restate the fix — DL §8.7 is the one place that ratio lives.
+
+### 2.9 Forbidden
 
 1. **Never** `Colors.black` or `Colors.white`.
 2. **Never** an inline `Color(0xFF…)`, and never add a color to `design_tokens.dart`.
@@ -378,7 +466,7 @@ Settings gains an **Appearance** section at every tier for the theme control (§
 
 ## 10. Theming
 
-> **Status: specified, not yet implemented.** The app is light-only today: `buildAppTheme()` hardcodes `Brightness.light` and `MaterialApp` sets no `darkTheme` or `themeMode`.
+> **Status: palette official; Dart implementation pending.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal. What's outstanding is purely mechanical: the app is light-only today, `buildAppTheme()` hardcodes `Brightness.light`, and `MaterialApp` sets no `darkTheme` or `themeMode`.
 
 ### 10.1 The split
 
@@ -424,7 +512,7 @@ const AppText('Sign in to your account', role: AppTextRole.secondary)
 
 No new brand. **Hue is invariant; chroma and lightness move.**
 
-- **The dark ground is a desaturated deep-navy derivative**, not deep navy itself — the brand navy is too chromatic for a full-screen ground and too light to let surfaces step above it. Roughly L\* 9–12, never `#000000` (**DL §6.4**).
+- **The dark ground is a desaturated deep-navy derivative**, not deep navy itself — the brand navy is too chromatic for a full-screen ground and too light to let surfaces step above it. **L\* 6.1**, never `#000000` and never below roughly L\* 5, where primary text begins to bloom (**DL §6.4**, D-012).
 - **Elevation becomes a four-step lightness ladder**, ~4 L\* apart.
 - **`surfaceBrand` inverts its relationship, not its role.** Dark navy chrome on a dark page has no separation, so in dark mode it becomes *elevated* navy — lighter than the page.
 - **Severity and status invert their construction**: a light tint of the hue as foreground, a deeply darkened low-chroma version as container. Reusing the light-mode foregrounds fails contrast badly on a dark ground.
@@ -433,9 +521,60 @@ No new brand. **Hue is invariant; chroma and lightness move.**
 
 Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 
+#### The values
+
+**Official.** Not a draft, not a proposal under review — ratified per **DL D-012, D-013**. Normative: the Dart implements these; where it disagrees, the Dart is wrong. The one thing not yet true is that the Dart implements them at all (§12 gap 1) — that is a wiring gap, not a reason to treat any value below as provisional.
+
+**Elevation ladder** — the four steps, and what "depth is lightness" means in practice:
+
+| Step | Value | L\* | Role |
+|---|---|---|---|
+| `surfacePage` | `#0E141B` | 6.1 | Scaffold ground |
+| `surface` | `#151C25` | 10.0 | Cards, dialogs, input fill |
+| `surfaceRaised` | `#1C242F` | 13.9 | Hovered cards, popovers |
+| `surfaceOverlay` | `#232C38` | 17.7 | Dialogs, menus — plus a hairline border |
+
+**Text ramp** — check every level of the ladder, not just the page. Muted text failed at 4.35:1 on the raised surface before it was lifted:
+
+| Token | Value | On page → overlay |
+|---|---|---|
+| `textPrimary` | `#E4E8ED` | 15.04 · 13.93 · 12.71 · 11.46 |
+| `textSecondary` | `#B4BCC6` | 9.65 · 8.94 · 8.15 · 7.35 |
+| `textTertiary` | `#939CA8` | 6.66 · 6.17 · 5.63 · 5.08 |
+| `textMuted` | `#8B95A1` | 6.09 · 5.64 · 5.15 · 4.64 |
+
+`textTertiary` clears AA but not AAA, so it stays off clinical strings in both modes (§2.3).
+
+**Brand, accent and border:**
+
+| Token | Value | Note |
+|---|---|---|
+| `surfaceBrand` | `#16273D` | Elevated navy — *lighter* than the page, inverting its light-mode relationship |
+| `surfaceBrandSecondary` | `#1B3049` | Same inversion |
+| `textOnBrand` | `#E4E8ED` | 12.26 · 10.90 on the two above |
+| `interactivePrimary` | `#4FA3C4` | Accent lifted two steps |
+| `textLink` / `borderFocused` | `#6DB3CE` | 7.92 on page |
+| `border` | `#5E6B7A` | **Meaningful borders only** — 3.15 vs surface. Three lighter-looking candidates failed 3:1 first |
+| `borderSubdued` | `#2A3442` | Decorative separator, no contrast floor |
+
+**Severity and status** — the light-mode construction inverts: a light tint of the hue in front, a darkened low-chroma version behind.
+
+| Level | Foreground | Container | On container | Vs page |
+|---|---|---|---|---|
+| Normal | `#7FD1A0` | `#14301F` | 7.83 | 10.16 |
+| Mild | `#8ECDF2` | `#12293A` | 8.66 | 10.72 |
+| Moderate | `#F0C070` | `#3A2A0F` | 8.22 | 11.00 |
+| Critical | `#FF9A93` | `#421D1D` | 7.22 | 9.07 |
+
+App status reuses these four pairs under its own token names — the two systems stay separately named so they can diverge later (**DL §3.5**).
+
+**Diagnostic canvas:** `#0A0C0E`. Mode-exempt, and deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp (**DL §3.7**).
+
 ### 10.5 Runtime
 
-`buildAppTheme(Brightness)`; `MaterialApp` gets `theme`, `darkTheme`, and `themeMode`; default follows system; the Settings Appearance section exposes System / Light / Dark.
+`buildAppTheme(Brightness)`; `MaterialApp` gets `theme`, `darkTheme`, and `themeMode`.
+
+**The app opens dark** — `themeMode` starts at `ThemeMode.dark`, not `ThemeMode.system` (**DL §6.5**, D-013). The Settings Appearance section exposes Dark / Light / System in that order, and the user's choice is remembered across launches. Following the system preference remains available; it is just not the default.
 
 ---
 
@@ -448,7 +587,7 @@ Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 | `Color(0xFF…)` inline | Semantic token |
 | `Colors.black` / `Colors.white` | `textPrimary` / `surface` |
 | `_Palette.anything` | The semantic layer |
-| `Theme.of(context).colorScheme.X` | Our tokens — see §2.8 |
+| `Theme.of(context).colorScheme.X` | Our tokens — see §2.9 |
 | `SizedBox(height: 16)` | `AppSpacing.lg` |
 | `BorderRadius.circular(12)` | `AppRadius.borderCard` |
 | `TextStyle(fontSize: 14)` | `AppTypography.bodyMd` |
@@ -481,16 +620,17 @@ Live defects and unimplemented specifications. Delete entries as they close.
 
 | # | Gap | Where |
 |---|---|---|
-| 1 | **Dark mode unimplemented.** §10 is specification only; tokens are `static const` and the app is light-only. | `design_tokens.dart`, `app.dart` |
+| 1 | **Dark palette is official; Dart implementation pending.** §10.4 carries the full, verified, ratified palette — the colour decisions are closed. The remaining work is purely the `ThemeExtension` refactor (§10.2) and wiring `buildAppTheme(Brightness)`. | `design_tokens.dart`, `app.dart` |
 | 2 | **Responsive tiers unimplemented.** §9 is specification only. One breakpoint at 768; five dead tokens. | `AppLayout`, all templates |
 | 3 | **The 168px chat column.** At 768 with nav and panel present, the primary column collapses. Fixed by §9.3. | `chat_template.dart`, `study_review_template.dart` |
 | 4 | **Chat bubble measures the window, not its box.** Uses `MediaQuery.of(context).size.width`, so a bubble inside a 360px panel is sized off the whole screen. Violates §9.6. | `chat_bubble.dart:27` |
 | 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. | `heatmap_viewer_template.dart` |
 | 6 | **`AppInteraction` hover tokens unwired.** Documented as web-only, but no `MouseRegion` anywhere reads them. | all levels |
 | 7 | **Default border fails 3:1** (1.74:1 on white). Acceptable decoratively, not for any border carrying meaning. | `AppColors.border` |
-| 8 | **Severity contrast remediation not applied to Dart.** Values specified in **DL §8.7**; `_Palette` still holds the failing originals. | `_Palette`, `SeverityTokens` |
+| 8 | **Severity/status/muted-text contrast remediation has no hex yet.** **DL §8.7** specifies each fix as a target ratio (moderate 5.41, mild 5.38, normal 5.37, critical 6.03, info-status 5.05/5.26, muted text 4.64) — none has an actual darkened color chosen, so `_Palette` still holds the failing originals in every case. Two gaps in one: pick the hex, then wire it in. | `_Palette`, `SeverityTokens`, `AppColors.textMuted` |
 | 9 | **Organism test coverage at 2 of 8.** | `test/ui/organisms/` |
 | 10 | **Templates with no responsive handling:** settings, onboarding, heatmap viewer. | `templates/` |
 | 11 | **DICOM values truncate, in the wrong voice.** Renders `value` as `bodyMd` with `maxLines: 1` and an ellipsis — a clipped study UID reads as a complete one. Violates **DL §4.2** and **DL §4.6**. Should be `mono`, wrapping. | `metadata_field.dart:26-33` |
 | 12 | **Finding description clamps with no way to see the rest.** Single-line ellipsis on a clinical string with no tooltip or expand affordance. Clamping is permitted; clamping without a reachable full value is not (**DL §4.6**). | `finding_row.dart:56-61` |
 | 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
+| 14 | **`textLinkHover` fails the 4.5:1 text floor** (3.08:1 on page, 3.39:1 on surface) — found while compiling §2.8, not previously in **DL §8.7**'s audit. Clears 3:1, so it's fine as `borderFocused` (same hex, different token, different floor) — just not as hover text. | `_Palette.tealBlue400`, `AppColors.textLinkHover` |

@@ -122,6 +122,6 @@ tried and failed. [`PALETTE.md`](../../PALETTE.md) at the repo root is now a
 full quick-reference for every token class `design_tokens.md` defines —
 color in both modes, typography, spacing, radius, elevation, icon sizes,
 motion, responsive tiers — not a recovery of the lost draft, but the same
-underlying source (`design_tokens.md`, plus the shipped Dart for the one
-gap it has: light-mode hex isn't spelled out in the doc itself) in one
-place.
+underlying source, `design_tokens.md`, in one place. (Light-mode hex used to
+mean reaching into the shipped Dart, since the doc named tokens by purpose
+only; §2.8 closed that, so the doc alone now covers both modes.)

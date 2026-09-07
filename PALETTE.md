@@ -1,20 +1,15 @@
 # Design tokens — quick reference
 
 **[`design_tokens.md`](design_tokens.md) is the single normative source** for
-every value below; this page distills it into one lookup table per section,
-in the same order, so a spacing value or a hex doesn't require opening all
-~550 lines. Where this disagrees with `design_tokens.md`, that document wins
-— treat any mismatch here as a bug in this file, not in it.
+every value below, with no exception — every hex, ratio, and figure here is
+transcribed from it, section noted, so a spacing value or a color doesn't
+require opening all ~650 lines. Where this disagrees with `design_tokens.md`,
+that document wins — treat any mismatch here as a bug in this file, not in
+it. (Light-mode color used to be the one gap: `design_tokens.md` §2 named
+tokens by purpose only. §2.8 closed that, so light now has the same
+computed-hex, computed-ratio treatment as dark's §10.4.)
 
-**One necessary exception:** `design_tokens.md` §2 defines light-mode color
-tokens by *purpose* only — it never resolves them to hex. The hex column in
-the light table below is resolved from the shipped [`design_tokens.dart`](lib/ui/core/design_tokens.dart),
-since that's the only place those values exist in writing. Every other value
-on this page — dark color, typography, spacing, radius, elevation, icon
-sizes, motion, responsive tiers — is transcribed directly from
-`design_tokens.md`, section noted.
-
-## Color — light (§2)
+## Color — light (§2, values §2.8)
 
 | Token (`AppColors.*`) | Hex | Use for |
 |---|---|---|
@@ -29,14 +24,14 @@ sizes, motion, responsive tiers — is transcribed directly from
 | `textPrimary` | `#1A1A1A` | Body text on light surfaces |
 | `textSecondary` | `#4A4A4A` | Subtitles, descriptions |
 | `textTertiary` | `#636363` | Helper text — AA only, not clinical strings |
-| `textPlaceholder` / `textDisabled` | `#A0A0A0` | Input placeholders / inactive labels |
-| `textMuted` | `#7D7D7D` | Timestamps, fine print |
+| `textPlaceholder` / `textDisabled` | `#A0A0A0` | Input placeholders / inactive labels — under 4.5:1, but WCAG exempts inactive/placeholder text, so this is by design |
+| `textMuted` | `#7D7D7D` | Timestamps, fine print — **fails AA** (3.74:1 on page); remediation target specified but no hex chosen yet (§12 gap 8) |
 | `textOnBrand` | `#F4F4F4` | Text on `surfaceBrand` / `surfaceBrandSecondary` |
 | `textOnAccent` | `#0F3545` | Text on `surfaceAccent` |
 | `textOnBrandSubdued` | `#061625` | Text on `surfaceBrandSubdued` |
 | `textOnBrandSecondarySubdued` | `#0F2640` | Text on `surfaceBrandSecondarySubdued` |
 | `textLink` | `#267390` | Inline interactive text |
-| `textLinkHover` | `#3D95B8` | Link hover |
+| `textLinkHover` | `#3D95B8` | Link hover — **fails 4.5:1** (3.08:1 on page); newly found, not in the existing accessibility audit (§12 gap 14) |
 | `textLinkVisited` | `#0F3545` | Link visited |
 | `icon` | `#636363` | Default icon |
 | `iconOnBrand` | `#F4F4F4` | Icon on brand surfaces |
@@ -57,9 +52,10 @@ sizes, motion, responsive tiers — is transcribed directly from
 
 ## Color — dark (§10.4)
 
-> Specified, not yet in Dart (§12 gap 1) — tokens are still `static const`
-> light-only. These are the values that land once the `ThemeExtension`
-> mechanism (§10.2) ships.
+> **Official.** Ratified, computed, verified — not a proposal (DL D-012,
+> D-013). What's pending is purely mechanical: tokens are still
+> `static const` light-only until the `ThemeExtension` mechanism (§10.2)
+> wires these in (§12 gap 1). The colour decisions themselves are closed.
 
 **Elevation ladder** (~4 L\* apart):
 
@@ -98,15 +94,20 @@ sizes, motion, responsive tiers — is transcribed directly from
 Two separate systems that share hues — status is app operations, severity is
 clinical findings; never use one for the other.
 
-| Level | Light foreground | Light container | Dark foreground | Dark container |
-|---|---|---|---|---|
-| Success / Normal | `#2E7D4F` | `#D9F0E3` | `#7FD1A0` | `#14301F` |
-| Info / Mild | `#0277BD` | `#DCEEF9` | `#8ECDF2` | `#12293A` |
-| Warning / Moderate | `#D4910A` | `#FFF4D6` | `#F0C070` | `#3A2A0F` |
-| Error / Critical | `#C62828` | `#FFE0E0` | `#FF9A93` | `#421D1D` |
+| Level | Light foreground | Light container | On container | Dark foreground | Dark container |
+|---|---|---|---|---|---|
+| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ | `#7FD1A0` | `#14301F` |
+| Info / Mild | `#0277BD` | `#DCEEF9` | 4.03 ✗ | `#8ECDF2` | `#12293A` |
+| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ | `#F0C070` | `#3A2A0F` |
+| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) | `#FF9A93` | `#421D1D` |
 
-A severity indicator carries a label **and** a distinct shape — never hue
-alone (§2.6).
+**Every light pair fails or barely clears AA** — dark's severity system was
+derived from scratch with a floor to hit; light's predates that discipline
+and was never brought up to it. `design_tokens.md` §2.8 has the full ratio
+picture; DL §8.7 specifies each fix as a target ratio, and §12 gap 8 tracks
+that no hex has been chosen to hit any of them yet. A severity indicator
+carries a label **and** a distinct shape regardless — never hue alone
+(§2.6).
 
 ## Brand reference (§2.7)
 
