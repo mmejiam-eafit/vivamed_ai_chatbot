@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #267390; } a:hover { color: #1D546C; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-feature-settings: 'zero' 1; }
+    .num  { font-variant-numeric: tabular-nums; }
+    .lbl  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+    .ovr  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #F4F4F4; font-family: 'Inter', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="height: 56px; flex: none; background: #0C2B4E; display: flex; align-items: center; padding: 0 20px; gap: 16px;">
+    <span class="lbl" style="font-size: 16px; color: #F4F4F4;">Chat</span>
+    <span style="width: 1px; height: 20px; background: #1A3D64;"></span>
+    <span style="font-size: 13px; color: #C9D3DE;">Chest CT &mdash; Posterior-Anterior</span>
+    <span class="mono" style="font-size: 12px; color: #8FA6BF;">Anonymous-7812</span>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; min-height: 0;">
+
+    <div style="width: 240px; flex: none; background: #1A3D64; display: flex; flex-direction: column; padding: 12px 8px; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px 12px;">
+        <div style="width: 40px; height: 40px; border-radius: 999px; background: #1D546C; display: flex; align-items: center; justify-content: center; flex: none;">
+          <span class="lbl" style="font-size: 14px; color: #F4F4F4;">DR</span>
+        </div>
+        <div style="display: flex; flex-direction: column; min-width: 0;">
+          <span class="lbl" style="font-size: 14px; color: #F4F4F4;">Dr. A. Ramírez</span>
+          <span style="font-size: 11px; color: #8FA6BF;">Radiologist</span>
+        </div>
+      </div>
+
+      <div style="height: 1px; background: #2A4E78; margin: 0 8px 8px;"></div>
+      <div class="ovr" style="color: #8FA6BF; padding: 0 16px 8px;">Conversations</div>
+
+      <sc-for list="{{conversations}}" as="c" hint-placeholder-count="4">
+        <div style="display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; background: {{c.bg}}; min-height: 44px; box-sizing: border-box;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="{{c.icon}}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px;"><path d="M4 5h12v9H8l-4 3z"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <span style="font-size: 13px; color: {{c.fg}}; line-height: 1.4;">{{c.title}}</span>
+            <span style="font-size: 11px; color: {{c.sub}};">{{c.subtitle}}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;">
+
+      <div style="flex-grow: 1; min-height: 0; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; justify-content: flex-end;">
+        <sc-for list="{{messages}}" as="m" hint-placeholder-count="5">
+          <div style="display: flex; flex-direction: column; gap: 4px; align-items: {{m.align}};">
+            <div style="max-width: 480px; padding: 12px 16px; border-radius: {{m.radius}}; background: {{m.bg}}; border: {{m.border}};">
+              <span style="font-size: 16px; line-height: 1.5; color: {{m.fg}};">{{m.text}}</span>
+            </div>
+            <span style="font-size: 11px; color: #6E6E6E;">{{m.time}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex: none; border-top: 1px solid #DCDCDC; background: #FFFFFF; padding: 20px 24px;">
+        <div style="display: flex; align-items: flex-end; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex: none;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#636363" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6 L7.5 11.5a2.5 2.5 0 0 0 3.5 3.5L16 10a4.5 4.5 0 0 0-6.4-6.4L4.5 8.7"/></svg>
+          </div>
+          <div style="flex-grow: 1; min-width: 0; border: 1px solid #C4C4C4; border-radius: 999px; padding: 14px 20px; background: #FFFFFF;">
+            <span style="font-size: 16px; color: #A0A0A0;">Ask about the study&hellip;</span>
+          </div>
+          <div style="width: 44px; height: 44px; border-radius: 999px; background: #1D546C; display: flex; align-items: center; justify-content: center; flex: none;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F4F4F4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 L17 3 L13 17 L10 11z"/></svg>
+          </div>
+        </div>
+        <div style="padding-top: 10px;">
+          <span style="font-size: 12px; color: #6E6E6E;">Answers are advisory and reference the findings panel &mdash; they are not a diagnosis.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 360px; flex: none; padding: 16px 16px 16px 0; display: flex; flex-direction: column; min-height: 0;">
+      <div style="flex-grow: 1; min-height: 0; background: #FFFFFF; border: 1px solid #C4C4C4; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="flex: none; padding: 14px 16px; display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid #DCDCDC;">
+          <span class="lbl" style="font-size: 18px; color: #1A1A1A;">Findings</span>
+          <span class="num" style="font-size: 13px; color: #6E6E6E;">6 findings</span>
+        </div>
+
+        <div style="flex: none; margin: 12px; background: #FFE0E0; border: 1px solid #A81919; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none;"><path d="M6.9 3h6.2l4.9 4.9v6.2l-4.9 4.9H6.9L2 14.1V7.9z" fill="#A81919"></path></svg>
+          <span class="lbl" style="font-size: 15px; color: #A81919; flex-grow: 1;">2 critical findings</span>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#A81919" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8 L10 13 L15 8"/></svg>
+        </div>
+
+        <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column;">
+          <sc-for list="{{findings}}" as="f" hint-placeholder-count="6">
+            <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #EEEEEE;">
+              <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none; margin-top: 2px;"><path d="{{f.shape}}" fill="{{f.fg}}"></path></svg>
+              <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 14px; color: #1A1A1A; line-height: 1.45;">{{f.name}}</span>
+                <span style="font-size: 12px; color: #4A4A4A;">{{f.location}}</span>
+              </div>
+              <span class="num" style="font-size: 13px; color: #4A4A4A; flex: none;">{{f.confidence}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+const CIRCLE = 'M10 3a7 7 0 1 1 0 14a7 7 0 0 1 0-14z';
+const SQUARE = 'M6.5 3.5h7a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3z';
+const TRIANGLE = 'M8.7 3.6a1.5 1.5 0 0 1 2.6 0l6.1 11.1a1.5 1.5 0 0 1-1.3 2.3H3.9a1.5 1.5 0 0 1-1.3-2.3z';
+const OCTAGON = 'M6.9 3h6.2l4.9 4.9v6.2l-4.9 4.9H6.9L2 14.1V7.9z';
+
+const USER = { align: 'flex-end', bg: '#1D546C', fg: '#F4F4F4', border: 'none', radius: '18px 18px 4px 18px' };
+const BOT  = { align: 'flex-start', bg: '#FFFFFF', fg: '#1A1A1A', border: '1px solid #DCDCDC', radius: '4px 18px 18px 18px' };
+
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (side, text, time) => Object.assign({ text, time }, side);
+    return {
+      messages: [
+        mk(USER, 'Is there consolidation in the right lower lobe?', '09:14'),
+        mk(BOT,  'Yes — a 42 × 31 mm consolidation in the right lower lobe, confidence 0.82. It is listed as moderate in the findings panel.', '09:14'),
+        mk(USER, 'Any pleural effusion?', '09:15'),
+        mk(BOT,  'No effusion detected. There is a tension pneumothorax on the right at confidence 0.94, with 14 mm of leftward mediastinal shift — both flagged critical.', '09:15'),
+        mk(USER, 'Show me the heatmap for the pneumothorax.', '09:16'),
+      ],
+      conversations: [
+        { title: 'Chest CT — Patient A',      subtitle: '2 hours ago', bg: '#1D546C',     fg: '#F4F4F4', sub: '#C9D3DE', icon: '#F4F4F4' },
+        { title: 'Abdominal MRI — Patient B', subtitle: 'Yesterday',   bg: 'transparent', fg: '#E8EEF5', sub: '#8FA6BF', icon: '#8FA6BF' },
+        { title: 'Chest X-Ray — Patient C',   subtitle: '2026-05-20',  bg: 'transparent', fg: '#E8EEF5', sub: '#8FA6BF', icon: '#8FA6BF' },
+        { title: 'Cervical spine CT',         subtitle: '2026-05-18',  bg: 'transparent', fg: '#E8EEF5', sub: '#8FA6BF', icon: '#8FA6BF' },
+      ],
+      findings: [
+        { name: 'Tension pneumothorax',                      location: 'Right hemithorax', shape: OCTAGON,  fg: '#A81919', confidence: '0.94' },
+        { name: 'Mediastinal shift',                         location: 'Leftward, 14 mm',  shape: OCTAGON,  fg: '#A81919', confidence: '0.88' },
+        { name: 'Right lower lobe consolidation',            location: 'RLL, 42 × 31 mm',  shape: TRIANGLE, fg: '#8A5A00', confidence: '0.82' },
+        { name: 'Subcutaneous emphysema',                    location: 'Right chest wall', shape: TRIANGLE, fg: '#8A5A00', confidence: '0.71' },
+        { name: 'Mild cardiomegaly',                         location: 'CTR 0.53',         shape: SQUARE,   fg: '#01639E', confidence: '0.64' },
+        { name: 'Cardiac silhouette — within normal limits', location: 'No displacement',  shape: CIRCLE,   fg: '#256B43', confidence: '0.91' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

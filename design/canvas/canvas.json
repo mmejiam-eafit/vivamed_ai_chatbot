@@ -1,0 +1,197 @@
+{
+  "artboards": [
+    {
+      "file": "StudyReviewDark.dc.html",
+      "page": "dark",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Study Review — the default mode"
+    },
+    {
+      "file": "HeatmapDark.dc.html",
+      "page": "dark",
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Heatmap viewer",
+      "is_interactive": true
+    },
+    {
+      "file": "Main.dc.html",
+      "page": "screens",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Study Review"
+    },
+    {
+      "file": "Chat.dc.html",
+      "page": "screens",
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "CaseList.dc.html",
+      "page": "screens",
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Studies — worklist"
+    },
+    {
+      "file": "Flow.dc.html",
+      "page": "flow",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 940
+    },
+    {
+      "file": "Severity.dc.html",
+      "page": "components",
+      "x": 0,
+      "y": 0,
+      "w": 1240,
+      "h": 1020,
+      "is_interactive": true
+    },
+    {
+      "file": "Typography.dc.html",
+      "page": "components",
+      "x": 1320,
+      "y": 0,
+      "w": 1240,
+      "h": 1080
+    },
+    {
+      "file": "Metadata.dc.html",
+      "page": "components",
+      "x": 0,
+      "y": 1200,
+      "w": 1240,
+      "h": 860
+    },
+    {
+      "file": "States.dc.html",
+      "page": "components",
+      "x": 1320,
+      "y": 1200,
+      "w": 1240,
+      "h": 940,
+      "is_interactive": true
+    },
+    {
+      "file": "StudyReviewPhone.dc.html",
+      "page": "mobile",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Study Review — phone"
+    },
+    {
+      "file": "ChatPhone.dc.html",
+      "page": "mobile",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Chat — phone",
+      "is_interactive": true
+    },
+    {
+      "file": "CaseListPhone.dc.html",
+      "page": "mobile",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Studies — phone"
+    },
+    {
+      "file": "HeatmapPhone.dc.html",
+      "page": "mobile",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Heatmap — phone",
+      "is_interactive": true
+    }
+  ],
+  "annotations": [
+    {
+      "id": "dark-note",
+      "page": "dark",
+      "x": 0,
+      "y": -210,
+      "w": 660,
+      "text": "This is the page to judge, and judging it means looking at it on the monitor you actually work on — not on this one, at this brightness.\n\nEvery hex here is now normative: design_tokens.md §10.4 carries the four-step ladder, the text ramp, and both severity columns. Every pair is contrast-checked and every L* figure is computed. Two values were replaced during derivation: muted text failed at 4.35:1 on the raised surface, and a border that carries meaning has to be far lighter than intuition suggests — #5E6B7A, where the first three candidates all failed 3:1.\n\nThe ground is #0E141B, L* 6.1. It is deliberately not black: below roughly L* 5 near-white text starts to bloom, which costs sharpness rather than adding it. The diagnostic canvas is #0A0C0E in both themes, deliberately not the chrome navy.\n\nContrast ratios are necessary, not sufficient. If this reads wrong in the room, the values change regardless of what the arithmetic says."
+    },
+    {
+      "id": "screens-note",
+      "page": "screens",
+      "x": 0,
+      "y": -170,
+      "w": 640,
+      "text": "Light mode is now the override, not the default — D-013 has the app open dark whatever the OS says, on the reasoning that a system preference is set for a different room.\n\nThese three were drawn before that decision, so read them as the light-mode treatment of the same screens rather than as the app's front door. The layout, hierarchy and type decisions carry over unchanged; only the palette swaps."
+    },
+    {
+      "id": "flow-note",
+      "page": "flow",
+      "x": 0,
+      "y": -150,
+      "w": 620,
+      "text": "This graph is a proposal, not a record. The app has no runtime navigation at all — seven routes, zero edges.\nThe three amber cards call out the decisions worth arguing with."
+    },
+    {
+      "id": "comp-note",
+      "page": "components",
+      "x": 0,
+      "y": -190,
+      "w": 660,
+      "text": "Three of these designs are currently asserted as WRONG by passing tests, so building them means changing tests too:\n• the severity dot is pinned to a circle\n• the heatmap canvas is pinned to the chrome navy\n• the auth card is pinned to an overlay shadow\n\nThe severity silhouettes are new — nothing in the app draws an icon for severity today. The Appearance control now starts on Dark, per D-013."
+    },
+    {
+      "id": "mobile-note",
+      "page": "mobile",
+      "x": 0,
+      "y": -220,
+      "w": 660,
+      "text": "The compact tier from design_tokens.md §9.5 — under 600px, drawn dark since that's the default now (D-013). This also closes part of the dark-coverage gap: Chat and the worklist previously existed only in light.\n\nFollowing §9.5 to the letter, not improvising: conversations collapse to an overlay drawer (try the menu button on Chat — phone); findings become a persistent bottom sheet that keeps the critical count on screen even while typing; the heatmap goes full-bleed with controls over a scrim, discrete opacity stops instead of a continuous slider so every stop is its own 44px target (try it).\n\nNo painted status bar or keyboard on any of these — the real device draws its own, and a fake one doubles up. Five new pairs this page introduces (icon labels on the diagnostic canvas, button text on the accent fill, secondary text on the brand surfaces, severity-as-border) are all contrast-checked; none reuse an unverified guess.\n\nStill missing at this width: Settings, Login, Onboarding — none of the three exist at any size yet."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "mobile"
+  },
+  "pages": [
+    {
+      "id": "dark",
+      "name": "Reading room"
+    },
+    {
+      "id": "screens",
+      "name": "Screens (light)"
+    },
+    {
+      "id": "mobile",
+      "name": "Mobile"
+    },
+    {
+      "id": "flow",
+      "name": "Flow"
+    },
+    {
+      "id": "components",
+      "name": "Components"
+    }
+  ]
+}

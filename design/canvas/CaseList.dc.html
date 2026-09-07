@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #267390; } a:hover { color: #1D546C; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-feature-settings: 'zero' 1; }
+    .num  { font-variant-numeric: tabular-nums; }
+    .lbl  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+    .ovr  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .cell { display: flex; align-items: center; min-width: 0; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #F4F4F4; font-family: 'Inter', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="height: 56px; flex: none; background: #0C2B4E; display: flex; align-items: center; padding: 0 20px; gap: 16px;">
+    <span class="lbl" style="font-size: 16px; color: #F4F4F4;">Studies</span>
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; align-items: center; gap: 8px; background: #1A3D64; border-radius: 999px; padding: 0 16px; min-height: 40px; width: 320px;">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#8FA6BF" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="M13 13 L17 17"/></svg>
+      <span style="font-size: 13px; color: #8FA6BF;">Search accession or patient</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; min-height: 0;">
+
+    <div style="width: 240px; flex: none; background: #1A3D64; display: flex; flex-direction: column; padding: 12px 8px; gap: 4px;">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; min-height: 44px; box-sizing: border-box; background: {{n.bg}};">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="{{n.fg}}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{n.icon}}"/></svg>
+          <span class="lbl" style="font-size: 14px; color: {{n.fg}};">{{n.label}}</span>
+        </div>
+      </sc-for>
+
+      <div style="height: 1px; background: #2A4E78; margin: 12px 8px;"></div>
+      <div class="ovr" style="color: #8FA6BF; padding: 0 16px 8px;">Filter</div>
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 8px;">
+          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none;"><path d="{{f.shape}}" fill="{{f.fg}}"></path></svg>
+          <span style="font-size: 13px; color: #E8EEF5; flex-grow: 1;">{{f.label}}</span>
+          <span class="num" style="font-size: 12px; color: #8FA6BF;">{{f.count}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; padding: 16px; gap: 12px;">
+
+      <div style="flex: none; display: flex; align-items: baseline; gap: 12px;">
+        <span class="lbl" style="font-size: 22px; color: #1A1A1A;">Worklist</span>
+        <span class="num" style="font-size: 14px; color: #4A4A4A;">24 studies &middot; 3 unread critical</span>
+      </div>
+
+      <div style="flex-grow: 1; min-height: 0; background: #FFFFFF; border: 1px solid #C4C4C4; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;">
+
+        <div style="flex: none; display: grid; grid-template-columns: 168px 1fr 74px 108px 96px 132px; gap: 16px; padding: 10px 16px; border-bottom: 1px solid #C4C4C4; background: #FAFAFA;">
+          <sc-for list="{{cols}}" as="c" hint-placeholder-count="6">
+            <div class="cell" style="gap: 5px; justify-content: {{c.justify}};">
+              <span class="ovr" style="color: {{c.fg}};">{{c.label}}</span>
+              <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="{{c.fg}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{c.op}};"><path d="{{c.dir}}"/></svg>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+            <div style="display: grid; grid-template-columns: 168px 1fr 74px 108px 96px 132px; gap: 16px; padding: 9px 16px; border-bottom: 1px solid #EEEEEE; background: {{r.bg}};">
+              <div class="cell mono" style="font-size: 12px; color: #1A1A1A;">{{r.accession}}</div>
+              <div class="cell" style="font-size: 13px; color: #1A1A1A; gap: 8px;">
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{r.description}}</span>
+              </div>
+              <div class="cell lbl" style="font-size: 12px; color: #4A4A4A;">{{r.modality}}</div>
+              <div class="cell num" style="font-size: 12px; color: #4A4A4A;">{{r.date}}</div>
+              <div class="cell num" style="font-size: 12px; color: #1A1A1A; justify-content: flex-end;">{{r.confidence}}</div>
+              <div class="cell" style="justify-content: flex-end;">
+                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: {{r.sevBg}};">
+                  <svg width="12" height="12" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none;"><path d="{{r.sevShape}}" fill="{{r.sevFg}}"></path></svg>
+                  <span class="lbl" style="font-size: 12px; letter-spacing: 0.4px; color: {{r.sevFg}};">{{r.sevLabel}}</span>
+                </span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="flex: none; border-top: 1px solid #DCDCDC; padding: 10px 16px; display: flex; align-items: center; gap: 12px;">
+          <span class="num" style="font-size: 12px; color: #6E6E6E; flex-grow: 1;">Showing 12 of 24</span>
+          <span style="font-size: 12px; color: #6E6E6E;">Accession and dates set in tabular figures so columns hold their grid</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"density":{"editor":"enum","default":"dense","options":["dense","comfortable"],"section":"Layout"}}'>
+const CIRCLE = 'M10 3a7 7 0 1 1 0 14a7 7 0 0 1 0-14z';
+const SQUARE = 'M6.5 3.5h7a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3z';
+const TRIANGLE = 'M8.7 3.6a1.5 1.5 0 0 1 2.6 0l6.1 11.1a1.5 1.5 0 0 1-1.3 2.3H3.9a1.5 1.5 0 0 1-1.3-2.3z';
+const OCTAGON = 'M6.9 3h6.2l4.9 4.9v6.2l-4.9 4.9H6.9L2 14.1V7.9z';
+
+const SEV = {
+  critical: { bg: '#FFE0E0', fg: '#A81919', shape: OCTAGON,  label: 'CRITICAL' },
+  moderate: { bg: '#FFF4D6', fg: '#8A5A00', shape: TRIANGLE, label: 'MODERATE' },
+  mild:     { bg: '#DCEEF9', fg: '#01639E', shape: SQUARE,   label: 'MILD' },
+  normal:   { bg: '#D9F0E3', fg: '#256B43', shape: CIRCLE,   label: 'NORMAL' },
+};
+
+class Component extends DCLogic {
+  renderVals() {
+    const raw = [
+      ['ACC-2026-004182', 'Chest CT — Posterior-Anterior',     'CT',  '2026-05-01', '0.94', 'critical'],
+      ['ACC-2026-004179', 'Chest X-Ray — PA and lateral',      'CXR', '2026-05-01', '0.88', 'critical'],
+      ['ACC-2026-004175', 'Chest X-Ray — portable AP',         'CXR', '2026-04-30', '0.81', 'critical'],
+      ['ACC-2026-004171', 'Abdominal CT with contrast',        'CT',  '2026-04-30', '0.82', 'moderate'],
+      ['ACC-2026-004168', 'Chest CT — high resolution',        'CT',  '2026-04-29', '0.76', 'moderate'],
+      ['ACC-2026-004164', 'Chest X-Ray — PA view',             'CXR', '2026-04-29', '0.71', 'moderate'],
+      ['ACC-2026-004160', 'Abdominal MRI — T2 weighted',       'MRI', '2026-04-28', '0.64', 'mild'],
+      ['ACC-2026-004157', 'Chest X-Ray — PA view',             'CXR', '2026-04-28', '0.61', 'mild'],
+      ['ACC-2026-004153', 'Cervical spine CT',                 'CT',  '2026-04-27', '0.58', 'mild'],
+      ['ACC-2026-004149', 'Chest X-Ray — PA and lateral',      'CXR', '2026-04-27', '0.93', 'normal'],
+      ['ACC-2026-004146', 'Knee MRI — right',                  'MRI', '2026-04-26', '0.91', 'normal'],
+      ['ACC-2026-004142', 'Chest X-Ray — portable AP',         'CXR', '2026-04-26', '0.89', 'normal'],
+    ];
+
+    return {
+      cols: [
+        { label: 'Accession',  justify: 'flex-start', fg: '#4A4A4A', dir: 'M6 12 L10 8 L14 12', op: '0' },
+        { label: 'Study',      justify: 'flex-start', fg: '#4A4A4A', dir: 'M6 12 L10 8 L14 12', op: '0' },
+        { label: 'Modality',   justify: 'flex-start', fg: '#4A4A4A', dir: 'M6 12 L10 8 L14 12', op: '0' },
+        { label: 'Date',       justify: 'flex-start', fg: '#4A4A4A', dir: 'M6 12 L10 8 L14 12', op: '0' },
+        { label: 'Confidence', justify: 'flex-end',   fg: '#4A4A4A', dir: 'M6 12 L10 8 L14 12', op: '0' },
+        { label: 'Severity',   justify: 'flex-end',   fg: '#1D546C', dir: 'M6 8 L10 12 L14 8',  op: '1' },
+      ],
+      rows: raw.map(function (r, i) {
+        const s = SEV[r[5]];
+        return {
+          accession: r[0], description: r[1], modality: r[2], date: r[3], confidence: r[4],
+          sevBg: s.bg, sevFg: s.fg, sevShape: s.shape, sevLabel: s.label,
+          bg: i % 2 === 1 ? '#FAFAFA' : '#FFFFFF',
+        };
+      }),
+      filters: [
+        { label: 'Critical', count: '3',  shape: OCTAGON,  fg: '#FF9A93' },
+        { label: 'Moderate', count: '3',  shape: TRIANGLE, fg: '#F0C070' },
+        { label: 'Mild',     count: '3',  shape: SQUARE,   fg: '#8ECDF2' },
+        { label: 'Normal',   count: '15', shape: CIRCLE,   fg: '#7FD1A0' },
+      ],
+      nav: [
+        { label: 'Chat',     icon: 'M4 5h12v9H8l-4 3z', fg: '#C9D3DE', bg: 'transparent' },
+        { label: 'Studies',  icon: 'M3 6h5l2 2h7v8H3z', fg: '#F4F4F4', bg: '#1D546C' },
+        { label: 'Settings', icon: 'M10 7a3 3 0 1 0 0 6a3 3 0 0 0 0-6z M10 2v2 M10 16v2 M2 10h2 M16 10h2', fg: '#C9D3DE', bg: 'transparent' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

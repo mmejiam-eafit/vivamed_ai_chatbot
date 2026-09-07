@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-feature-settings: 'zero' 1; }
+    .num  { font-variant-numeric: tabular-nums; }
+    .lbl  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+    .ovr  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E141B; font-family: 'Inter', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- app bar (no fake status bar — the shell draws its own) -->
+  <div style="height: 56px; flex: none; background: #16273D; display: flex; align-items: center; padding: 0 4px 0 8px; gap: 4px;">
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex: none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#E4E8ED" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 L6 10 L12 16"/></svg>
+    </div>
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+      <span class="lbl" style="font-size: 16px; color: #E4E8ED; line-height: 1.2;">Study Review</span>
+      <span style="font-size: 11px; color: #B4BCC6; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Chest CT &mdash; Posterior-Anterior</span>
+    </div>
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex: none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="#E4E8ED" aria-hidden="true"><circle cx="10" cy="4" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="10" cy="16" r="1.6"/></svg>
+    </div>
+  </div>
+
+  <!-- identifiers: scrolls sideways, never truncates -->
+  <div style="height: 40px; flex: none; background: #151C25; border-bottom: 1px solid #2A3442; display: flex; align-items: center; gap: 18px; padding: 0 16px; overflow: hidden;">
+    <sc-for list="{{meta}}" as="m" hint-placeholder-count="4">
+      <div style="display: flex; align-items: baseline; gap: 6px; flex: none;">
+        <span class="ovr" style="color: #8B95A1;">{{m.label}}</span>
+        <span class="{{m.cls}}" style="font-size: 12px; color: #E4E8ED; white-space: nowrap;">{{m.value}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- viewer, 4:3, full bleed -->
+  <div style="height: 292px; flex: none; background: #0A0C0E; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <svg width="248" height="230" viewBox="0 0 340 300" fill="none" aria-hidden="true" style="opacity: 0.42;">
+      <path d="M170 26 v250" stroke="#7C8894" stroke-width="1.8"/>
+      <path d="M60 74 Q170 44 280 74" stroke="#7C8894" stroke-width="1.8"/>
+      <path d="M52 108 Q170 76 288 108" stroke="#7C8894" stroke-width="1.8"/>
+      <path d="M50 144 Q170 110 290 144" stroke="#7C8894" stroke-width="1.8"/>
+      <path d="M56 180 Q170 146 284 180" stroke="#7C8894" stroke-width="1.8"/>
+      <path d="M68 214 Q170 184 272 214" stroke="#7C8894" stroke-width="1.8"/>
+      <path d="M116 236 Q170 268 224 236" stroke="#7C8894" stroke-width="1.8"/>
+      <ellipse cx="196" cy="196" rx="46" ry="34" stroke="#9AA6B2" stroke-width="1.8"/>
+    </svg>
+
+    <!-- viewer stats, bottom left over the canvas -->
+    <div style="position: absolute; left: 12px; bottom: 10px; display: flex; gap: 14px;">
+      <sc-for list="{{viewerStats}}" as="v" hint-placeholder-count="3">
+        <div style="display: flex; align-items: baseline; gap: 5px;">
+          <span class="ovr" style="color: #939CA8;">{{v.label}}</span>
+          <span class="num" style="font-size: 11px; color: #E4E8ED;">{{v.value}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- expand to heatmap, 44px target -->
+    <div style="position: absolute; right: 10px; bottom: 8px; min-width: 44px; height: 44px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 8px; background: rgba(14,20,27,0.82); border: 1px solid #5E6B7A;">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#6DB3CE" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3h5v5 M8 17H3v-5 M17 3l-6 6 M3 17l6-6"/></svg>
+      <span class="lbl" style="font-size: 12px; color: #6DB3CE;">Heatmap</span>
+    </div>
+  </div>
+
+  <!-- tabs -->
+  <div style="height: 48px; flex: none; display: flex; border-bottom: 1px solid #2A3442;">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+      <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: inset 0 -2px 0 {{t.rule}};">
+        <span class="lbl" style="font-size: 14px; color: {{t.fg}};">{{t.label}}</span>
+        <span class="num" style="font-size: 12px; color: {{t.countFg}};">{{t.count}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- findings -->
+  <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
+
+    <div style="flex: none; margin: 10px 12px; background: #421D1D; border: 1px solid #FF9A93; border-radius: 8px; min-height: 44px; box-sizing: border-box; padding: 0 12px; display: flex; align-items: center; gap: 10px;">
+      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none;"><path d="M6.9 3h6.2l4.9 4.9v6.2l-4.9 4.9H6.9L2 14.1V7.9z" fill="#FF9A93"></path></svg>
+      <span class="lbl" style="font-size: 14px; color: #FF9A93; flex-grow: 1;">2 critical findings</span>
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#FF9A93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8 L10 13 L15 8"/></svg>
+    </div>
+
+    <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column;">
+      <sc-for list="{{findings}}" as="f" hint-placeholder-count="5">
+        <div style="display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; min-height: 44px; box-sizing: border-box; border-bottom: 1px solid #2A3442; background: {{f.rowBg}};">
+          <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none; margin-top: 2px;"><path d="{{f.shape}}" fill="{{f.fg}}"></path></svg>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 14px; color: #E4E8ED; line-height: 1.4;">{{f.name}}</span>
+            <span style="font-size: 12px; color: #B4BCC6; line-height: 1.35;">{{f.location}}</span>
+          </div>
+          <span class="num" style="font-size: 13px; color: #B4BCC6; flex: none; margin-top: 1px;">{{f.confidence}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- primary action -->
+  <div style="flex: none; border-top: 1px solid #2A3442; background: #151C25; padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 8px;">
+    <span style="font-size: 11px; color: #939CA8; text-align: center; line-height: 1.35;">Advisory only &mdash; not a diagnostic device</span>
+    <div style="min-height: 48px; border-radius: 10px; background: #4FA3C4; display: flex; align-items: center; justify-content: center;">
+      <span class="lbl" style="font-size: 15px; color: #0A0C0E;">Sign report</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+const CIRCLE = 'M10 3a7 7 0 1 1 0 14a7 7 0 0 1 0-14z';
+const SQUARE = 'M6.5 3.5h7a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3z';
+const TRIANGLE = 'M8.7 3.6a1.5 1.5 0 0 1 2.6 0l6.1 11.1a1.5 1.5 0 0 1-1.3 2.3H3.9a1.5 1.5 0 0 1-1.3-2.3z';
+const OCTAGON = 'M6.9 3h6.2l4.9 4.9v6.2l-4.9 4.9H6.9L2 14.1V7.9z';
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tabs: [
+        { label: 'Findings', count: '6', fg: '#E4E8ED', countFg: '#B4BCC6', rule: '#4FA3C4' },
+        { label: 'Chat',     count: '',  fg: '#939CA8', countFg: '#939CA8', rule: 'transparent' },
+      ],
+      meta: [
+        { label: 'Patient',   value: 'Anonymous-7812',  cls: 'mono' },
+        { label: 'Accession', value: 'ACC-2026-004182', cls: 'mono' },
+        { label: 'Date',      value: '2026-05-01',      cls: 'num'  },
+        { label: 'Modality',  value: 'CT',              cls: 'lbl'  },
+      ],
+      viewerStats: [
+        { label: 'Slice', value: '112 / 240' },
+        { label: 'W / L', value: '1500 / -600' },
+        { label: 'Zoom',  value: '145 %' },
+      ],
+      findings: [
+        { name: 'Tension pneumothorax',           location: 'Right hemithorax', shape: OCTAGON,  fg: '#FF9A93', confidence: '0.94', rowBg: '#1A1416' },
+        { name: 'Mediastinal shift',              location: 'Leftward, 14 mm',  shape: OCTAGON,  fg: '#FF9A93', confidence: '0.88', rowBg: '#1A1416' },
+        { name: 'Right lower lobe consolidation', location: 'RLL, 42 × 31 mm',  shape: TRIANGLE, fg: '#F0C070', confidence: '0.82', rowBg: 'transparent' },
+        { name: 'Subcutaneous emphysema',         location: 'Right chest wall', shape: TRIANGLE, fg: '#F0C070', confidence: '0.71', rowBg: 'transparent' },
+        { name: 'Mild cardiomegaly',              location: 'CTR 0.53',         shape: SQUARE,   fg: '#8ECDF2', confidence: '0.64', rowBg: 'transparent' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

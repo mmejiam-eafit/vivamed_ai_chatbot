@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #267390; } a:hover { color: #1D546C; }
+    .lbl { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+    .ovr { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; }
+  </style>
+</helmet>
+
+<div style="width: 1600px; height: 940px; box-sizing: border-box; background: #F4F4F4; font-family: 'Inter', system-ui, sans-serif; padding: 32px 36px; display: flex; flex-direction: column; gap: 20px;">
+
+  <div style="display: flex; align-items: flex-end; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div class="lbl" style="font-size: 24px; color: #1A1A1A;">Navigation flow</div>
+      <div style="font-size: 14px; color: #4A4A4A; max-width: 760px; text-wrap: pretty;">Proposed. The app currently has <strong>no runtime navigation at all</strong> &mdash; seven routes, zero edges, every button an empty callback. Only the login screen is reachable.</div>
+    </div>
+    <div style="flex-grow: 1;"></div>
+    <div style="display: flex; gap: 20px; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="34" height="10" viewBox="0 0 34 10" fill="none"><path d="M0 5h26" stroke="#1D546C" stroke-width="2"/><path d="M26 1 L33 5 L26 9z" fill="#1D546C"/></svg>
+        <span style="font-size: 12px; color: #4A4A4A;">Proposed edge</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="34" height="10" viewBox="0 0 34 10" fill="none"><path d="M0 5h26" stroke="#8A5A00" stroke-width="2" stroke-dasharray="4 3"/><path d="M26 1 L33 5 L26 9z" fill="#8A5A00"/></svg>
+        <span style="font-size: 12px; color: #4A4A4A;">Conditional</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 14px; height: 14px; border-radius: 3px; background: #DCDCDC; border: 1px dashed #7D7D7D;"></span>
+        <span style="font-size: 12px; color: #4A4A4A;">Exists, unreachable today</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; position: relative; background: #FFFFFF; border: 1px solid #C4C4C4; border-radius: 12px; overflow: hidden;">
+
+    <svg width="1528" height="762" viewBox="0 0 1528 762" fill="none" style="position: absolute; inset: 0;" aria-hidden="true">
+      <defs>
+        <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="#1D546C"/></marker>
+        <marker id="ao" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="#8A5A00"/></marker>
+      </defs>
+
+      <path d="M212 172 h84" stroke="#8A5A00" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ao)"/>
+      <path d="M132 216 v150 h360" stroke="#8A5A00" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ao)"/>
+      <path d="M508 172 h94 v186 h-94" stroke="#1D546C" stroke-width="2" marker-end="url(#ah)"/>
+      <path d="M660 410 h96" stroke="#1D546C" stroke-width="2" marker-end="url(#ah)"/>
+      <path d="M964 410 h96" stroke="#1D546C" stroke-width="2" marker-end="url(#ah)"/>
+      <path d="M1268 410 h96" stroke="#1D546C" stroke-width="2" marker-end="url(#ah)"/>
+      <path d="M1112 454 v92 h-304 v-92" stroke="#1D546C" stroke-width="2" marker-end="url(#ah)"/>
+      <path d="M556 454 v168 h592" stroke="#1D546C" stroke-width="2" marker-end="url(#ah)"/>
+    </svg>
+
+    <div style="position: absolute; left: 52px; top: 128px; width: 160px;">
+      <div style="background: #F4F4F4; border: 1px dashed #7D7D7D; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #1A1A1A;">Login</div>
+        <div class="mono" style="font-size: 11px; color: #6E6E6E;">/</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 300px; top: 128px; width: 208px;">
+      <div style="background: #F4F4F4; border: 1px dashed #7D7D7D; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #1A1A1A;">Onboarding</div>
+        <div class="mono" style="font-size: 11px; color: #6E6E6E;">/onboarding</div>
+        <div style="font-size: 11px; color: #4A4A4A;">First run only</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 300px; top: 358px; width: 208px;">
+      <div style="background: #E9F3F7; border: 1px solid #1D546C; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #0F3545;">Chat</div>
+        <div class="mono" style="font-size: 11px; color: #1D546C;">/chat</div>
+        <div style="font-size: 11px; color: #0F3545;">Landing screen</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 604px; top: 358px; width: 208px;">
+      <div style="background: #E9F3F7; border: 1px solid #1D546C; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #0F3545;">Studies</div>
+        <div class="mono" style="font-size: 11px; color: #1D546C;">/cases</div>
+        <div style="font-size: 11px; color: #0F3545;">Worklist</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 908px; top: 358px; width: 208px;">
+      <div style="background: #E9F3F7; border: 1px solid #1D546C; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #0F3545;">Study Review</div>
+        <div class="mono" style="font-size: 11px; color: #1D546C;">/study-review</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 1212px; top: 358px; width: 208px;">
+      <div style="background: #F4F4F4; border: 1px dashed #7D7D7D; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #1A1A1A;">Heatmap</div>
+        <div class="mono" style="font-size: 11px; color: #6E6E6E;">/heatmap</div>
+        <div style="font-size: 11px; color: #4A4A4A;">Per finding</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 1044px; top: 590px; width: 208px;">
+      <div style="background: #F4F4F4; border: 1px dashed #7D7D7D; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 15px; color: #1A1A1A;">Settings</div>
+        <div class="mono" style="font-size: 11px; color: #6E6E6E;">/settings</div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 240px; top: 146px;"><span style="font-size: 11px; color: #8A5A00; background: #FFFFFF; padding: 0 4px;">first run</span></div>
+    <div style="position: absolute; left: 152px; top: 344px;"><span style="font-size: 11px; color: #8A5A00; background: #FFFFFF; padding: 0 4px;">returning</span></div>
+    <div style="position: absolute; left: 528px; top: 252px;"><span style="font-size: 11px; color: #1D546C; background: #FFFFFF; padding: 0 4px;">Get started</span></div>
+    <div style="position: absolute; left: 672px; top: 388px;"><span style="font-size: 11px; color: #1D546C; background: #FFFFFF; padding: 0 4px;">nav</span></div>
+    <div style="position: absolute; left: 972px; top: 388px;"><span style="font-size: 11px; color: #1D546C; background: #FFFFFF; padding: 0 4px;">select case</span></div>
+    <div style="position: absolute; left: 1272px; top: 388px;"><span style="font-size: 11px; color: #1D546C; background: #FFFFFF; padding: 0 4px;">select finding</span></div>
+    <div style="position: absolute; left: 892px; top: 524px;"><span style="font-size: 11px; color: #1D546C; background: #FFFFFF; padding: 0 4px;">back</span></div>
+    <div style="position: absolute; left: 776px; top: 600px;"><span style="font-size: 11px; color: #1D546C; background: #FFFFFF; padding: 0 4px;">nav</span></div>
+
+    <div style="position: absolute; left: 52px; top: 470px; width: 208px; display: flex; flex-direction: column; gap: 8px;">
+      <div class="ovr" style="color: #6E6E6E;">Persistent nav</div>
+      <div style="background: #1A3D64; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px;">
+        <sc-for list="{{nav}}" as="n" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; background: {{n.bg}};">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="{{n.fg}}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{n.icon}}"/></svg>
+            <span class="lbl" style="font-size: 13px; color: {{n.fg}};">{{n.label}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size: 11px; color: #4A4A4A; line-height: 1.5;">Rail at desktop, bottom bar at phone. The component exists and is mounted nowhere.</div>
+    </div>
+  </div>
+
+  <div style="flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+    <sc-for list="{{decisions}}" as="d" hint-placeholder-count="3">
+      <div style="background: #FFF4D6; border-left: none; border: 1px solid #8A5A00; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;">
+        <div class="lbl" style="font-size: 13px; color: #8A5A00;">{{d.title}}</div>
+        <div style="font-size: 12px; color: #4A4A4A; line-height: 1.5; text-wrap: pretty;">{{d.body}}</div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      nav: [
+        { label: 'Chat',     icon: 'M4 5h12v9H8l-4 3z', fg: '#F4F4F4', bg: '#1D546C' },
+        { label: 'Studies',  icon: 'M3 6h5l2 2h7v8H3z', fg: '#C9D3DE', bg: 'transparent' },
+        { label: 'Settings', icon: 'M10 7a3 3 0 1 0 0 6a3 3 0 0 0 0-6z M10 2v2 M10 16v2 M2 10h2 M16 10h2', fg: '#C9D3DE', bg: 'transparent' },
+      ],
+      decisions: [
+        { title: 'Heatmap is no longer top-level',
+          body: 'It is reached from a finding, the only context where an overlay means anything. Nothing links to it today.' },
+        { title: 'The nav bar gets mounted',
+          body: 'Chat / Studies / Settings is fully built and used by no screen. Mounting it is what turns seven islands into an app.' },
+        { title: 'Chat is a screen and a panel',
+          body: 'The chat panel appears standalone and inside Study Review. This picks standalone-plus-embedded — worth confirming.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

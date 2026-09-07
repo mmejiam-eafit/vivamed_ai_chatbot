@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-feature-settings: 'zero' 1; }
+    .num  { font-variant-numeric: tabular-nums; }
+    .lbl  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+    .ovr  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0E141B; font-family: 'Inter', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="height: 56px; flex: none; background: #16273D; display: flex; align-items: center; padding: 0 4px 0 16px; gap: 4px;">
+    <div style="flex-grow: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px;">
+      <span class="lbl" style="font-size: 18px; color: #E4E8ED;">Studies</span>
+      <span class="num" style="font-size: 13px; color: #B4BCC6;">24 open</span>
+    </div>
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex: none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#E4E8ED" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 L17 17"/></svg>
+    </div>
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex: none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#E4E8ED" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h14 M6 10h8 M8.5 15h3"/></svg>
+    </div>
+  </div>
+
+  <!-- filter chips -->
+  <div style="height: 56px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 16px; overflow: hidden; border-bottom: 1px solid #2A3442;">
+    <sc-for list="{{filters}}" as="c" hint-placeholder-count="4">
+      <div style="flex: none; min-height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 18px; background: {{c.bg}}; border: 1px solid {{c.border}};">
+        <span class="lbl" style="font-size: 13px; color: {{c.fg}}; white-space: nowrap;">{{c.label}}</span>
+        <span class="num" style="font-size: 12px; color: {{c.countFg}};">{{c.count}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- card list -->
+  <div style="flex-grow: 1; min-height: 0; overflow: hidden; padding: 12px 12px 0; display: flex; flex-direction: column; gap: 10px;">
+    <sc-for list="{{cases}}" as="s" hint-placeholder-count="5">
+      <div style="flex: none; background: #151C25; border: 1px solid {{s.cardBorder}}; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px;">
+
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none;"><path d="{{s.shape}}" fill="{{s.sevFg}}"></path></svg>
+          <span class="lbl" style="font-size: 13px; color: {{s.sevFg}}; flex-grow: 1;">{{s.sevLabel}}</span>
+          <span style="flex: none; min-height: 22px; display: flex; align-items: center; padding: 0 9px; border-radius: 6px; background: {{s.statusBg}};">
+            <span class="ovr" style="color: {{s.statusFg}};">{{s.status}}</span>
+          </span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 15px; color: #E4E8ED; line-height: 1.35;">{{s.description}}</span>
+          <span class="mono" style="font-size: 12px; color: #B4BCC6;">{{s.patient}}</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px; padding-top: 2px;">
+          <div style="display: flex; align-items: baseline; gap: 5px;">
+            <span class="ovr" style="color: #8B95A1;">Mod</span>
+            <span class="lbl" style="font-size: 12px; color: #B4BCC6;">{{s.modality}}</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 5px;">
+            <span class="ovr" style="color: #8B95A1;">Date</span>
+            <span class="num" style="font-size: 12px; color: #B4BCC6;">{{s.date}}</span>
+          </div>
+          <div style="flex-grow: 1;"></div>
+          <div style="display: flex; align-items: baseline; gap: 5px;">
+            <span class="ovr" style="color: #8B95A1;">Conf</span>
+            <span class="num" style="font-size: 13px; color: #E4E8ED;">{{s.confidence}}</span>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- bottom nav: what the 240px side rail becomes at compact -->
+  <div style="height: 68px; flex: none; background: #16273D; border-top: 1px solid #2A3442; display: flex; align-items: stretch; padding: 0 8px;">
+    <sc-for list="{{nav}}" as="n" hint-placeholder-count="3">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 44px;">
+        <svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="{{n.fg}}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{n.icon}}"/></svg>
+        <span class="lbl" style="font-size: 11px; color: {{n.fg}};">{{n.label}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+const CIRCLE = 'M10 3a7 7 0 1 1 0 14a7 7 0 0 1 0-14z';
+const SQUARE = 'M6.5 3.5h7a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3z';
+const TRIANGLE = 'M8.7 3.6a1.5 1.5 0 0 1 2.6 0l6.1 11.1a1.5 1.5 0 0 1-1.3 2.3H3.9a1.5 1.5 0 0 1-1.3-2.3z';
+const OCTAGON = 'M6.9 3h6.2l4.9 4.9v6.2l-4.9 4.9H6.9L2 14.1V7.9z';
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      filters: [
+        { label: 'All',      count: '24', bg: '#4FA3C4',    fg: '#0A0C0E', countFg: '#0A0C0E', border: '#4FA3C4' },
+        { label: 'Critical', count: '3',  bg: 'transparent', fg: '#FF9A93', countFg: '#FF9A93', border: '#5E6B7A' },
+        { label: 'Unread',   count: '11', bg: 'transparent', fg: '#B4BCC6', countFg: '#939CA8', border: '#5E6B7A' },
+        { label: 'Mine',     count: '8',  bg: 'transparent', fg: '#B4BCC6', countFg: '#939CA8', border: '#5E6B7A' },
+      ],
+      cases: [
+        {
+          description: 'Chest CT — Posterior-Anterior', patient: 'Anonymous-7812',
+          shape: OCTAGON, sevFg: '#FF9A93', sevLabel: 'Critical', cardBorder: '#FF9A93',
+          status: 'Unread', statusBg: '#421D1D', statusFg: '#FF9A93',
+          modality: 'CT', date: '2026-05-01', confidence: '0.94',
+        },
+        {
+          description: 'Chest X-Ray — supine portable', patient: 'Anonymous-6431',
+          shape: OCTAGON, sevFg: '#FF9A93', sevLabel: 'Critical', cardBorder: '#FF9A93',
+          status: 'Unread', statusBg: '#421D1D', statusFg: '#FF9A93',
+          modality: 'CR', date: '2026-05-01', confidence: '0.89',
+        },
+        {
+          description: 'Abdominal MRI — with contrast', patient: 'Anonymous-5590',
+          shape: TRIANGLE, sevFg: '#F0C070', sevLabel: 'Moderate', cardBorder: '#2A3442',
+          status: 'In review', statusBg: '#3A2A0F', statusFg: '#F0C070',
+          modality: 'MR', date: '2026-04-30', confidence: '0.76',
+        },
+        {
+          description: 'Chest CT — follow-up, 3 months', patient: 'Anonymous-4218',
+          shape: SQUARE, sevFg: '#8ECDF2', sevLabel: 'Mild', cardBorder: '#2A3442',
+          status: 'In review', statusBg: '#12293A', statusFg: '#8ECDF2',
+          modality: 'CT', date: '2026-04-29', confidence: '0.64',
+        },
+        {
+          description: 'Chest X-Ray — pre-operative', patient: 'Anonymous-3907',
+          shape: CIRCLE, sevFg: '#7FD1A0', sevLabel: 'Normal', cardBorder: '#2A3442',
+          status: 'Signed', statusBg: '#14301F', statusFg: '#7FD1A0',
+          modality: 'CR', date: '2026-04-28', confidence: '0.91',
+        },
+      ],
+      nav: [
+        { label: 'Chat',     icon: 'M4 5h12v9H8l-4 3z', fg: '#B4BCC6' },
+        { label: 'Studies',  icon: 'M3 6h5l2 2h7v8H3z', fg: '#4FA3C4' },
+        { label: 'Settings', icon: 'M10 7a3 3 0 1 0 0 6a3 3 0 0 0 0-6z M10 2v2 M10 16v2 M2 10h2 M16 10h2', fg: '#B4BCC6' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #267390; } a:hover { color: #1D546C; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+    .zero { font-feature-settings: 'zero' 1; }
+    .tab  { font-variant-numeric: tabular-nums; }
+    .prop { font-variant-numeric: proportional-nums; }
+    .lbl  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+    .ovr  { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .card { background: #FFFFFF; border: 1px solid #C4C4C4; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  </style>
+</helmet>
+
+<div style="width: 1240px; height: 1080px; box-sizing: border-box; background: #F4F4F4; font-family: 'Inter', system-ui, sans-serif; padding: 32px; display: flex; flex-direction: column; gap: 20px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div class="lbl" style="font-size: 24px; color: #1A1A1A;">Type and hierarchy</div>
+    <div style="font-size: 14px; color: #4A4A4A; max-width: 800px; text-wrap: pretty;">Three voices. Each rank is a pairing of type treatment and colour treatment &mdash; neither establishes hierarchy alone.</div>
+  </div>
+
+  <div class="card">
+    <div class="lbl" style="font-size: 18px; color: #1A1A1A;">The five layers, on one finding row</div>
+
+    <div style="display: flex; gap: 24px; align-items: flex-start;">
+      <div style="flex-grow: 1; min-width: 0; border: 1px solid #DCDCDC; border-radius: 8px; overflow: hidden;">
+        <div style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: #FFFFFF; border-bottom: 1px solid #EEEEEE;">
+          <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true" style="display: block; flex: none; margin-top: 3px;"><path d="M8.7 3.6a1.5 1.5 0 0 1 2.6 0l6.1 11.1a1.5 1.5 0 0 1-1.3 2.3H3.9a1.5 1.5 0 0 1-1.3-2.3z" fill="#8A5A00"></path></svg>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+            <span style="font-size: 14px; color: #1A1A1A; line-height: 1.45;">Right lower lobe consolidation</span>
+            <span style="font-size: 12px; color: #4A4A4A;">RLL, 42 &times; 31 mm</span>
+          </div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: #FFF4D6; flex: none;">
+            <svg width="12" height="12" viewBox="0 0 20 20" aria-hidden="true" style="display: block;"><path d="M8.7 3.6a1.5 1.5 0 0 1 2.6 0l6.1 11.1a1.5 1.5 0 0 1-1.3 2.3H3.9a1.5 1.5 0 0 1-1.3-2.3z" fill="#8A5A00"></path></svg>
+            <span class="lbl" style="font-size: 12px; letter-spacing: 0.4px; color: #8A5A00;">MODERATE</span>
+          </span>
+        </div>
+        <div style="padding: 10px 16px; background: #FAFAFA;">
+          <span style="font-size: 12px; color: #4A4A4A; line-height: 1.5;">The chip is the smallest element and wins the eye anyway. That only works because the ground and the content are low&#8209;chroma.</span>
+        </div>
+      </div>
+
+      <div style="width: 420px; flex: none; display: flex; flex-direction: column; gap: 6px;">
+        <sc-for list="{{layers}}" as="l" hint-placeholder-count="5">
+          <div style="display: flex; align-items: flex-start; gap: 10px; padding: 7px 10px; border-radius: 6px; background: {{l.bg}};">
+            <span class="lbl" style="font-size: 11px; color: #FFFFFF; background: {{l.dot}}; border-radius: 4px; padding: 1px 6px; flex: none;">{{l.n}}</span>
+            <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+              <span class="lbl" style="font-size: 12px; color: #1A1A1A;">{{l.name}}</span>
+              <span style="font-size: 11px; color: #4A4A4A; line-height: 1.45;">{{l.desc}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+
+    <div class="card">
+      <div class="lbl" style="font-size: 18px; color: #1A1A1A;">Three voices</div>
+      <sc-for list="{{voices}}" as="v" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 5px; padding-bottom: 12px; border-bottom: 1px solid #EEEEEE;">
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <span class="ovr" style="color: #6E6E6E;">{{v.role}}</span>
+            <span style="font-size: 11px; color: #6E6E6E;">{{v.family}}</span>
+          </div>
+          <span style="{{v.style}}">{{v.sample}}</span>
+          <span style="font-size: 11px; color: #4A4A4A; line-height: 1.5;">{{v.why}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div class="card">
+      <div class="lbl" style="font-size: 18px; color: #1A1A1A;">Identifiers are machine truth</div>
+      <div style="font-size: 13px; color: #4A4A4A; line-height: 1.6; text-wrap: pretty;">Every clinical value renders in the body voice today, including study UIDs. A transcribed fragment reads as a whole value.</div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="border: 1px solid #A81919; border-radius: 8px; overflow: hidden;">
+          <div class="ovr" style="color: #A81919; background: #FFE0E0; padding: 6px 12px;">Today &mdash; body voice, clipped</div>
+          <div style="padding: 12px; display: flex; align-items: baseline; gap: 12px;">
+            <span class="lbl" style="font-size: 12px; color: #4A4A4A; flex: none;">Study UID</span>
+            <span style="font-size: 14px; color: #1A1A1A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">1.2.840.10008.5.1.4.1.1.2</span>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #256B43; border-radius: 8px; overflow: hidden;">
+          <div class="ovr" style="color: #256B43; background: #D9F0E3; padding: 6px 12px;">Specified &mdash; mono, slashed zero, wraps</div>
+          <div style="padding: 12px; display: flex; align-items: baseline; gap: 12px;">
+            <span class="lbl" style="font-size: 12px; color: #4A4A4A; flex: none;">Study UID</span>
+            <span class="mono zero" style="font-size: 14px; color: #1A1A1A; word-break: break-all;">1.2.840.10008.5.1.4.1.1.2</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 24px; padding-top: 4px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span class="ovr" style="color: #6E6E6E;">Ambiguous</span>
+          <span style="font-size: 22px; color: #1A1A1A;">0O 1lI 5S</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span class="ovr" style="color: #6E6E6E;">Disambiguated</span>
+          <span class="mono zero" style="font-size: 22px; color: #1A1A1A;">0O 1lI 5S</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="flex-grow: 1;">
+    <div style="display: flex; align-items: baseline; gap: 12px;">
+      <div class="lbl" style="font-size: 18px; color: #1A1A1A;">Figures in a column</div>
+      <span class="ovr" style="color: #6E6E6E;">the body face defaults to proportional &mdash; tabular must be asked for</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span class="ovr" style="color: #A81919;">Proportional &mdash; the column drifts</span>
+        <div style="border: 1px solid #DCDCDC; border-radius: 8px; overflow: hidden;">
+          <sc-for list="{{figures}}" as="f" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 7px 14px; border-bottom: 1px solid #EEEEEE;">
+              <span class="prop" style="font-size: 14px; color: #1A1A1A;">{{f.date}}</span>
+              <span class="prop" style="font-size: 14px; color: #1A1A1A; text-align: right;">{{f.value}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span class="ovr" style="color: #256B43;">Tabular &mdash; digits hold their grid</span>
+        <div style="border: 1px solid #DCDCDC; border-radius: 8px; overflow: hidden;">
+          <sc-for list="{{figures}}" as="f" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 7px 14px; border-bottom: 1px solid #EEEEEE;">
+              <span class="tab" style="font-size: 14px; color: #1A1A1A;">{{f.date}}</span>
+              <span class="tab" style="font-size: 14px; color: #1A1A1A; text-align: right;">{{f.value}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      layers: [
+        { n: '1', name: 'Ground',    desc: 'Row background and divider. Carries no information.',                    dot: '#7D7D7D', bg: '#FAFAFA' },
+        { n: '2', name: 'Structure', desc: 'The panel header above. Display voice on chrome navy.',                   dot: '#0C2B4E', bg: '#FAFAFA' },
+        { n: '3', name: 'Content',   desc: 'The finding text. Body voice, neutral — the thing you read.',             dot: '#4A4A4A', bg: '#FAFAFA' },
+        { n: '4', name: 'Emphasis',  desc: 'Not used in this row. Accent or a lightness lift, never a clinical hue.', dot: '#1D546C', bg: '#FFFFFF' },
+        { n: '5', name: 'Alarm',     desc: 'The severity chip. Label voice, small, full-chroma pair.',                dot: '#A81919', bg: '#FFF7F7' },
+      ],
+      voices: [
+        { role: 'Display', family: 'IBM Plex Sans',  sample: 'Study Review',
+          style: "font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 22px; font-weight: 600; color: #1A1A1A;",
+          why: 'Structure and authority — institutional, never friendly. Names and frames regions.' },
+        { role: 'Body', family: 'Inter', sample: 'Right lower lobe consolidation consistent with pneumonia.',
+          style: "font-family: 'Inter', system-ui, sans-serif; font-size: 16px; color: #1A1A1A; line-height: 1.5;",
+          why: 'Sustained clinical reading. The largest x-height available, which is what carries 14px prose in a dim room.' },
+        { role: 'Mono', family: 'IBM Plex Mono', sample: 'ACC-2026-004182',
+          style: "font-family: 'IBM Plex Mono', ui-monospace, monospace; font-feature-settings: 'zero' 1; font-size: 16px; color: #1A1A1A;",
+          why: 'Machine truth. Anything a clinician might transcribe into a report.' },
+      ],
+      figures: [
+        { date: '2026-05-01', value: '0.94' },
+        { date: '2026-04-30', value: '0.11' },
+        { date: '2026-11-18', value: '1.00' },
+        { date: '2026-01-11', value: '0.71' },
+        { date: '2026-10-07', value: '0.18' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
