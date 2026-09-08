@@ -25,7 +25,9 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Radiologist Helper',
-      theme: buildAppTheme(),
+      theme: buildAppTheme(Brightness.light),
+      darkTheme: buildAppTheme(Brightness.dark),
+      themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       initialRoute: Routes.login,
       routes: {

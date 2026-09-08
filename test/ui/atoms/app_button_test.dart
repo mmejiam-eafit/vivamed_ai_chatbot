@@ -18,7 +18,8 @@ void main() {
     expect(find.byType(ElevatedButton), findsOneWidget);
   });
 
-  testWidgets('primary variant uses interactivePrimary background', (tester) async {
+  testWidgets('primary variant uses interactivePrimary background',
+      (tester) async {
     await tester.pumpWidget(wrap(
       const AppButton(label: 'OK', onPressed: null),
     ));
@@ -32,9 +33,7 @@ void main() {
   testWidgets('secondary variant renders OutlinedButton', (tester) async {
     await tester.pumpWidget(wrap(
       const AppButton(
-          label: 'OK',
-          onPressed: null,
-          variant: AppButtonVariant.secondary),
+          label: 'OK', onPressed: null, variant: AppButtonVariant.secondary),
     ));
     expect(find.byType(OutlinedButton), findsOneWidget);
   });
@@ -71,7 +70,8 @@ void main() {
     expect(find.text('Submit'), findsOneWidget);
   });
 
-  testWidgets('icon is shown when provided with primary variant', (tester) async {
+  testWidgets('icon is shown when provided with primary variant',
+      (tester) async {
     await tester.pumpWidget(wrap(
       const AppButton(icon: Icons.send, label: 'Send', onPressed: null),
     ));
@@ -125,7 +125,8 @@ void main() {
 
   // ── iconOnly isLoading ─────────────────────────────────────────────────────
 
-  testWidgets('iconOnly isLoading shows CircularProgressIndicator', (tester) async {
+  testWidgets('iconOnly isLoading shows CircularProgressIndicator',
+      (tester) async {
     await tester.pumpWidget(wrap(
       AppButton(
         icon: Icons.add,
@@ -135,5 +136,61 @@ void main() {
       ),
     ));
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+
+  // ── Touch target (DL §8.5) ────────────────────────────────────────────────
+
+  testWidgets('primary variant meets the 44px minimum touch target',
+      (tester) async {
+    await tester.pumpWidget(wrap(
+      const AppButton(label: 'OK', onPressed: null),
+    ));
+    final size = tester.getSize(find.byType(ElevatedButton));
+    expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+  });
+
+  testWidgets('iconOnly variant meets the 44px minimum touch target',
+      (tester) async {
+    await tester.pumpWidget(wrap(
+      const AppButton(
+        icon: Icons.add,
+        onPressed: null,
+        variant: AppButtonVariant.iconOnly,
+      ),
+    ));
+    final size = tester.getSize(find.byType(IconButton));
+    expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+    expect(size.width, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+  });
+
+  // ── Focus ring (DL §8.4) ──────────────────────────────────────────────
+
+  testWidgets('focus ring is transparent when not focused', (tester) async {
+    await tester.pumpWidget(wrap(
+      AppButton(label: 'Idle', onPressed: () {}),
+    ));
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(ElevatedButton),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, Colors.transparent);
+  });
+
+  testWidgets('shows a visible focus ring when focused', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(
+      AppButton(label: 'Focus me', onPressed: () {}, focusNode: focusNode),
+    ));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(ElevatedButton),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, AppColorsData.light.borderFocused);
   });
 }

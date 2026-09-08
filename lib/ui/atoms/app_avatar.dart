@@ -15,27 +15,35 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     if (imageUrl != null) {
       return CircleAvatar(
         radius: radius,
         backgroundImage: NetworkImage(imageUrl!),
-        backgroundColor: AppColors.surfaceBrandSecondary,
+        backgroundColor: colors.surfaceBrandSecondary,
       );
     }
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: AppColors.surfaceBrandSecondary,
+      backgroundColor: colors.surfaceBrandSecondary,
+      // Shrinks to fit so long initials survive 200% text scale (DL §8.6).
       child: initials != null
-          ? Text(
-              initials!,
-              style: AppTypography.labelMd.copyWith(
-                color: AppColors.textOnBrand,
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xxs),
+                child: Text(
+                  initials!,
+                  style: AppTypography.labelMd.copyWith(
+                    color: colors.textOnBrand,
+                  ),
+                ),
               ),
             )
           : Icon(
               Icons.person,
-              color: AppColors.textOnBrand,
+              color: colors.textOnBrand,
               size: radius,
             ),
     );

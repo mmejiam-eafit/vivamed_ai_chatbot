@@ -51,4 +51,58 @@ void main() {
     final icon = tester.widget<Icon>(find.byType(Icon));
     expect(icon.semanticLabel, 'star icon');
   });
+
+  // ── role ──────────────────────────────────────────────────────────────────────────────
+
+  testWidgets('role.defaultIcon resolves to context.colors.icon',
+      (tester) async {
+    await tester.pumpWidget(
+        wrap(const AppIcon(Icons.star, role: AppIconRole.defaultIcon)));
+    final icon = tester.widget<Icon>(find.byType(Icon));
+    expect(icon.color, AppColorsData.light.icon);
+  });
+
+  testWidgets('role.onBrand resolves to context.colors.iconOnBrand',
+      (tester) async {
+    await tester
+        .pumpWidget(wrap(const AppIcon(Icons.star, role: AppIconRole.onBrand)));
+    final icon = tester.widget<Icon>(find.byType(Icon));
+    expect(icon.color, AppColorsData.light.iconOnBrand);
+  });
+
+  testWidgets('role.accent resolves to context.colors.iconAccent',
+      (tester) async {
+    await tester
+        .pumpWidget(wrap(const AppIcon(Icons.star, role: AppIconRole.accent)));
+    final icon = tester.widget<Icon>(find.byType(Icon));
+    expect(icon.color, AppColorsData.light.iconAccent);
+  });
+
+  testWidgets('role.disabled resolves to context.colors.iconDisabled',
+      (tester) async {
+    await tester.pumpWidget(
+        wrap(const AppIcon(Icons.star, role: AppIconRole.disabled)));
+    final icon = tester.widget<Icon>(find.byType(Icon));
+    expect(icon.color, AppColorsData.light.iconDisabled);
+  });
+
+  testWidgets('explicit color wins over role', (tester) async {
+    await tester.pumpWidget(wrap(const AppIcon(
+      Icons.star,
+      role: AppIconRole.accent,
+      color: AppColors.statusError,
+    )));
+    final icon = tester.widget<Icon>(find.byType(Icon));
+    expect(icon.color, AppColors.statusError);
+  });
+
+  testWidgets('role resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+          body: AppIcon(Icons.star, role: AppIconRole.defaultIcon)),
+    ));
+    final icon = tester.widget<Icon>(find.byType(Icon));
+    expect(icon.color, AppColorsData.dark.icon);
+  });
 }

@@ -19,12 +19,13 @@ class AppChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final labelWidget = Text(
       label,
       style: AppTypography.labelMd.copyWith(
         color: selected
-            ? AppColors.interactivePrimaryForeground
-            : AppColors.textOnAccent,
+            ? colors.interactivePrimaryForeground
+            : colors.textOnAccent,
       ),
     );
 
@@ -39,9 +40,9 @@ class AppChip extends StatelessWidget {
         onSelected: onSelected!,
         onDeleted: onDeleted,
         avatar: avatar,
-        backgroundColor: AppColors.surfaceAccent,
-        selectedColor: AppColors.interactivePrimary,
-        checkmarkColor: AppColors.interactivePrimaryForeground,
+        backgroundColor: colors.surfaceAccent,
+        selectedColor: colors.interactivePrimary,
+        checkmarkColor: colors.interactivePrimaryForeground,
         showCheckmark: false,
         shape: shape,
         side: BorderSide.none,
@@ -52,7 +53,7 @@ class AppChip extends StatelessWidget {
       label: labelWidget,
       onDeleted: onDeleted,
       avatar: avatar,
-      backgroundColor: AppColors.surfaceAccent,
+      backgroundColor: colors.surfaceAccent,
       shape: shape,
       side: BorderSide.none,
     );

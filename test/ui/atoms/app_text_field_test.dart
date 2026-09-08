@@ -52,8 +52,8 @@ void main() {
   });
 
   testWidgets('clamps maxLines to 1 when obscureText is true', (tester) async {
-    await tester.pumpWidget(
-        wrap(const AppTextField(obscureText: true, maxLines: 5)));
+    await tester
+        .pumpWidget(wrap(const AppTextField(obscureText: true, maxLines: 5)));
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.maxLines, 1);
   });
@@ -89,5 +89,46 @@ void main() {
         wrap(const AppTextField(keyboardType: TextInputType.emailAddress)));
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.keyboardType, TextInputType.emailAddress);
+  });
+
+  // ── Touch target (DL §8.5) ────────────────────────────────────────────────
+
+  testWidgets('meets the 44px minimum touch target', (tester) async {
+    await tester.pumpWidget(wrap(const AppTextField()));
+    final size = tester.getSize(find.byType(TextField));
+    expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+  });
+
+  // ── Mouse cursor ────────────────────────────────────────────────────────────────
+
+  testWidgets('uses the text cursor when enabled', (tester) async {
+    await tester.pumpWidget(wrap(const AppTextField()));
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.mouseCursor, AppInteraction.mouseText);
+  });
+
+  testWidgets('uses the forbidden cursor when disabled', (tester) async {
+    await tester.pumpWidget(wrap(const AppTextField(enabled: false)));
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.mouseCursor, AppInteraction.mouseForbidden);
+  });
+
+  // ── Focus ring (DL §8.4) ──────────────────────────────────────────────
+
+  testWidgets('shows a visible focus ring when focused', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(AppTextField(focusNode: focusNode)));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find
+        .ancestor(
+          of: find.byType(TextField),
+          matching: find.byType(Container),
+        )
+        .first);
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, AppColorsData.light.borderFocused);
   });
 }

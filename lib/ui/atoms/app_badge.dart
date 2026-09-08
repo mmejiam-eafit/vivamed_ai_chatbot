@@ -15,19 +15,20 @@ class AppBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.interactivePrimary,
+        color: backgroundColor ?? colors.interactivePrimary,
         borderRadius: AppRadius.borderInput,
       ),
       child: Text(
         label,
         style: AppTypography.labelSm.copyWith(
-          color: textColor ?? AppColors.interactivePrimaryForeground,
+          color: textColor ?? colors.interactivePrimaryForeground,
         ),
       ),
     );

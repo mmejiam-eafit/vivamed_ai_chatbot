@@ -29,17 +29,19 @@ class AppImage extends StatelessWidget {
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return _placeholder(
-          child: const CircularProgressIndicator(
+          context,
+          child: CircularProgressIndicator(
             strokeWidth: 2.5,
-            color: AppColors.interactivePrimary,
+            color: context.colors.interactivePrimary,
           ),
         );
       },
       errorBuilder: (context, error, stackTrace) {
         return _placeholder(
-          child: const Icon(
+          context,
+          child: Icon(
             Icons.broken_image_outlined,
-            color: AppColors.icon,
+            color: context.colors.icon,
           ),
         );
       },
@@ -51,11 +53,11 @@ class AppImage extends StatelessWidget {
     return image;
   }
 
-  Widget _placeholder({required Widget child}) {
+  Widget _placeholder(BuildContext context, {required Widget child}) {
     return Container(
       width: width,
       height: height,
-      color: AppColors.surfaceSubdued,
+      color: context.colors.surfaceSubdued,
       alignment: Alignment.center,
       child: child,
     );

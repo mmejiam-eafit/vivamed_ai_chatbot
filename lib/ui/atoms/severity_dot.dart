@@ -13,22 +13,28 @@ class SeverityDot extends StatelessWidget {
   final SeverityLevel severity;
   final double size;
 
-  Color _colorFor(SeverityLevel level) => switch (level) {
-        SeverityLevel.normal => SeverityTokens.normal,
-        SeverityLevel.mild => SeverityTokens.mild,
-        SeverityLevel.moderate => SeverityTokens.moderate,
-        SeverityLevel.critical => SeverityTokens.critical,
+  static Color _colorFor(SeverityData data, SeverityLevel level) =>
+      switch (level) {
+        SeverityLevel.normal => data.normal,
+        SeverityLevel.mild => data.mild,
+        SeverityLevel.moderate => data.moderate,
+        SeverityLevel.critical => data.critical,
+      };
+
+  // Distinct silhouettes so severity survives without hue (DL §3.6, D-003).
+  static IconData _shapeFor(SeverityLevel level) => switch (level) {
+        SeverityLevel.normal => Icons.circle,
+        SeverityLevel.mild => Icons.square,
+        SeverityLevel.moderate => Icons.change_history,
+        SeverityLevel.critical => Icons.diamond,
       };
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: _colorFor(severity),
-      ),
+    return Icon(
+      _shapeFor(severity),
+      size: size,
+      color: _colorFor(context.severity, severity),
     );
   }
 }

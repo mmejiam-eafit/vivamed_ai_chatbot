@@ -22,7 +22,8 @@ void main() {
 
   // ── imageUrl variant ───────────────────────────────────────────────────────
 
-  testWidgets('imageUrl: renders CircleAvatar with NetworkImage', (tester) async {
+  testWidgets('imageUrl: renders CircleAvatar with NetworkImage',
+      (tester) async {
     _suppressNetworkImageErrors();
     await tester.pumpWidget(wrap(
       const AppAvatar(imageUrl: 'https://example.com/avatar.jpg'),
@@ -60,6 +61,17 @@ void main() {
     expect(avatar.backgroundColor, AppColors.surfaceBrandSecondary);
   });
 
+  testWidgets('initials: resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(body: AppAvatar(initials: 'AB')),
+    ));
+    final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
+    expect(avatar.backgroundColor, AppColorsData.dark.surfaceBrandSecondary);
+    final text = tester.widget<Text>(find.text('AB'));
+    expect(text.style?.color, AppColorsData.dark.textOnBrand);
+  });
+
   // ── fallback variant (neither imageUrl nor initials) ───────────────────────
 
   testWidgets('fallback: renders person icon', (tester) async {
@@ -85,5 +97,16 @@ void main() {
     await tester.pumpWidget(wrap(const AppAvatar(radius: 32.0)));
     final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
     expect(avatar.radius, 32.0);
+  });
+
+  // ── Text scaling (DL §8.6) ──────────────────────────────────────────────
+
+  testWidgets('initials shrink to fit via FittedBox instead of overflowing',
+      (tester) async {
+    await tester.pumpWidget(wrap(const AppAvatar(initials: 'JD')));
+    expect(
+      find.ancestor(of: find.text('JD'), matching: find.byType(FittedBox)),
+      findsOneWidget,
+    );
   });
 }

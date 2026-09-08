@@ -19,7 +19,7 @@ class AppDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppColors.borderSubdued;
+    final effectiveColor = color ?? context.colors.borderSubdued;
     if (axis == Axis.vertical) {
       return VerticalDivider(
         thickness: thickness,
