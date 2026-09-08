@@ -25,13 +25,13 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 | `textSecondary` | `#4A4A4A` | Subtitles, descriptions |
 | `textTertiary` | `#636363` | Helper text — AA only, not clinical strings |
 | `textPlaceholder` / `textDisabled` | `#A0A0A0` | Input placeholders / inactive labels — under 4.5:1, but WCAG exempts inactive/placeholder text, so this is by design |
-| `textMuted` | `#7D7D7D` | Timestamps, fine print — **fails AA** (3.74:1 on page). Specified fix: `#6E6E6E`, 4.64:1 (§12 gap 8) |
+| `textMuted` | `#6E6E6E` | Timestamps, fine print — 4.64:1 on page. Remediated from a failing `#7D7D7D` (3.74:1); wired into `_Palette`. |
 | `textOnBrand` | `#F4F4F4` | Text on `surfaceBrand` / `surfaceBrandSecondary` |
 | `textOnAccent` | `#0F3545` | Text on `surfaceAccent` |
 | `textOnBrandSubdued` | `#061625` | Text on `surfaceBrandSubdued` |
 | `textOnBrandSecondarySubdued` | `#0F2640` | Text on `surfaceBrandSecondarySubdued` |
 | `textLink` | `#267390` | Inline interactive text |
-| `textLinkHover` | `#3D95B8` | Link hover — **fails 4.5:1** (3.08:1 on page); shares this hex with `borderFocused` / `interactiveAccent` below, whose 3:1 floor it clears. Specified fix: `#275F75`, its own value, 6.41:1 (§12 gap 14) |
+| `textLinkHover` | `#275F75` | Link hover — 6.41:1 on page, its own value. Used to share `#3D95B8` with `borderFocused` / `interactiveAccent` below and fail as text (3.08:1); those two keep that value, unaffected, since their 3:1 floor was never the problem. |
 | `textLinkVisited` | `#0F3545` | Link visited |
 | `icon` | `#636363` | Default icon |
 | `iconOnBrand` | `#F4F4F4` | Icon on brand surfaces |
@@ -52,10 +52,12 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 
 ## Color — dark (§10.4)
 
-> **Official.** Ratified, computed, verified — not a proposal (DL D-012,
-> D-013). What's pending is purely mechanical: tokens are still
-> `static const` light-only until the `ThemeExtension` mechanism (§10.2)
-> wires these in (§12 gap 1). The colour decisions themselves are closed.
+> **Official and wired at the token layer.** Ratified, computed, verified
+> (DL D-012, D-013) — the `ThemeExtension` mechanism (§10.2) exists,
+> `AppColorsData.dark` holds every one of these values, and every atom
+> reads it via `context.colors`. What's pending is composition: organisms,
+> molecules, and templates mostly still read the light-only static alias
+> directly, so dark mode doesn't reach any actual screen yet (§12, gap 1).
 
 **Elevation ladder** (~4 L\* apart):
 
@@ -94,13 +96,13 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 Two separate systems that share hues — status is app operations, severity is
 clinical findings; never use one for the other.
 
-| Level | Light foreground | Light container | On container | Light fix | Dark foreground | Dark container |
+| Level | Light foreground | Light container | On container | Was (failing) | Dark foreground | Dark container |
 |---|---|---|---|---|---|---|
-| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ | `#276A43` | `#7FD1A0` | `#14301F` |
-| Mild severity | `#0277BD` | `#DCEEF9` | 4.03 ✗ | `#02639E` | `#8ECDF2` | `#12293A` |
-| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ | `#855B06` | `#F0C070` | `#3A2A0F` |
-| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) | `#A42121` | `#FF9A93` | `#421D1D` |
-| Info status | `#3D95B8` | `#E9F3F7` | 3.01 ✗ | `#23566A` | — | — |
+| Success / Normal | `#276A43` | `#D9F0E3` | 5.43 ✓ | `#2E7D4F` — 4.21 ✗ | `#7FD1A0` | `#14301F` |
+| Mild severity | `#02639E` | `#DCEEF9` | 5.38 ✓ | `#0277BD` — 4.03 ✗ | `#8ECDF2` | `#12293A` |
+| Warning / Moderate | `#855B06` | `#FFF4D6` | 5.48 ✓ | `#D4910A` — 2.44 ✗ | `#F0C070` | `#3A2A0F` |
+| Error / Critical | `#A42121` | `#FFE0E0` | 6.03 ✓ | `#C62828` — 4.55 ✓ (AA only) | `#FF9A93` | `#421D1D` |
+| Info status | `#23566A` | `#E9F3F7` | 7.14 ✓ | `#3D95B8` — 3.01 ✗ | — | — |
 
 **Corrected:** this table used to show one combined "Info / Mild" row using
 only Mild severity's hex — they're different colors (`statusInfo` is the
@@ -110,13 +112,16 @@ deliberately reuses the Mild pair for Info status (§10.4), so there's no
 separate dark value to show — a light-only asymmetry that predates any of
 this, not something introduced here.
 
-**Every light pair fails or barely clears AA** — dark's severity system was
-derived from scratch with a floor to hit; light's predates that discipline
-and was never brought up to it. Every "Light fix" hex above is computed and
-verified, hue held (checked in HLS, not eyeballed) — `design_tokens.md`
-§2.8 has the full ratio picture and `_Palette` still holds the failing
-originals (§12 gap 8). A severity indicator carries a label **and** a
-distinct shape regardless — never hue alone (§2.6).
+**Light's severity system used to fail or barely clear AA across the
+board** — dark's was derived from scratch with a floor to hit; light's
+predated that discipline and was never brought up to it, until now. Every
+value above is computed and verified, hue held (checked in HLS, not
+eyeballed), and wired into `_Palette` — `design_tokens.md` §2.8 has the
+full ratio picture. What's still open is composition: most of the widgets
+that render these colors read the light-only static alias directly rather
+than `context.severity`, so the fix reaches every light-mode call site
+today but none in dark mode yet (§12, gap 1). A severity indicator carries
+a label **and** a distinct shape regardless — never hue alone (§2.6).
 
 ## Brand reference (§2.7)
 

@@ -42,7 +42,7 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 Raw hex values live in `_Palette`, which is library-private. **Never reference `_Palette` in widget code** — always go through the semantic layer.
 
-Classes marked mode-dependent take their dark values from §10.4, which is **official** — ratified, computed, verified, not a proposal. They are `static const` today regardless: the palette is closed, only the `ThemeExtension` mechanism is unbuilt (§12, gap 1).
+Classes marked mode-dependent take their dark values from §10.4, which is **official** — ratified, computed, verified, not a proposal, and wired into the `ThemeExtension` mechanism (`AppColorsData`, `SeverityData`) that every atom now reads via `context.colors`/`context.severity`. The `static const` forms stay as `@Deprecated` aliases for call sites that haven't migrated — most of the codebase above the atom layer, still (§12, gap 1).
 
 ---
 
@@ -156,7 +156,7 @@ Normative — companion to §10.4's dark values, same discipline: every ratio be
 | `textPrimary` | `#1A1A1A` | 15.82 · 17.40 |
 | `textSecondary` | `#4A4A4A` | 8.06 · 8.86 |
 | `textTertiary` | `#636363` | 5.46 · 6.01 — AA only, not clinical strings |
-| `textMuted` | `#7D7D7D` | 3.74 · 4.12 — **fails AA.** Specified fix: `#6E6E6E`, 4.64 on page · 5.10 on surface (DL §8.7, §12 gap 8). |
+| `textMuted` | `#6E6E6E` | 4.64 on page · 5.10 on surface — remediated per DL §8.7, D-014 (was `#7D7D7D`, 3.74 · 4.12, failing AA) |
 | `textPlaceholder` / `textDisabled` | `#A0A0A0` | 2.38 · 2.61 — WCAG exempts inactive/placeholder text from the 4.5:1 floor, so this is by design, not a defect |
 
 Text-on-tinted-surface pairs, each checked against its own surface:
@@ -168,7 +168,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 | `textOnBrandSubdued` | `#061625` | 15.97 on `surfaceBrandSubdued` |
 | `textOnBrandSecondarySubdued` | `#0F2640` | 13.51 on `surfaceBrandSecondarySubdued` |
 | `textLink` | `#267390` | 4.85 on page · 5.33 on surface |
-| `textLinkHover` | `#3D95B8` | 3.08 on page · 3.39 on surface — **fails the 4.5:1 text floor.** Found while compiling this table, not previously in DL §8.7's audit (§12 gap 14). Specified fix: **`#275F75`**, its own value, no longer sharing `#3D95B8` with `borderFocused` / `interactiveAccent` — 6.41 on page · 7.05 on surface. |
+| `textLinkHover` | `#275F75` | 6.41 on page · 7.05 on surface — its own value now, no longer sharing `#3D95B8` with `borderFocused` / `interactiveAccent` (which stay put, unaffected). Was `#3D95B8`, 3.08 · 3.39, failing the 4.5:1 text floor — found while compiling this table, not previously in DL §8.7's audit. |
 | `textLinkVisited` | `#0F3545` | 11.82 on page · 13.00 on surface |
 
 **Icons** (§2.4) reuse hexes already in the ramp above — no separate palette:
@@ -186,7 +186,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 |---|---|---|---|
 | `border` | `#C4C4C4` | 1.59 on page · 1.74 on surface | **Fails 3:1** — decorative only (§12 gap 7) |
 | `borderSubdued` | `#DCDCDC` | 1.25 · 1.37 | Decorative, no floor |
-| `borderFocused` | `#3D95B8` | 3.08 on page · 3.39 on surface | Clears 3:1 — fine as a border at this value. `textLinkHover` used to share this hex and fail as text; its specified fix gives it a separate value instead, so `borderFocused` is unaffected. |
+| `borderFocused` | `#3D95B8` | 3.08 on page · 3.39 on surface | Clears 3:1 — fine as a border at this value. `textLinkHover` used to share this hex and fail as text; it now has its own separate value instead, so `borderFocused` is unaffected. |
 | `borderSelected` | `#1D546C` | 7.53 · 8.28 | Clears with margin |
 
 **Interactive** (§2.4):
@@ -198,23 +198,25 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 | `interactiveSecondary` | `#FFFFFF` | fill — see `interactiveSecondaryForeground` |
 | `interactiveSecondaryForeground` | `#1D546C` | 8.28 on `interactiveSecondary` |
 | `interactiveHover` | `#267390` | same value as `textLink` |
-| `interactiveAccent` | `#3D95B8` | same value as `borderFocused`. `textLinkHover` used to share it too; its specified fix moves it to its own value (above). |
+| `interactiveAccent` | `#3D95B8` | same value as `borderFocused`. `textLinkHover` used to share it too; it now has its own value instead (above). |
 | `interactiveDisabled` | `#DCDCDC` | WCAG-exempt (disabled control) |
 | `interactiveDisabledForeground` | `#7D7D7D` | WCAG-exempt (disabled control) |
 
-**Status and severity** (§2.5, §2.6) — measured today, and the specified fix now that one exists:
+**Status and severity** (§2.5, §2.6) — remediated and wired into `_Palette`:
 
-**Correction:** an earlier version of this table showed one combined "Info / Mild" row, using only `SeverityTokens.mild`'s hex. They're different colors in the Dart — `statusInfo` is `_Palette.tealBlue400` (`#3D95B8`, the brand accent, also shared with `borderFocused` and `interactiveAccent`), `SeverityTokens.mild` is `_Palette.blue700` (`#0277BD`), unrelated. Deriving real remediation colors forced the distinction back into view; both get their own row below.
+**Correction:** an earlier version of this table showed one combined "Info / Mild" row, using only `SeverityTokens.mild`'s hex. They're different colors in the Dart — `statusInfo` is `_Palette.tealBlue750` (the brand accent family, distinct from `borderFocused`/`interactiveAccent`'s `tealBlue400`), `SeverityTokens.mild` is `_Palette.blue700`, unrelated. Deriving real remediation colors forced the distinction back into view; both get their own row below.
 
-| Level | Foreground today | Container | On container (today → fixed) | Vs page (today → fixed) | Specified fix |
-|---|---|---|---|---|---|
-| Success / Normal | `#2E7D4F` | `#D9F0E3` | 4.21 ✗ → 5.43 ✓ | 4.59 ✓ → 5.91 ✓ | `#276A43` |
-| Mild severity | `#0277BD` | `#DCEEF9` | 4.03 ✗ → 5.38 ✓ | 4.36 ✗ → 5.82 ✓ | `#02639E` |
-| Warning / Moderate | `#D4910A` | `#FFF4D6` | 2.44 ✗ → 5.48 ✓ | 2.43 ✗ → 5.46 ✓ | `#855B06` |
-| Error / Critical | `#C62828` | `#FFE0E0` | 4.55 ✓ (AA only) → 6.03 ✓ | 5.11 ✓ → 6.78 ✓ | `#A42121` |
-| Info status | `#3D95B8` | `#E9F3F7` | 3.01 ✗ → 7.14 ✓ | 3.08 ✗ → 7.31 ✓ | `#23566A` |
+| Level | Color | On container | Vs page | Was (failing) |
+|---|---|---|---|---|
+| Success / Normal | `#276A43` | 5.43 ✓ | 5.91 ✓ | `#2E7D4F` — 4.21 on container |
+| Mild severity | `#02639E` | 5.38 ✓ | 5.82 ✓ | `#0277BD` — 4.03 on container |
+| Warning / Moderate | `#855B06` | 5.48 ✓ | 5.46 ✓ | `#D4910A` — 2.44 on container |
+| Error / Critical | `#A42121` | 6.03 ✓ | 6.78 ✓ | `#C62828` — 4.55 (AA only) |
+| Info status | `#23566A` | 7.14 ✓ | 7.31 ✓ | `#3D95B8` — 3.01 on container |
 
-Every fixed value clears its target with hue held (checked in HLS: every hue shift under 0.4°, saturation held within 0.005 — only lightness moved) and its container unchanged; §12 gap 8 tracks that these exist as specified colors but aren't wired into `_Palette` yet. Full derivation, including why Info status needed its own value distinct from both Mild severity and `textLinkHover`'s fix above (three colors in the same hue family, each needing real separation from its neighbors, not just its own passing ratio) lives in **DL §8.7**, D-014.
+Every value clears its target with hue held (checked in HLS: every hue shift under 0.4°, saturation held within 0.005 — only lightness moved) and its container unchanged. Full derivation, including why Info status needed its own value distinct from both Mild severity and `textLinkHover`'s fix above (three colors in the same hue family, each needing real separation from its neighbors, not just its own passing ratio) lives in **DL §8.7**, D-014.
+
+**These are the current, shipped values** — `_Palette` no longer holds the failing originals. What's still open is composition, not color: organisms, molecules, and templates mostly read the light-only static aliases directly rather than `context.severity`/`context.colors`, which happen to resolve to these same corrected values in light mode — so the fix already reaches every current light-mode call site. It does not yet reach dark mode, because those same call sites never resolve `context.severity`/`context.colors` at all (§12, the composition-layer gap).
 
 ### 2.9 Forbidden
 
@@ -469,7 +471,7 @@ Settings gains an **Appearance** section at every tier for the theme control (§
 
 ## 10. Theming
 
-> **Status: palette official; Dart implementation pending.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal. What's outstanding is purely mechanical: the app is light-only today, `buildAppTheme()` hardcodes `Brightness.light`, and `MaterialApp` sets no `darkTheme` or `themeMode`.
+> **Status: palette official, mechanism built, composition pending.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal — and implemented: `AppColorsData`/`SeverityData` exist, `buildAppTheme(Brightness)` builds either theme correctly, and `app.dart` sets `darkTheme`/`themeMode: ThemeMode.dark`. What's outstanding is that only atoms read it — organisms, molecules, and templates mostly still read the light-only static alias directly, so dark mode is real in the token layer and invisible everywhere a user would actually see it (§12, gap 1).
 
 ### 10.1 The split
 
@@ -526,7 +528,7 @@ Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 
 #### The values
 
-**Official.** Not a draft, not a proposal under review — ratified per **DL D-012, D-013**. Normative: the Dart implements these; where it disagrees, the Dart is wrong. The one thing not yet true is that the Dart implements them at all (§12 gap 1) — that is a wiring gap, not a reason to treat any value below as provisional.
+**Official.** Not a draft, not a proposal under review — ratified per **DL D-012, D-013**. Normative: the Dart implements these — `AppColorsData.dark`/`SeverityData.dark` hold every value below exactly, verified field by field — and where anything disagrees, the Dart is wrong. The one thing not yet true is that anything above the atom layer *reads* them (§12 gap 1) — that is a composition gap, not a reason to treat any value below as provisional.
 
 **Elevation ladder** — the four steps, and what "depth is lightness" means in practice:
 
@@ -623,17 +625,16 @@ Live defects and unimplemented specifications. Delete entries as they close.
 
 | # | Gap | Where |
 |---|---|---|
-| 1 | **Dark palette is official; Dart implementation pending.** §10.4 carries the full, verified, ratified palette — the colour decisions are closed. The remaining work is purely the `ThemeExtension` refactor (§10.2) and wiring `buildAppTheme(Brightness)`. | `design_tokens.dart`, `app.dart` |
+| 1 | **Dark mode: tokens and atoms done, composition not — migration stops one layer short of the screen.** The `ThemeExtension` mechanism is built and correct (`AppColorsData`/`SeverityData`, `context.colors`/`context.severity`), every dark value matches §10.4 exactly, `app.dart` wires `darkTheme`/`themeMode: ThemeMode.dark` per §10.5, and every atom reads `context.colors`. But 18 files above the atom layer still read the deprecated light-only statics directly — organisms `app_nav_bar`, `chat_panel`, `conversation_drawer`, `findings_panel`, `onboarding_carousel`, `status_bar`, `study_info_card`; molecules `finding_row`, `metadata_field`, `severity_chip`, `status_banner`; all 7 templates. Since every real screen composes down through templates → organisms → molecules → atoms, dark mode does not currently render on any page — confirmed by rendering all four canvas-reviewed screens in both modes: the dark and light captures of Study Review are pixel-identical. | 18 files listed above |
 | 2 | **Responsive tiers unimplemented.** §9 is specification only. One breakpoint at 768; five dead tokens. | `AppLayout`, all templates |
 | 3 | **The 168px chat column.** At 768 with nav and panel present, the primary column collapses. Fixed by §9.3. | `chat_template.dart`, `study_review_template.dart` |
 | 4 | **Chat bubble measures the window, not its box.** Uses `MediaQuery.of(context).size.width`, so a bubble inside a 360px panel is sized off the whole screen. Violates §9.6. | `chat_bubble.dart:27` |
 | 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. | `heatmap_viewer_template.dart` |
 | 6 | **`AppInteraction` hover tokens unwired.** Documented as web-only, but no `MouseRegion` anywhere reads them. | all levels |
 | 7 | **Default border fails 3:1** (1.74:1 on white). Acceptable decoratively, not for any border carrying meaning. | `AppColors.border` |
-| 8 | **Severity/status/muted-text contrast fix is specified, not wired.** §2.8 and **DL §8.7** now give real colors — normal `#276A43`, mild `#02639E`, moderate/warning `#855B06`, critical/error `#A42121`, info status `#23566A`, muted text `#6E6E6E` — all computed, all clearing their targets. `_Palette` still holds the failing originals. | `_Palette`, `SeverityTokens`, `AppColors.textMuted` |
 | 9 | **Organism test coverage at 2 of 8.** | `test/ui/organisms/` |
 | 10 | **Templates with no responsive handling:** settings, onboarding, heatmap viewer. | `templates/` |
 | 11 | **DICOM values truncate, in the wrong voice.** Renders `value` as `bodyMd` with `maxLines: 1` and an ellipsis — a clipped study UID reads as a complete one. Violates **DL §4.2** and **DL §4.6**. Should be `mono`, wrapping. | `metadata_field.dart:26-33` |
 | 12 | **Finding description clamps with no way to see the rest.** Single-line ellipsis on a clinical string with no tooltip or expand affordance. Clamping is permitted; clamping without a reachable full value is not (**DL §4.6**). | `finding_row.dart:56-61` |
 | 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
-| 14 | **`textLinkHover` fails the 4.5:1 text floor, fix specified.** 3.08:1 on page / 3.39:1 on surface today — found while compiling §2.8, not previously in **DL §8.7**'s audit. Specified: `#275F75`, its own value (no longer sharing `#3D95B8` with `borderFocused` / `interactiveAccent`, which stay put and are unaffected) — 6.41 on page, 7.05 on surface. | `_Palette.tealBlue400`, `AppColors.textLinkHover` |
+| 15 | **`FindingsPanel` overflows with an empty findings list.** Rendering `StudyReviewPage` (which passes `findings: []`) at 1440×900 produces a visible Flutter overflow warning inside the panel. Found while screenshotting real pages for the gap-1 verification above; not yet diagnosed further. | `findings_panel.dart` |
