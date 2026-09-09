@@ -7,10 +7,15 @@ import 'package:radiologist_helper/ui/molecules/image_thumbnail.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 
 class StudyMetadataField {
-  const StudyMetadataField({required this.label, required this.value});
+  const StudyMetadataField({
+    required this.label,
+    required this.value,
+    this.valueKind = MetadataValueKind.text,
+  });
 
   final String label;
   final String value;
+  final MetadataValueKind valueKind;
 }
 
 class StudyInfoCard extends StatelessWidget {
@@ -70,7 +75,11 @@ class StudyInfoCard extends StatelessWidget {
               ...fields.map(
                 (f) => Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
-                  child: MetadataField(label: f.label, value: f.value),
+                  child: MetadataField(
+                    label: f.label,
+                    value: f.value,
+                    valueKind: f.valueKind,
+                  ),
                 ),
               ),
             ],
@@ -85,9 +94,17 @@ class StudyInfoCard extends StatelessWidget {
 
 const _previewFields = [
   StudyMetadataField(label: 'Patient', value: 'Anonymous-7812'),
-  StudyMetadataField(label: 'Date', value: '2026-05-01'),
+  StudyMetadataField(
+    label: 'Date',
+    value: '2026-05-01',
+    valueKind: MetadataValueKind.numeric,
+  ),
   StudyMetadataField(label: 'Modality', value: 'CT'),
-  StudyMetadataField(label: 'Study UID', value: '1.2.840.10008.5.1.4.1.1.2'),
+  StudyMetadataField(
+    label: 'Study UID',
+    value: '1.2.840.10008.5.1.4.1.1.2',
+    valueKind: MetadataValueKind.identifier,
+  ),
 ];
 
 @Preview(name: 'with thumbnail', size: Size(360, 220), wrapper: previewWrapper)

@@ -3,6 +3,7 @@ import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
+import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 
 class CaseListTemplate extends StatelessWidget {
@@ -88,13 +89,25 @@ class CaseListTemplate extends StatelessWidget {
 
 const _previewCaseFields = [
   StudyMetadataField(label: 'Patient', value: 'Anonymous'),
-  StudyMetadataField(label: 'Date', value: '2026-04-12'),
+  StudyMetadataField(
+    label: 'Date',
+    value: '2026-04-12',
+    valueKind: MetadataValueKind.numeric,
+  ),
   StudyMetadataField(label: 'Modality', value: 'CXR'),
-  StudyMetadataField(label: 'Similarity', value: '94 %'),
+  StudyMetadataField(
+    label: 'Similarity',
+    value: '94 %',
+    valueKind: MetadataValueKind.numeric,
+  ),
 ];
 
 const _previewHistoryFields = [
-  StudyMetadataField(label: 'Date', value: '2025-11-03'),
+  StudyMetadataField(
+    label: 'Date',
+    value: '2025-11-03',
+    valueKind: MetadataValueKind.numeric,
+  ),
   StudyMetadataField(label: 'Modality', value: 'CXR'),
   StudyMetadataField(label: 'Findings', value: 'Mild cardiomegaly'),
 ];
