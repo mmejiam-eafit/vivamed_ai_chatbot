@@ -27,9 +27,11 @@ class ChatInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: ChatTokens.inputBackground,
+      // Generous, not dense — the composer is a deciding surface, not a
+      // scanning one (DL §7.1).
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
       ),
       child: Row(
         children: [

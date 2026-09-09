@@ -39,6 +39,30 @@ void main() {
     expect(find.text('Hello'), findsOneWidget);
   });
 
+  testWidgets('message text uses bodyLg', (tester) async {
+    await tester.pumpWidget(wrap(const ChatBubble(message: 'Hello', isUser: true)));
+    final text = tester.widget<Text>(find.text('Hello'));
+    expect(text.style?.fontSize, AppTypography.bodyLg.fontSize);
+  });
+
+  // ── Width cap reads the box, not the window (DT §9.6) ─────────────────────
+
+  testWidgets('caps width against its own box, not MediaQuery', (tester) async {
+    await tester.pumpWidget(wrap(
+      const SizedBox(
+        width: 200,
+        child: ChatBubble(message: 'Hello', isUser: true),
+      ),
+    ));
+    final container = tester.widget<Container>(
+      find.byWidgetPredicate(
+        (w) => w is Container && w.constraints?.maxWidth != null,
+        description: 'bubble container',
+      ),
+    );
+    expect(container.constraints!.maxWidth, 200 * ChatTokens.bubbleMaxWidthFraction);
+  });
+
   // ── Alignment ──────────────────────────────────────────────────────────────
 
   testWidgets('user bubble aligns right', (tester) async {

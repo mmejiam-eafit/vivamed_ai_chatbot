@@ -104,4 +104,19 @@ void main() {
     )));
     expect(find.text('draft'), findsOneWidget);
   });
+
+  // ── Density (DL §7.1: the composer is a deciding, not scanning, surface) ──
+
+  testWidgets('padding is generous (lg/md), not dense', (tester) async {
+    await tester.pumpWidget(wrap(ChatInput(
+      controller: TextEditingController(),
+      onSubmit: () {},
+    )));
+    final container = tester.widget<Container>(find.byType(Container).first);
+    expect(
+      container.padding,
+      const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+    );
+  });
 }
