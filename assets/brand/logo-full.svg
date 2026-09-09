@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="320" height="100" role="img" aria-label="RadAsk logo">
+  <path
+    d="M28,18 L72,18 A12,12 0 0 1 84,30 L84,54 A12,12 0 0 1 72,66 L46,66 L26,84 L34,66 L28,66 A12,12 0 0 1 16,54 L16,30 A12,12 0 0 1 28,18 Z"
+    fill="none"
+    stroke="#0C2B4E"
+    stroke-width="6"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <text
+    x="100"
+    y="64"
+    font-family="'IBM Plex Sans','Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+    font-size="48"
+    font-weight="700"
+    letter-spacing="-0.5"
+  ><tspan fill="#0C2B4E">Rad</tspan><tspan fill="#1D546C">Ask</tspan></text>
+</svg>

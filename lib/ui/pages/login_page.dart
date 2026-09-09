@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
+import 'package:radiologist_helper/ui/atoms/app_logo.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/app_text_field.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
@@ -31,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Center(child: AppLogo()),
           const AppText('Sign In'),
           AppTextField(
             controller: _emailController,

@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +50,9 @@ flutter:
           weight: 700
 
   uses-material-design: true
+
+  # Brand mark — see assets/brand/README.md. logo-reversed.svg stays
+  # unbundled; nothing in lib/ loads it yet.
+  assets:
+    - assets/brand/logo-mark.svg
+    - assets/brand/logo-full.svg

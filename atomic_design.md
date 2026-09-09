@@ -37,6 +37,7 @@ Atoms are the smallest visual building blocks. Each atom maps to exactly one Mat
 | `AppChip` | `Chip` / `FilterChip` | Compact label with optional dismiss or selection. Used for tags and filters. |
 | `AppImage` | `Image` / `CachedNetworkImage` | Displays raster images (X-ray thumbnails, avatars). Handles loading and error states. |
 | `SeverityDot` | `Container` (circle) | A small colored dot indicating finding severity level. |
+| `AppLogo` | `SvgPicture` (`flutter_svg`) | The RadAsk brand mark (bubble icon, optionally with wordmark). Loads a static SVG with brand colors baked in — mode-invariant, never `context.colors`. |
 
 ### Rules for atoms
 
@@ -167,7 +168,8 @@ lib/ui/
 │   ├── app_loading_indicator.dart
 │   ├── app_chip.dart
 │   ├── app_image.dart
-│   └── severity_dot.dart
+│   ├── severity_dot.dart
+│   └── app_logo.dart
 ├── molecules/
 │   ├── chat_bubble.dart
 │   ├── chat_input.dart
