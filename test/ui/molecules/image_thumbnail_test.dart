@@ -79,4 +79,38 @@ void main() {
     await tester.pump();
     expect(called, isTrue);
   });
+
+  // ── Focus ring (DL §8.4) ───────────────────────────────────────────────
+
+  testWidgets('focus ring is transparent when not focused', (tester) async {
+    await tester.pumpWidget(wrap(ImageThumbnail(
+      url: 'https://example.com/img.png',
+      onTap: () {},
+    )));
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, Colors.transparent);
+  });
+
+  testWidgets('shows a visible focus ring when focused', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(ImageThumbnail(
+      url: 'https://example.com/img.png',
+      onTap: () {},
+      focusNode: focusNode,
+    )));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, AppColorsData.light.borderFocused);
+  });
 }

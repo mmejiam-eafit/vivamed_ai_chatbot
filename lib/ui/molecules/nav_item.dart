@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 
 /// Layout used by [NavItem].
 ///
@@ -17,6 +18,7 @@ class NavItem extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
     this.layout = NavItemLayout.vertical,
+    this.focusNode,
   });
 
   final IconData icon;
@@ -24,6 +26,7 @@ class NavItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
   final NavItemLayout layout;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -53,20 +56,28 @@ class NavItem extends StatelessWidget {
         ),
     };
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderButton,
-      child: Padding(
-        padding: layout == NavItemLayout.horizontal
-            ? const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              )
-            : const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-        child: child,
+    return FocusRing(
+      // The ring sits outside the control by focusRingOffset, so its own
+      // radius grows by the same amount — mirrors AppButton's ring (DL §8.4).
+      borderRadius: BorderRadius.circular(
+        AppRadius.button + AppInteraction.focusRingOffset,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        focusNode: focusNode,
+        borderRadius: AppRadius.borderButton,
+        child: Padding(
+          padding: layout == NavItemLayout.horizontal
+              ? const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                )
+              : const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+          child: child,
+        ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 
 // Inlines the severity chip display to avoid importing a sibling molecule.
 class FindingRow extends StatelessWidget {
@@ -13,12 +14,14 @@ class FindingRow extends StatelessWidget {
     this.onTap,
     this.isExpanded = false,
     this.isAlarm = true,
+    this.focusNode,
   });
 
   final String name;
   final SeverityLevel severity;
   final VoidCallback? onTap;
   final bool isExpanded;
+  final FocusNode? focusNode;
 
   /// Whether this row may carry the viewport's one Layer-5 alarm (DL §5.2).
   /// The list owner decides: when several findings share the top severity it
@@ -64,42 +67,50 @@ class FindingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final severityColors = context.severity;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderCard,
-      child: Padding(
-        // Dense, not generous — this is a scanning surface (DL §7.1).
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: AppText(
-                name,
-                style: AppTypography.bodyMd,
-                // Collapsed: clamp to fit the list. Expanded: the full name
-                // must be reachable (DL §4.6) — this is the row's only
-                // carrier of it, so it wraps instead of staying cut off.
-                overflow: isExpanded ? null : TextOverflow.ellipsis,
-                maxLines: isExpanded ? null : 1,
+    return FocusRing(
+      // Mirrors AppButton's ring: the control's own radius plus the offset
+      // the ring sits outside it by (DL §8.4).
+      borderRadius: BorderRadius.circular(
+        AppRadius.card + AppInteraction.focusRingOffset,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        focusNode: focusNode,
+        borderRadius: AppRadius.borderCard,
+        child: Padding(
+          // Dense, not generous — this is a scanning surface (DL §7.1).
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: AppText(
+                  name,
+                  style: AppTypography.bodyMd,
+                  // Collapsed: clamp to fit the list. Expanded: the full name
+                  // must be reachable (DL §4.6) — this is the row's only
+                  // carrier of it, so it wraps instead of staying cut off.
+                  overflow: isExpanded ? null : TextOverflow.ellipsis,
+                  maxLines: isExpanded ? null : 1,
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            _SeverityMark(
-              severity: severity,
-              showsAlarm: _showsAlarm,
-              severityColors: severityColors,
-              quietLabelColor: colors.textSecondary,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            AppIcon(
-              isExpanded ? Icons.expand_less : Icons.expand_more,
-              color: colors.icon,
-              size: 20.0,
-            ),
-          ],
+              const SizedBox(width: AppSpacing.sm),
+              _SeverityMark(
+                severity: severity,
+                showsAlarm: _showsAlarm,
+                severityColors: severityColors,
+                quietLabelColor: colors.textSecondary,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              AppIcon(
+                isExpanded ? Icons.expand_less : Icons.expand_more,
+                color: colors.icon,
+                size: 20.0,
+              ),
+            ],
+          ),
         ),
       ),
     );

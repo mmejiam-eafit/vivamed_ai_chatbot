@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 
 enum AppButtonVariant { primary, secondary, ghost, iconOnly }
 
@@ -40,6 +41,10 @@ class AppButton extends StatelessWidget {
     AppInteraction.minTouchTarget,
   );
 
+  static final BorderRadius _ringRadius = BorderRadius.circular(
+    AppRadius.button + AppInteraction.focusRingOffset,
+  );
+
   static WidgetStateProperty<MouseCursor> get _cursor =>
       WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.disabled)
@@ -75,7 +80,8 @@ class AppButton extends StatelessWidget {
     final effectiveOnPressed = isLoading ? null : onPressed;
 
     if (variant == AppButtonVariant.iconOnly) {
-      return _FocusRing(
+      return FocusRing(
+        borderRadius: _ringRadius,
         child: IconButton(
           onPressed: effectiveOnPressed,
           focusNode: focusNode,
@@ -99,7 +105,8 @@ class AppButton extends StatelessWidget {
       );
     }
 
-    return _FocusRing(
+    return FocusRing(
+      borderRadius: _ringRadius,
       child: switch (variant) {
         AppButtonVariant.primary => ElevatedButton(
             onPressed: effectiveOnPressed,
@@ -152,43 +159,6 @@ class AppButton extends StatelessWidget {
           ),
         AppButtonVariant.iconOnly => const SizedBox.shrink(), // unreachable
       },
-    );
-  }
-}
-
-/// Offset focus ring — sits outside the control so it reads against the page
-/// regardless of the control's own fill (DL §8.4). Reactive via [Focus],
-/// so the button stays a [StatelessWidget].
-class _FocusRing extends StatelessWidget {
-  const _FocusRing({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      child: Builder(
-        builder: (context) {
-          final hasFocus = Focus.of(context).hasFocus;
-          return Container(
-            padding: const EdgeInsets.all(AppInteraction.focusRingOffset),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: hasFocus
-                    ? context.colors.borderFocused
-                    : Colors.transparent,
-                width: AppInteraction.focusRingWidth,
-              ),
-              borderRadius: BorderRadius.circular(
-                AppRadius.button + AppInteraction.focusRingOffset,
-              ),
-            ),
-            child: child,
-          );
-        },
-      ),
     );
   }
 }

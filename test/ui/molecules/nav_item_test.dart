@@ -78,4 +78,83 @@ void main() {
     await tester.pump();
     expect(called, isTrue);
   });
+
+  // ── Focus ring (DL §8.4) ───────────────────────────────────────────────
+
+  testWidgets('focus ring is transparent when not focused', (tester) async {
+    await tester.pumpWidget(wrap(
+      NavItem(icon: Icons.home, label: 'Home', onTap: () {}),
+    ));
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, Colors.transparent);
+  });
+
+  testWidgets('shows a visible focus ring when focused', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(
+      NavItem(
+        icon: Icons.home,
+        label: 'Home',
+        onTap: () {},
+        focusNode: focusNode,
+      ),
+    ));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, AppColorsData.light.borderFocused);
+  });
+
+  testWidgets('with no onTap, requesting focus does not show a ring',
+      (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(
+      NavItem(icon: Icons.home, label: 'Home', focusNode: focusNode),
+    ));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, Colors.transparent);
+  });
+
+  testWidgets('focus ring resolves against the dark theme', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: Scaffold(
+        body: NavItem(
+          icon: Icons.home,
+          label: 'Home',
+          onTap: () {},
+          focusNode: focusNode,
+        ),
+      ),
+    ));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, AppColorsData.dark.borderFocused);
+  });
 }

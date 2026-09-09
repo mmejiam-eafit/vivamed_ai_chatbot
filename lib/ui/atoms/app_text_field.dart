@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 
 // Styling is handled by buildAppTheme()'s InputDecorationTheme.
 // This atom owns only structure and behavior — no manual decoration tokens needed.
@@ -35,7 +36,8 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _FocusRing(
+    return FocusRing(
+      borderRadius: AppRadius.borderInput,
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           minHeight: AppInteraction.minTouchTarget,
@@ -60,40 +62,6 @@ class AppTextField extends StatelessWidget {
             suffixIcon: suffixIcon,
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Offset focus ring, mirroring AppButton's — reads against the page rather
-/// than relying solely on the shared theme's on-edge border color (DL §8.4).
-class _FocusRing extends StatelessWidget {
-  const _FocusRing({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      child: Builder(
-        builder: (context) {
-          final hasFocus = Focus.of(context).hasFocus;
-          return Container(
-            padding: const EdgeInsets.all(AppInteraction.focusRingOffset),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: hasFocus
-                    ? context.colors.borderFocused
-                    : Colors.transparent,
-                width: AppInteraction.focusRingWidth,
-              ),
-              borderRadius: AppRadius.borderInput,
-            ),
-            child: child,
-          );
-        },
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/atoms/app_chip.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
@@ -110,5 +111,53 @@ void main() {
     ));
     final chip = tester.widget<FilterChip>(find.byType(FilterChip));
     expect(chip.selected, isTrue);
+  });
+
+  // ── Focus ring (DL §8.4) — only the selectable FilterChip has one ────────
+
+  testWidgets('focus ring is transparent when not focused', (tester) async {
+    await tester.pumpWidget(wrap(
+      AppChip(label: 'Tag', onSelected: (_) {}),
+    ));
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(FilterChip),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, Colors.transparent);
+  });
+
+  testWidgets('shows a visible focus ring when focused', (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(
+      AppChip(label: 'Tag', onSelected: (_) {}, focusNode: focusNode),
+    ));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(FilterChip),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, AppColorsData.light.borderFocused);
+  });
+
+  testWidgets('a non-selectable Chip has no focus ring at all', (tester) async {
+    await tester.pumpWidget(wrap(const AppChip(label: 'Tag')));
+    expect(find.byType(FocusRing), findsNothing);
+  });
+
+  // ── Dark theme ─────────────────────────────────────────────────────────────
+
+  testWidgets('resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: Scaffold(body: AppChip(label: 'Tag', onSelected: (_) {})),
+    ));
+    final chip = tester.widget<FilterChip>(find.byType(FilterChip));
+    expect(chip.backgroundColor, AppColorsData.dark.surfaceAccent);
+    expect(chip.selectedColor, AppColorsData.dark.interactivePrimary);
   });
 }

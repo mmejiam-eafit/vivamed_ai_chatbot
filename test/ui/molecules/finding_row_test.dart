@@ -125,9 +125,13 @@ void main() {
   FontWeight? labelWeight(WidgetTester tester, String label) =>
       tester.widget<Text>(find.text(label)).style?.fontWeight;
 
+  // Checks for the alarm chip's own fill specifically — not FocusRing's
+  // Container, which always has a BoxDecoration (border, transparent or
+  // not) but never a `color`.
   bool hasFilledChip(WidgetTester tester) => tester
       .widgetList<Container>(find.byType(Container))
-      .any((c) => c.decoration is BoxDecoration);
+      .any((c) => c.decoration is BoxDecoration &&
+          (c.decoration! as BoxDecoration).color != null);
 
   testWidgets('critical carries alarm treatment by default', (tester) async {
     await tester.pumpWidget(wrap(const FindingRow(
@@ -173,12 +177,65 @@ void main() {
       name: 'Finding',
       severity: SeverityLevel.mild,
     )));
-    final padding = tester.widget<Padding>(find.byType(Padding).first);
+    // Scoped inside InkWell specifically — FocusRing's own Container also
+    // composes an internal Padding (its focus-ring offset), which sits
+    // outside the InkWell and would otherwise be found first.
+    final padding = tester.widget<Padding>(
+      find.descendant(of: find.byType(InkWell), matching: find.byType(Padding)).first,
+    );
     expect(
       padding.padding,
       const EdgeInsets.symmetric(
           horizontal: AppSpacing.md, vertical: AppSpacing.sm),
     );
+  });
+
+  // ── Focus ring (DL §8.4) ───────────────────────────────────────────────
+
+  testWidgets('focus ring: transparent, then visible once focused',
+      (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.mild,
+      onTap: () {},
+      focusNode: focusNode,
+    )));
+
+    BoxDecoration ringDecoration() => tester
+        .widget<Container>(find.ancestor(
+          of: find.byType(InkWell),
+          matching: find.byType(Container),
+        ))
+        .decoration! as BoxDecoration;
+
+    expect(ringDecoration().border!.top.color, Colors.transparent);
+
+    focusNode.requestFocus();
+    await tester.pump();
+
+    expect(ringDecoration().border!.top.color, AppColorsData.light.borderFocused);
+  });
+
+  testWidgets('with no onTap, requesting focus does not show a ring',
+      (tester) async {
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(wrap(FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.mild,
+      focusNode: focusNode,
+    )));
+    focusNode.requestFocus();
+    await tester.pump();
+
+    final ringContainer = tester.widget<Container>(find.ancestor(
+      of: find.byType(InkWell),
+      matching: find.byType(Container),
+    ));
+    final decoration = ringContainer.decoration! as BoxDecoration;
+    expect(decoration.border!.top.color, Colors.transparent);
   });
 
   // ── Dark theme ─────────────────────────────────────────────────────────────
