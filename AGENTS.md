@@ -10,6 +10,25 @@ A Flutter medical chatbot that helps radiologists review DICOM studies and AI-ge
 
 ---
 
+## Simplicity first
+
+**Aim for the simplest solution that satisfies the requirement. Succinctness is preferable to over-engineering.**
+
+Complexity should arrive as a *response* — something the system demonstrably needed — rather than as preparation for a case that might never occur. Build for the problem in front of you.
+
+In practice:
+
+- **Solve the case you have, not the case you imagine.** A second variant, a configuration flag, or an abstraction layer earns its place when a second real call site exists — not before. Three similar lines beat a premature abstraction.
+- **Reach for the lowest level that works.** A molecule that does the job beats an organism. A parameter beats a subclass. A `switch` beats a strategy object.
+- **Prefer the thing that already exists.** Before adding a token, widget, or helper, find the one whose *purpose* already matches. The palette is closed for exactly this reason (**DL D-001**); the same instinct applies to everything else in the repo.
+- **Delete rather than accommodate.** A parameter, branch, or file with no live caller should be removed, not maintained against a hypothetical future.
+
+**This is not licence to skip the rigour.** Tokens, tests, layer boundaries, and the checklists below are the floor — not optional complexity. Each exists because the system already demonstrated it needed it. Simplicity governs what you *build*, never whether you verify it.
+
+When a simple solution genuinely will not hold, say so and name what forced the complication. "This has to be more complex because X" is a reviewable claim; silent over-engineering is not.
+
+---
+
 ## Architecture: atomic design
 
 ```
@@ -304,6 +323,7 @@ Before marking a task done, verify:
 - [ ] No business logic, service calls, or state management outside of pages.
 - [ ] Page files contain no direct token references.
 - [ ] No organism imports another organism; no molecule imports another molecule.
+- [ ] This is the simplest solution that satisfies the requirement. Every parameter, variant, branch, and abstraction has a live caller today — none is there for a case that has not occurred yet. Where complexity was unavoidable, the reason is stated rather than left implicit.
 
 ---
 
