@@ -7,9 +7,15 @@ class SeverityChip extends StatelessWidget {
   const SeverityChip({
     super.key,
     required this.severity,
+    this.label,
   });
 
   final SeverityLevel severity;
+
+  /// Overrides the level's own label. Used for the aggregated alarm a
+  /// findings list collapses to — "3 CRITICAL FINDINGS" is one Layer-5
+  /// element where three separate chips would be three (DL §5.2).
+  final String? label;
 
   static String labelFor(SeverityLevel level) => switch (level) {
         SeverityLevel.normal => 'NORMAL',
@@ -18,29 +24,32 @@ class SeverityChip extends StatelessWidget {
         SeverityLevel.critical => 'CRITICAL',
       };
 
-  static Color bgFor(SeverityLevel level) => switch (level) {
-        SeverityLevel.normal => SeverityTokens.normalBg,
-        SeverityLevel.mild => SeverityTokens.mildBg,
-        SeverityLevel.moderate => SeverityTokens.moderateBg,
-        SeverityLevel.critical => SeverityTokens.criticalBg,
+  static Color bgFor(SeverityData severity, SeverityLevel level) =>
+      switch (level) {
+        SeverityLevel.normal => severity.normalBg,
+        SeverityLevel.mild => severity.mildBg,
+        SeverityLevel.moderate => severity.moderateBg,
+        SeverityLevel.critical => severity.criticalBg,
       };
 
-  static Color colorFor(SeverityLevel level) => switch (level) {
-        SeverityLevel.normal => SeverityTokens.normal,
-        SeverityLevel.mild => SeverityTokens.mild,
-        SeverityLevel.moderate => SeverityTokens.moderate,
-        SeverityLevel.critical => SeverityTokens.critical,
+  static Color colorFor(SeverityData severity, SeverityLevel level) =>
+      switch (level) {
+        SeverityLevel.normal => severity.normal,
+        SeverityLevel.mild => severity.mild,
+        SeverityLevel.moderate => severity.moderate,
+        SeverityLevel.critical => severity.critical,
       };
 
   @override
   Widget build(BuildContext context) {
+    final severityColors = context.severity;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: bgFor(severity),
+        color: bgFor(severityColors, severity),
         borderRadius: AppRadius.borderInput,
       ),
       child: Row(
@@ -49,9 +58,12 @@ class SeverityChip extends StatelessWidget {
           SeverityDot(severity: severity),
           const SizedBox(width: AppSpacing.xs),
           AppText(
-            labelFor(severity),
-            style: AppTypography.labelSm,
-            color: colorFor(severity),
+            label ?? labelFor(severity),
+            // labelMd, not labelSm — labelSm's 10px sits below the 12px
+            // clinical floor (DL §4.5) and this label carries the colour-
+            // vision-deficiency redundancy channel (DL §3.6).
+            style: AppTypography.labelMd,
+            color: colorFor(severityColors, severity),
           ),
         ],
       ),

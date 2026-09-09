@@ -83,4 +83,116 @@ void main() {
     )));
     expect(find.byType(SeverityDot), findsOneWidget);
   });
+
+  // ── Expand (DL §4.6: the full name must stay reachable) ───────────────────
+
+  testWidgets('collapsed: name clamps to one line', (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'A very long finding name that would otherwise overflow the row',
+      severity: SeverityLevel.mild,
+    )));
+    final text = tester.widget<Text>(find.textContaining('A very long'));
+    expect(text.maxLines, 1);
+    expect(text.overflow, TextOverflow.ellipsis);
+  });
+
+  testWidgets('expanded: name is no longer clamped', (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'A very long finding name that would otherwise overflow the row',
+      severity: SeverityLevel.mild,
+      isExpanded: true,
+    )));
+    final text = tester.widget<Text>(find.textContaining('A very long'));
+    expect(text.maxLines, isNull);
+  });
+
+  // ── Typography ─────────────────────────────────────────────────────────────
+
+  testWidgets('severity label renders at or above the 12px clinical floor',
+      (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.mild,
+    )));
+    final text = tester.widget<Text>(find.text('MILD'));
+    expect(text.style?.fontSize, greaterThanOrEqualTo(12.0));
+  });
+
+  // ── Alarm vs quiet (DL §5.2, §5.3) ────────────────────────────────────────
+
+  // The two ranks are distinguished by weight, not size: labelMd is w600,
+  // bodySm is w400, and both sit at the 12px clinical floor (DL §4.4, §4.5).
+  FontWeight? labelWeight(WidgetTester tester, String label) =>
+      tester.widget<Text>(find.text(label)).style?.fontWeight;
+
+  bool hasFilledChip(WidgetTester tester) => tester
+      .widgetList<Container>(find.byType(Container))
+      .any((c) => c.decoration is BoxDecoration);
+
+  testWidgets('critical carries alarm treatment by default', (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.critical,
+    )));
+    expect(labelWeight(tester, 'CRITICAL'), FontWeight.w600);
+    expect(hasFilledChip(tester), isTrue);
+  });
+
+  testWidgets('critical goes quiet when the list holds the alarm',
+      (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.critical,
+      isAlarm: false,
+    )));
+    expect(labelWeight(tester, 'CRITICAL'), FontWeight.w400);
+    expect(hasFilledChip(tester), isFalse);
+  });
+
+  for (final level in [SeverityLevel.normal, SeverityLevel.mild]) {
+    testWidgets('$level is never alarm, even when asked', (tester) async {
+      await tester.pumpWidget(wrap(FindingRow(
+        name: 'Finding',
+        severity: level,
+        isAlarm: true,
+      )));
+      final label = level == SeverityLevel.normal ? 'NORMAL' : 'MILD';
+      expect(labelWeight(tester, label), FontWeight.w400);
+      expect(hasFilledChip(tester), isFalse);
+      // Demoted, not erased — the label and the distinct dot silhouette both
+      // survive, because severity may never rest on hue alone (DL §3.6).
+      expect(find.text(label), findsOneWidget);
+      expect(find.byType(SeverityDot), findsOneWidget);
+    });
+  }
+
+  // ── Density (DL §7.1: this is a scanning surface, so it stays dense) ──────
+
+  testWidgets('padding is dense (md/sm), not generous', (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.mild,
+    )));
+    final padding = tester.widget<Padding>(find.byType(Padding).first);
+    expect(
+      padding.padding,
+      const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+    );
+  });
+
+  // ── Dark theme ─────────────────────────────────────────────────────────────
+
+  testWidgets('resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: FindingRow(name: 'Finding', severity: SeverityLevel.critical),
+      ),
+    ));
+    final text = tester.widget<Text>(find.text('CRITICAL'));
+    expect(text.style?.color, SeverityData.dark.critical);
+    final icon = tester.widget<Icon>(find.byIcon(Icons.expand_more));
+    expect(icon.color, AppColorsData.dark.icon);
+  });
 }

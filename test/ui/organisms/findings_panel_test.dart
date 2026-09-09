@@ -111,4 +111,84 @@ void main() {
       reason: 'FindingsPanel must scroll rather than overflow',
     );
   });
+
+  // ── Layer-5 aggregation (DL §5.2) ─────────────────────────────────────────
+  //
+  // At most one alarm per viewport. Alarm treatment is w600 label voice in a
+  // full-chroma pair; the quiet rank is w400 at the same size. Counting w600
+  // severity labels therefore counts alarms.
+
+  int alarmCount(WidgetTester tester) => tester
+      .widgetList<Text>(find.byType(Text))
+      .where((t) =>
+          t.style?.fontWeight == FontWeight.w600 &&
+          t.data != null &&
+          t.data! == t.data!.toUpperCase() &&
+          RegExp(r'NORMAL|MILD|MODERATE|CRITICAL').hasMatch(t.data!))
+      .length;
+
+  testWidgets('two criticals aggregate into one alarm', (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(findings: [
+      FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+      FindingItem(name: 'Aortic dissection', severity: SeverityLevel.critical),
+      FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+    ])));
+
+    expect(find.text('2 CRITICAL FINDINGS'), findsOneWidget);
+    expect(alarmCount(tester), 1, reason: 'the aggregate is the only alarm');
+    // Rows are never removed — aggregation changes rank, not presence.
+    expect(find.byType(FindingRow), findsNWidgets(3));
+  });
+
+  testWidgets('a lone critical keeps its own chip, with no aggregate',
+      (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(findings: [
+      FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+      FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+    ])));
+
+    expect(find.textContaining('FINDING'), findsNothing);
+    expect(alarmCount(tester), 1, reason: 'the row itself is the one alarm');
+    expect(find.text('CRITICAL'), findsOneWidget);
+  });
+
+  testWidgets('the aggregate speaks for the highest level present',
+      (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(findings: [
+      FindingItem(name: 'Pleural effusion', severity: SeverityLevel.moderate),
+      FindingItem(name: 'Atelectasis', severity: SeverityLevel.moderate),
+      FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+    ])));
+
+    // One critical outranks two moderates: it is the lone top-level finding,
+    // so it keeps its chip and nothing aggregates.
+    expect(find.textContaining('FINDINGS'), findsNothing);
+    expect(alarmCount(tester), 1);
+  });
+
+  testWidgets('no alarm at all when nothing exceeds mild', (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(findings: [
+      FindingItem(name: 'Cardiac silhouette — normal', severity: SeverityLevel.normal),
+      FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+    ])));
+
+    expect(alarmCount(tester), 0);
+    expect(find.textContaining('FINDING'), findsNothing);
+    // Still legible, just not shouted (DL §3.6).
+    expect(find.text('NORMAL'), findsOneWidget);
+    expect(find.text('MILD'), findsOneWidget);
+    expect(find.byType(SeverityDot), findsNWidgets(2));
+  });
+
+  testWidgets('three criticals never render three alarms', (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(findings: [
+      FindingItem(name: 'A', severity: SeverityLevel.critical),
+      FindingItem(name: 'B', severity: SeverityLevel.critical),
+      FindingItem(name: 'C', severity: SeverityLevel.critical),
+    ])));
+
+    expect(find.text('3 CRITICAL FINDINGS'), findsOneWidget);
+    expect(alarmCount(tester), 1,
+        reason: 'three alarms are indistinguishable from none (DL §5.2)');
+  });
 }
