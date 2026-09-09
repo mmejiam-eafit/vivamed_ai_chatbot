@@ -2,7 +2,7 @@
 
 Does the implemented app satisfy [`design_language.md`](design_language.md) (DL) and [`design_tokens.md`](design_tokens.md) (DT)?
 
-**Verdict: no, and the gap is large but structured.** Of ~25 normative rules audited, 8 conform, 16 are violated, and 8 are specified with no implementation at all. (Twelve more have since closed outright — 4, 10, 24 from the tokens/atoms reconciliation, 1, 2, 3, 7, 12, 15, 21 from Step 3, and 5, 6 taken early out of step order — folded into Conforming below; several others have real, verified partial progress. One row has been **added** since the original audit — 27, found while implementing rather than while auditing — so the numbering now runs to 27 even though fewer rows are open than at the start. See the reconciliation notes above and each updated row.)
+**Verdict: no, and the gap is large but structured.** Of ~25 normative rules audited, 8 conform, 16 are violated, and 8 are specified with no implementation at all. (Thirteen more have since closed outright — 4, 10, 24 from the tokens/atoms reconciliation, 1, 2, 3, 7, 12, 15, 21 from Step 3, 5 and 6 taken early out of step order, and 8 closed as a standalone fix — folded into Conforming below; several others have real, verified partial progress. One row has been **added** since the original audit — 27, found while implementing rather than while auditing — so the numbering now runs to 27 even though fewer rows are open than at the start. See the reconciliation notes above and each updated row.)
 
 The gap splits along one clean line. **Mechanical rules — the greppable ones — are at 100% in production code:** zero hex literals, zero `_Palette` references, zero `Theme.of(context)`, zero inline radii or durations. **Semantic rules — everything the design language newly articulated — are largely unimplemented:** the mono voice, tabular figures, severity redundancy, the truncation policy, the perceptual hierarchy, responsive tiers, focus, density, and dark mode.
 
@@ -17,6 +17,8 @@ This register supersedes the known-gaps table at `design_tokens.md` §12; the "�
 Audited at commit `906e91f`. A reconciliation pass since then (uncommitted at audit time, atoms + tokens + `app.dart` only — no organism, molecule, or template touched) closed three rows outright (4, 10, 24) and made partial, atom-only progress on several others (8, 14, 16, 20, 23) — updated in place below rather than re-auditing from scratch. Two things the reconciliation *claimed* in its own step plan below turned out not to have happened when checked directly: gap 11 (no `textTheme`, still Roboto) and gap 19's `DiagnosticImageTokens` (doesn't exist) — corrected in place, not silently left to look done.
 
 A third pass took gaps **5** and **6** out of order, both high clinical risk, also uncommitted. Two things it found that the rows themselves did not say. Gap 6's ground value was **already specified** — DT §10.4 has carried `#0A0C0E` all along with no token to live in — so it needed implementing, not deciding, and `design_language.md` needed no change at all (D-004 and DL §3.7 already carry the reasoning). And gap 6 was **latent, not live**: `heatmap_viewer_template.dart` reads the deprecated static, so its canvas was frozen light-navy and never actually brightened; the brightening would have begun the moment gap 18 migrated the file. Fixing it now is preventive. The same DL §3.7 clause turned out to be broken a second time in a file gap 6 never cited — `study_review_template.dart` grounded its image slot in off-white `surfacePage` — and that was fixed in the same pass.
+
+A fourth pass closed gap 8, also uncommitted. The row had never actually been assigned to a step — Step 2 closed its atom half ("focus rings on every interactive atom"), but the molecule half ("`nav_item.dart`, chips") wasn't in Step 3's closing list either, so it sat open with no step ever claiming it. Closing it surfaced that `_FocusRing` was already duplicated verbatim between `app_button.dart` and `app_text_field.dart` — two real call sites, which is exactly the threshold this document's own new simplicity rule sets for extracting a shared implementation — so it became a public `FocusRing` in `lib/ui/core/`, and both atoms were rewired to it rather than gaining a third and fourth copy. `AppChip` turned out to have no focus ring at all — checked directly — despite Step 2's own row claiming focus rings on "every interactive atom." A second thing that step didn't actually finish. Two more interactive molecules the row's "and other interactive molecules" phrase covers but didn't name — `finding_row.dart` and `image_thumbnail.dart` — got the same fix in the same pass, since leaving them would mean the gap wasn't actually closed, just narrowed again without saying so.
 
 A second pass executed Step 3 (Molecules), uncommitted at time of writing. Closes rows 1, 2, 3, 7, 12, 15, 21 outright and narrows row 18 (`finding_row`, `metadata_field`, `severity_chip` now read `context.colors`/`context.severity`; `status_banner` still doesn't — 15 files remain, not 18). One correction to this document's own Step 3 table: it listed a `ConversationDrawer` fix (gap 20b) as molecule-layer work, but `conversation_drawer.dart` lives in `lib/ui/organisms/` — checked directly. That item was not executed as part of this pass; moved to Step 4's table, where it actually belongs. `flutter analyze` clean, `flutter test` at 383 passing (was 362).
 
@@ -48,6 +50,7 @@ A second pass executed Step 3 (Molecules), uncommitted at time of writing. Close
 | At most one Layer-5 alarm per viewport; multiples aggregate to one chip (DL §5.2) | `findings_panel_test.dart` counts w600 severity labels — 1 for three criticals, 1 for a lone critical, 0 below moderate |
 | `normal` and `mild` never get alarm treatment, and keep label + dot anyway (DL §5.3, §3.6) | `FindingRow` ignores `isAlarm` for both levels; pinned per level |
 | The diagnostic canvas is grounded in a mode-exempt token, not a semantic surface (DL §3.7, D-004) | `DiagnosticImageTokens.canvasGround`; both viewer and study-review image slot assert light == dark |
+| Focus indication now reaches every interactive molecule, not just atoms (DL §8.4) | `nav_item_test.dart`, `finding_row_test.dart`, `image_thumbnail_test.dart`, `app_chip_test.dart` — transparent-then-visible pinned per widget, plus a dark-theme case |
 
 ---
 
@@ -55,7 +58,6 @@ A second pass executed Step 3 (Molecules), uncommitted at time of writing. Close
 
 | # | Gap | Rule | Where | Effort | §12 |
 |---|---|---|---|---|---|
-| 8 | **Focus indication exists on atoms, nowhere else.** `AppButton` and `AppTextField` both now have a real offset ring reading `AppInteraction`/`context.colors.borderFocused` — the class is no longer dead code. But interactive molecules (`nav_item.dart`, chips) still have no focus treatment at all, so most of the app's actual controls remain uncovered. | DL §8.4 | `nav_item.dart` and other interactive molecules | M | — |
 | 9 | **Onboarding overflows at 200% text scale.** A fixed 240px image sits in a `Column` with no scroll view, so the title and description have nowhere to grow. | DL §8.6, DT §3.7 | `onboarding_carousel.dart:130-157` | S | — |
 
 ## Medium clinical risk
@@ -139,7 +141,7 @@ Without this, all 46 widget files get edited twice.
 | Work | Gap | Effort |
 |---|---|---|
 | `SeverityDot` gains a distinct silhouette per level — the missing redundancy channel | 4 | M |
-| Focus rings on every interactive atom, wired to the existing `AppInteraction` tokens | 8 (atoms only) | M |
+| Focus rings on every interactive atom, wired to the existing `AppInteraction` tokens — **overclaimed**: `AppButton`/`AppTextField` got one, `AppChip` didn't; closed later in gap 8's own standalone pass | 8 (atoms only) | M |
 | Explicit touch-target minimums; override Flutter's desktop `shrinkWrap`/`compact` defaults | 14 (atoms only) | M |
 | Cursor wiring via `ButtonStyle.mouseCursor` — narrower than the `MouseRegion` hover-color mechanism 23 actually needs, which is still entirely unbuilt | 23 (cursor only) | M |
 | Role enums (`AppTextRole`, `AppIconRole`) so call sites stay `const` and become mode-correct | 18 (atoms only) | M |
