@@ -334,5 +334,63 @@ void main() {
         findsOneWidget,
       );
     });
+
+    // DL §3.7 / D-004: the image slot is evidence surround, not page chrome.
+    // It must be the diagnostic ground, and must not move with theme mode —
+    // while the Scaffold around it stays themed, because that part IS chrome.
+    group('diagnostic canvas ground', () {
+      Future<ColoredBox> canvasFor(
+        WidgetTester tester,
+        Brightness brightness,
+      ) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(brightness),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const Text('image'),
+              findingsPanel: const SizedBox(),
+              chatPanel: const SizedBox(),
+            ),
+          ),
+        );
+        return tester.widget<ColoredBox>(
+          find
+              .ancestor(
+                of: find.text('image'),
+                matching: find.byType(ColoredBox),
+              )
+              .first,
+        );
+      }
+
+      testWidgets('image slot sits on canvasGround', (tester) async {
+        final canvas = await canvasFor(tester, Brightness.light);
+        expect(canvas.color, DiagnosticImageTokens.canvasGround);
+        expect(canvas.color, isNot(AppColors.surfacePage));
+      });
+
+      testWidgets('is identical in light and dark', (tester) async {
+        final light = await canvasFor(tester, Brightness.light);
+        final dark = await canvasFor(tester, Brightness.dark);
+        expect(light.color, dark.color);
+      });
+
+      testWidgets('the Scaffold around it stays themed', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const SizedBox(),
+              findingsPanel: const SizedBox(),
+              chatPanel: const SizedBox(),
+            ),
+          ),
+        );
+        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+        expect(scaffold.backgroundColor, AppColors.surfacePage);
+      });
+    });
   });
 }

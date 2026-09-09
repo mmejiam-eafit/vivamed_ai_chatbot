@@ -76,7 +76,8 @@ void main() {
       expect(find.text('heatmap'), findsNothing);
     });
 
-    testWidgets('has Scaffold with surfaceBrand background', (tester) async {
+    testWidgets('canvas is grounded in the diagnostic canvas token',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildAppTheme(),
@@ -88,7 +89,33 @@ void main() {
         ),
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, AppColors.surfaceBrand);
+      expect(scaffold.backgroundColor, DiagnosticImageTokens.canvasGround);
+      // Not a semantic surface — picking one for being "dark enough" is the
+      // reasoning D-001 forbids, and surfaceBrand moves with theme mode.
+      expect(scaffold.backgroundColor, isNot(AppColors.surfaceBrand));
+    });
+
+    // D-004: the canvas is outside the theme. This is the assertion that makes
+    // that checkable — the ground must not move when the mode does.
+    testWidgets('canvas ground is identical in light and dark', (tester) async {
+      Future<Color?> groundFor(Brightness brightness) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(brightness),
+            home: HeatmapViewerTemplate(
+              appBar: AppBar(),
+              baseImage: const SizedBox(),
+              opacityControl: const SizedBox(),
+            ),
+          ),
+        );
+        return tester
+            .widget<Scaffold>(find.byType(Scaffold))
+            .backgroundColor;
+      }
+
+      expect(await groundFor(Brightness.light),
+          await groundFor(Brightness.dark));
     });
 
     testWidgets('body uses Stack to layer image and overlay', (tester) async {
@@ -136,7 +163,7 @@ void main() {
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.bottomNavigationBar, isA<ColoredBox>());
       final bottomBar = scaffold.bottomNavigationBar! as ColoredBox;
-      expect(bottomBar.color, AppColors.surfaceBrand);
+      expect(bottomBar.color, DiagnosticImageTokens.canvasGround);
     });
   });
 }

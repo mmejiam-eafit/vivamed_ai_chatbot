@@ -24,6 +24,11 @@ abstract final class _Palette {
   static const Color tealBlue = Color(0xFF1D546C);
   static const Color offWhite = Color(0xFFF4F4F4);
 
+  // Diagnostic image ground. Mode-exempt, so it sits here with the other
+  // mode-invariant values rather than in the dark block below. Specified by
+  // design_tokens.md §10.4 and §2.10 — not a new color.
+  static const Color diagnosticCanvas = Color(0xFF0A0C0E);
+
   // Deep Navy scale
   static const Color deepNavy900 = Color(0xFF061625);
   // ignore: unused_field
@@ -1359,8 +1364,26 @@ abstract final class TooltipTokens {
 }
 
 // ============================================================================
-// ThemeData builder
+// Diagnostic image — outside the theme (design_tokens.md §2.10)
 // ============================================================================
+// Pixel data is evidence. The perceived contrast of an image depends on its
+// surround, so the surround must not vary with a user preference (DL §3.7,
+// D-004). These values are mode-exempt and are NOT part of AppColorsData —
+// there is deliberately no `context.colors` path to them.
+
+abstract final class DiagnosticImageTokens {
+  /// The ground behind and around diagnostic pixel data — the viewer canvas,
+  /// and any slot a DICOM image is dropped into.
+  ///
+  /// Identical in light and dark by design. Specified in design_tokens.md
+  /// §10.4 and §2.10; not a new color. Deliberately not the chrome navy —
+  /// the boundary between interface and evidence has to stay sharp.
+  static const Color canvasGround = _Palette.diagnosticCanvas;
+
+  // The perceptual overlay/heatmap ramp DL §3.7 requires is NOT built yet —
+  // design_tokens.md §12 gap 5. Do not approximate it with status or
+  // severity colors; that is the violation the gap records.
+}
 
 // ============================================================================
 // ThemeData builder

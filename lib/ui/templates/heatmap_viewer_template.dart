@@ -4,9 +4,15 @@ import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
-// AppColors.surfaceBrand (deep navy #0C2B4E) is used as the background because
-// it is the darkest available semantic surface token — appropriate for an
-// immersive medical image viewer that conventionally uses a dark canvas.
+// The canvas is grounded in DiagnosticImageTokens.canvasGround, which is
+// mode-exempt: identical in light and dark. Pixel data is evidence, and the
+// perceived contrast of an image depends on its surround, so the surround must
+// not move with a user preference (DL §3.7, D-004). It is deliberately not a
+// semantic surface token — picking one for being "dark enough" is the
+// appearance-based reasoning D-001 forbids.
+//
+// The chrome around the canvas is forced dark for the same reason, via the
+// mechanism design_tokens.md §10.2 specifies for this file.
 class HeatmapViewerTemplate extends StatelessWidget {
   const HeatmapViewerTemplate({
     super.key,
@@ -26,23 +32,30 @@ class HeatmapViewerTemplate extends StatelessWidget {
   /// Slider or custom widget; the page owns the opacity state.
   final Widget opacityControl;
 
+  /// Built once — the viewer's chrome is dark in both modes, so this never
+  /// depends on the ambient theme (design_tokens.md §10.2, DL §6.5).
+  static final ThemeData _forcedDark = buildAppTheme(Brightness.dark);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surfaceBrand,
-      appBar: appBar,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          baseImage,
-          if (heatmapOverlay != null) heatmapOverlay!,
-        ],
-      ),
-      bottomNavigationBar: ColoredBox(
-        color: AppColors.surfaceBrand,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: opacityControl,
+    return Theme(
+      data: _forcedDark,
+      child: Scaffold(
+        backgroundColor: DiagnosticImageTokens.canvasGround,
+        appBar: appBar,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            baseImage,
+            if (heatmapOverlay != null) heatmapOverlay!,
+          ],
+        ),
+        bottomNavigationBar: ColoredBox(
+          color: DiagnosticImageTokens.canvasGround,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: opacityControl,
+          ),
         ),
       ),
     );

@@ -33,6 +33,15 @@ class StudyReviewTemplate extends StatelessWidget {
   /// Narrow: passed to Scaffold.drawer as a slide-over.
   final Widget? drawer;
 
+  /// Grounds the image slot in the diagnostic canvas rather than the page
+  /// surface. Mode-exempt: the surround of pixel data must not move with a
+  /// user preference (DL §3.7, D-004). The Scaffold around it stays themed —
+  /// that part is chrome, not evidence.
+  static Widget _canvas(Widget imageViewer) => ColoredBox(
+        color: DiagnosticImageTokens.canvasGround,
+        child: imageViewer,
+      );
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -61,7 +70,7 @@ class StudyReviewTemplate extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       children: [
-                        Expanded(flex: 3, child: imageViewer),
+                        Expanded(flex: 3, child: _canvas(imageViewer)),
                         const SizedBox(height: AppSpacing.lg),
                         Expanded(flex: 2, child: findingsPanel),
                       ],
@@ -85,7 +94,7 @@ class StudyReviewTemplate extends StatelessWidget {
       body: Column(
         children: [
           if (statusBar != null) statusBar!,
-          AspectRatio(aspectRatio: 4 / 3, child: imageViewer),
+          AspectRatio(aspectRatio: 4 / 3, child: _canvas(imageViewer)),
           const SizedBox(height: AppSpacing.sm),
           Expanded(
             child: DefaultTabController(

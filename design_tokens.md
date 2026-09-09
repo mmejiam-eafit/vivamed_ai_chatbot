@@ -38,6 +38,7 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 | `NavigationTokens` | App bar, drawer, side nav, bottom nav | Yes — derives from §10.4 |
 | `SeverityTokens` | Clinical finding severity pairs | Yes — values in §10.4 |
 | `TooltipTokens` | Tooltip surface and text | Yes — derives from §10.4 |
+| `DiagnosticImageTokens` | Ground behind and around diagnostic pixel data | **No — mode-exempt by rule** (§2.10) |
 | `buildAppTheme()` | Pre-wired `ThemeData` for `MaterialApp` | — |
 
 Raw hex values live in `_Palette`, which is library-private. **Never reference `_Palette` in widget code** — always go through the semantic layer.
@@ -132,6 +133,8 @@ A separate system from status, and the separation is deliberate even where hues 
 | `brandAccent` | `#1D546C` |
 | `brandLight` | `#F4F4F4` |
 
+**Not every pair of these four passes contrast against each other** — they were tuned as accents on light surfaces, not as a palette meant to combine freely. `brandAccent`/`brandSecondary` on `brandPrimary` measure 1.72:1 / 1.29:1, both well under any floor; only `brandLight` clears `brandPrimary` (12.98:1). A logo needing a dark ground goes monochrome (`brandLight` on `brandPrimary`) rather than reaching for a fifth color — see `assets/brand/README.md` and DL D-015 for the derivation, and `AppLogo` (`lib/ui/atoms/app_logo.dart`) for the shipped mark.
+
 ### 2.8 Light values
 
 Normative — companion to §10.4's dark values, same discipline: every ratio below is computed, never estimated. §2.2–§2.7 give purpose; this section resolves each token to hex against the grounds that matter, so light mode stops being the one half of this document that names tokens without settling what they resolve to.
@@ -224,6 +227,22 @@ Every value clears its target with hue held (checked in HLS: every hue shift und
 2. **Never** an inline `Color(0xFF…)`, and never add a color to `design_tokens.dart`.
 3. **Never** reference `_Palette` outside the token file.
 4. **Never** `Theme.of(context).colorScheme.X` in a custom widget — Material's scheme is not our semantic layer. (This is distinct from reading *our* tokens from context, which §10 makes mandatory.)
+
+### 2.10 Diagnostic image
+
+`DiagnosticImageTokens` grounds diagnostic pixel data. It sits outside every other rule in this section because **DL §3.7** and **D-004** put it outside the theme: pixel data is evidence, and the perceived contrast of an image depends on its surround, which must not vary with a user preference.
+
+| Token | Value | Use for |
+|---|---|---|
+| `canvasGround` | `#0A0C0E` | The ground behind and around diagnostic imagery — the viewer canvas, and any slot a DICOM image is dropped into |
+
+**This value is not new.** §10.4 has specified it all along; it simply had no token to live in. It is deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp.
+
+Three rules follow:
+
+1. **Never read this through `context.colors`.** It is mode-exempt: identical in light and dark, by design. A canvas that follows theme mode is a defect, not a preference.
+2. **Never ground a diagnostic image in a semantic surface token.** `surfaceBrand` is app chrome; `surfacePage` is a page ground. Reaching for either because it "looks dark enough" is the appearance-based reasoning **D-001** forbids.
+3. **Never tint the pixels themselves.** Overlays and heatmaps need a dedicated perceptual ramp, never repurposed status or severity colors (**DL §3.7**). That ramp is **not yet built** — it remains §12 gap 5, and this class does not yet carry it.
 
 ---
 
@@ -573,7 +592,7 @@ Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 
 App status reuses these four pairs under its own token names — the two systems stay separately named so they can diverge later (**DL §3.5**).
 
-**Diagnostic canvas:** `#0A0C0E`. Mode-exempt, and deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp (**DL §3.7**).
+**Diagnostic canvas:** `#0A0C0E`. Mode-exempt, and deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp (**DL §3.7**). It is listed here because this is where the value was first written down, but it is **not a dark-mode value** — it is the same in both modes. It lives in `DiagnosticImageTokens.canvasGround` (§2.10).
 
 ### 10.5 Runtime
 
@@ -625,16 +644,13 @@ Live defects and unimplemented specifications. Delete entries as they close.
 
 | # | Gap | Where |
 |---|---|---|
-| 1 | **Dark mode: tokens and atoms done, composition not — migration stops one layer short of the screen.** The `ThemeExtension` mechanism is built and correct (`AppColorsData`/`SeverityData`, `context.colors`/`context.severity`), every dark value matches §10.4 exactly, `app.dart` wires `darkTheme`/`themeMode: ThemeMode.dark` per §10.5, and every atom reads `context.colors`. But 18 files above the atom layer still read the deprecated light-only statics directly — organisms `app_nav_bar`, `chat_panel`, `conversation_drawer`, `findings_panel`, `onboarding_carousel`, `status_bar`, `study_info_card`; molecules `finding_row`, `metadata_field`, `severity_chip`, `status_banner`; all 7 templates. Since every real screen composes down through templates → organisms → molecules → atoms, dark mode does not currently render on any page — confirmed by rendering all four canvas-reviewed screens in both modes: the dark and light captures of Study Review are pixel-identical. | 18 files listed above |
+| 1 | **Dark mode: tokens, atoms, and three molecules done, composition otherwise not.** The `ThemeExtension` mechanism is built and correct (`AppColorsData`/`SeverityData`, `context.colors`/`context.severity`), every dark value matches §10.4 exactly, `app.dart` wires `darkTheme`/`themeMode: ThemeMode.dark` per §10.5, every atom reads `context.colors`, and `finding_row`/`metadata_field`/`severity_chip`/`findings_panel` now do too. But 14 files above the atom layer still read the deprecated light-only statics directly — organisms `app_nav_bar`, `chat_panel`, `conversation_drawer`, `onboarding_carousel`, `status_bar`, `study_info_card`; the molecule `status_banner`; all 7 templates. Since every real screen composes down through templates → organisms → molecules → atoms, dark mode does not currently render on any page — confirmed by rendering all four canvas-reviewed screens in both modes: the dark and light captures of Study Review are pixel-identical. | 15 files listed above |
 | 2 | **Responsive tiers unimplemented.** §9 is specification only. One breakpoint at 768; five dead tokens. | `AppLayout`, all templates |
 | 3 | **The 168px chat column.** At 768 with nav and panel present, the primary column collapses. Fixed by §9.3. | `chat_template.dart`, `study_review_template.dart` |
-| 4 | **Chat bubble measures the window, not its box.** Uses `MediaQuery.of(context).size.width`, so a bubble inside a 360px panel is sized off the whole screen. Violates §9.6. | `chat_bubble.dart:27` |
-| 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. | `heatmap_viewer_template.dart` |
+| 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. `DiagnosticImageTokens` now exists (§2.10) but carries only the canvas ground; the ramp is deliberately unbuilt, because deriving one means new color needing a decision-log entry against D-001, and there is no production heatmap to validate it against — the offending gradient is preview-only code. | `heatmap_viewer_template.dart` previews |
 | 6 | **`AppInteraction` hover tokens unwired.** Documented as web-only, but no `MouseRegion` anywhere reads them. | all levels |
 | 7 | **Default border fails 3:1** (1.74:1 on white). Acceptable decoratively, not for any border carrying meaning. | `AppColors.border` |
 | 9 | **Organism test coverage at 2 of 8.** | `test/ui/organisms/` |
 | 10 | **Templates with no responsive handling:** settings, onboarding, heatmap viewer. | `templates/` |
-| 11 | **DICOM values truncate, in the wrong voice.** Renders `value` as `bodyMd` with `maxLines: 1` and an ellipsis — a clipped study UID reads as a complete one. Violates **DL §4.2** and **DL §4.6**. Should be `mono`, wrapping. | `metadata_field.dart:26-33` |
-| 12 | **Finding description clamps with no way to see the rest.** Single-line ellipsis on a clinical string with no tooltip or expand affordance. Clamping is permitted; clamping without a reachable full value is not (**DL §4.6**). | `finding_row.dart:56-61` |
 | 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
-| 15 | **`FindingsPanel` overflows with an empty findings list.** Rendering `StudyReviewPage` (which passes `findings: []`) at 1440×900 produces a visible Flutter overflow warning inside the panel. Found while screenshotting real pages for the gap-1 verification above; not yet diagnosed further. | `findings_panel.dart` |
+| 15 | **An overflow warning appears where the findings panel renders, originally attributed to an empty findings list.** Rendering `StudyReviewPage` (which passes `findings: []`) at 1440×900 produces a visible Flutter overflow warning. The panel is an unlikely culprit — its content sits in a `SingleChildScrollView`, which clips rather than overflowing, and the empty branch is smaller than the populated one already proven to fit. Credible alternative: `study_review_template.dart`'s narrow-branch `AspectRatio(4/3)` in a `Column` demands `width × 0.75` regardless of available height, and the stripe would land over the `TabBarView` where the panel renders. Unproven — it depends on the original capture's device pixel ratio, which is not recoverable. Left open, not reassigned. | `findings_panel.dart`, `study_review_template.dart` |
