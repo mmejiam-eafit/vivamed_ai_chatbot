@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/organisms/collapsed_nav_rail.dart';
+import 'package:radiologist_helper/ui/organisms/draggable_findings_sheet.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 
 void main() {
@@ -50,7 +52,9 @@ void main() {
       expect(scaffold.backgroundColor, AppColors.surfacePage);
     });
 
-    testWidgets('narrow layout renders findings as bottom sheet',
+    // ── Compact (< mediumMinWidth): drawer + draggable bottom sheet ────────
+
+    testWidgets('compact: renders findings as a draggable bottom sheet',
         (tester) async {
       tester.view.physicalSize = const Size(390 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -69,52 +73,58 @@ void main() {
       );
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.bottomSheet, isNotNull);
+      expect(scaffold.bottomSheet, isA<DraggableFindingsSheet>());
       expect(find.text('findings'), findsOneWidget);
     });
 
     testWidgets(
-        'narrow layout: bottom sheet height scales with available height, '
-        'not a fixed pixel value', (tester) async {
+        'compact: bottom sheet gets the available height, not a fixed pixel '
+        'value', (tester) async {
       // Regression guard for gap 25: the sheet used to be capped at the
       // literal AppLayout.panelMaxWidth (a width constant) treated as a
       // height, so it never changed with the screen.
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      Future<double> sheetMaxHeightAt(double height) async {
-        tester.view.physicalSize = Size(390 * 3, height * 3);
-        tester.view.devicePixelRatio = 3.0;
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: buildAppTheme(),
-            home: ChatTemplate(
-              appBar: AppBar(),
-              chatPanel: const SizedBox(),
-              findingsPanel: const Text('findings'),
-            ),
+      tester.view.physicalSize = const Size(390 * 3, 700 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            findingsPanel: const Text('findings'),
           ),
-        );
-        final constrainedBoxes = tester.widgetList<ConstrainedBox>(
-          find.ancestor(
-            of: find.text('findings'),
-            matching: find.byType(ConstrainedBox),
-          ),
-        );
-        return constrainedBoxes
-            .firstWhere((box) => box.constraints.maxHeight.isFinite)
-            .constraints
-            .maxHeight;
-      }
+        ),
+      );
 
-      final shortSheet = await sheetMaxHeightAt(600);
-      final tallSheet = await sheetMaxHeightAt(900);
-
-      expect(tallSheet / shortSheet, closeTo(900 / 600, 0.001));
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      final sheet = scaffold.bottomSheet! as DraggableFindingsSheet;
+      // The outer LayoutBuilder measures ChatTemplate's own incoming
+      // constraints -- the full view height, since the AppBar it hands to
+      // Scaffold is built underneath this point, not above it.
+      expect(sheet.availableHeight, 700);
     });
 
-    testWidgets('narrow layout has no bottom sheet when findings null',
-        (tester) async {
+    testWidgets('compact: no bottom sheet when findings null', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(appBar: AppBar(), chatPanel: const SizedBox()),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomSheet, isNull);
+    });
+
+    testWidgets('compact: drawer is passed to Scaffold.drawer', (tester) async {
       tester.view.physicalSize = const Size(390 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -126,16 +136,123 @@ void main() {
           home: ChatTemplate(
             appBar: AppBar(),
             chatPanel: const SizedBox(),
+            drawer: const Text('drawer-slot'),
           ),
         ),
       );
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.bottomSheet, isNull);
+      expect(scaffold.drawer, isNotNull);
     });
 
-    testWidgets('wide layout renders findings inline side panel',
+    // ── Medium (mediumMinWidth to threePaneMinWidth): collapsed rail ───────
+
+    testWidgets('medium: renders CollapsedNavRail at sideNavCollapsedWidth',
         (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            drawer: const Text('drawer-slot'),
+            findingsPanel: const Text('findings-slot'),
+          ),
+        ),
+      );
+
+      expect(find.byType(CollapsedNavRail), findsOneWidget);
+      final size = tester.getSize(find.byType(CollapsedNavRail));
+      expect(size.width, NavigationTokens.sideNavCollapsedWidth);
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomSheet, isNull);
+      expect(scaffold.drawer, isNotNull);
+      expect(scaffold.endDrawer, isNotNull);
+    });
+
+    testWidgets('medium: tapping the menu icon opens Scaffold.drawer',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            drawer: const Text('drawer-slot'),
+          ),
+        ),
+      );
+
+      final state = tester.state<ScaffoldState>(find.byType(Scaffold));
+      expect(state.isDrawerOpen, isFalse);
+      await tester.tap(find.byTooltip('Conversations'));
+      await tester.pumpAndSettle();
+      expect(state.isDrawerOpen, isTrue);
+    });
+
+    testWidgets('medium: tapping the findings icon opens Scaffold.endDrawer',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            findingsPanel: const Text('findings-slot'),
+          ),
+        ),
+      );
+
+      final state = tester.state<ScaffoldState>(find.byType(Scaffold));
+      expect(state.isEndDrawerOpen, isFalse);
+      await tester.tap(find.byTooltip('Findings'));
+      await tester.pumpAndSettle();
+      expect(state.isEndDrawerOpen, isTrue);
+      expect(find.text('findings-slot'), findsOneWidget);
+    });
+
+    testWidgets('medium: no findings icon or endDrawer when findings null',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(appBar: AppBar(), chatPanel: const SizedBox()),
+        ),
+      );
+
+      expect(find.byTooltip('Findings'), findsNothing);
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.endDrawer, isNull);
+    });
+
+    // ── Wide (>= threePaneMinWidth): three panes ────────────────────────────
+
+    testWidgets('wide: renders findings inline side panel', (tester) async {
       tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -158,29 +275,7 @@ void main() {
       expect(find.byType(Row), findsWidgets);
     });
 
-    testWidgets('drawer is passed to Scaffold.drawer on narrow',
-        (tester) async {
-      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: ChatTemplate(
-            appBar: AppBar(),
-            chatPanel: const SizedBox(),
-            drawer: const Text('drawer-slot'),
-          ),
-        ),
-      );
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.drawer, isNotNull);
-    });
-
-    testWidgets('drawer is inline and Scaffold.drawer is null on wide',
+    testWidgets('wide: drawer is inline and Scaffold.drawer is null',
         (tester) async {
       tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -203,8 +298,10 @@ void main() {
       expect(find.text('drawer-inline'), findsOneWidget);
     });
 
-    testWidgets('uses narrow layout below threePaneMinWidth', (tester) async {
-      const width = AppLayout.threePaneMinWidth - 1;
+    // ── Tier boundaries ─────────────────────────────────────────────────────
+
+    testWidgets('uses compact layout below mediumMinWidth', (tester) async {
+      const width = AppLayout.mediumMinWidth - 1;
       tester.view.physicalSize = const Size(width * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -223,6 +320,52 @@ void main() {
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.bottomSheet, isNotNull);
+      expect(find.byType(CollapsedNavRail), findsNothing);
+    });
+
+    testWidgets('uses rail layout at mediumMinWidth', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            findingsPanel: const Text('findings'),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomSheet, isNull);
+      expect(find.byType(CollapsedNavRail), findsOneWidget);
+    });
+
+    testWidgets('uses rail layout below threePaneMinWidth', (tester) async {
+      const width = AppLayout.threePaneMinWidth - 1;
+      tester.view.physicalSize = const Size(width * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            findingsPanel: const Text('findings'),
+          ),
+        ),
+      );
+
+      expect(find.byType(CollapsedNavRail), findsOneWidget);
+      expect(find.byType(Row), findsWidgets);
     });
 
     testWidgets('uses wide layout at threePaneMinWidth', (tester) async {
@@ -245,6 +388,7 @@ void main() {
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.bottomSheet, isNull);
+      expect(find.byType(CollapsedNavRail), findsNothing);
       expect(find.byType(Row), findsWidgets);
     });
 

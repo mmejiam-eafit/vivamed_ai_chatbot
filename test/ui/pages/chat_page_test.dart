@@ -48,6 +48,15 @@ void main() {
     });
 
     testWidgets('renders FindingsPanel slot', (tester) async {
+      // Pumped wide: at the default test size (800x600, medium tier),
+      // findingsPanel is endDrawer content and isn't mounted until opened --
+      // wide is where it renders inline and unconditionally.
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(
         MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
       );
@@ -73,10 +82,11 @@ void main() {
       expect(scaffold.drawer, isNotNull);
     });
 
-    testWidgets('narrow below threePaneMinWidth: findings rendered as bottom sheet',
-        (tester) async {
-      tester.view.physicalSize =
-          const Size((AppLayout.threePaneMinWidth - 1) * 3, 844 * 3);
+    testWidgets('compact: findings rendered as bottom sheet', (tester) async {
+      // Only compact (< mediumMinWidth) uses the bottom sheet now -- medium
+      // and the rest of the pre-three-pane band use the collapsed rail's
+      // endDrawer instead (gap 17).
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);

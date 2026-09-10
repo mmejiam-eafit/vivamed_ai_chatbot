@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
+import 'package:radiologist_helper/ui/organisms/collapsed_nav_rail.dart';
+import 'package:radiologist_helper/ui/organisms/draggable_findings_sheet.dart';
 
 class ChatTemplate extends StatelessWidget {
   const ChatTemplate({
@@ -19,12 +21,6 @@ class ChatTemplate extends StatelessWidget {
   final Widget? statusBar;
   final Widget? drawer;
 
-  /// Interim proportion of the available height given to the findings
-  /// bottom sheet at narrow widths. DT §9.5 specifies this slot as a
-  /// draggable sheet (gap 17); until that's built, this keeps the sheet's
-  /// height responsive to the screen instead of a fixed pixel value.
-  static const double _narrowFindingsSheetHeightFraction = 0.4;
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -34,12 +30,30 @@ class ChatTemplate extends StatelessWidget {
         // used to leave a chat column as narrow as 168px (§9.1).
         final fitsThreePanes =
             constraints.maxWidth >= AppLayout.threePaneMinWidth;
-        return fitsThreePanes
-            ? _buildWide()
-            : _buildNarrow(constraints.maxHeight);
+        if (fitsThreePanes) return _buildWide();
+        // Below that, compact keeps the drawer + bottom sheet; medium (and
+        // whatever's left of expanded once panes don't fit) collapses to a
+        // rail instead (§9.5).
+        final isCompact =
+            constraints.maxWidth.layoutTier == AppLayoutTier.compact;
+        return isCompact
+            ? _buildNarrow(constraints.maxHeight)
+            : _buildRail();
       },
     );
   }
+
+  Widget _chatColumn() => Column(
+        children: [
+          if (statusBar != null) statusBar!,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: chatPanel,
+            ),
+          ),
+        ],
+      );
 
   Widget _buildWide() {
     return Scaffold(
@@ -49,19 +63,7 @@ class ChatTemplate extends StatelessWidget {
         children: [
           if (drawer != null)
             SizedBox(width: NavigationTokens.sideNavWidth, child: drawer),
-          Expanded(
-            child: Column(
-              children: [
-                if (statusBar != null) statusBar!,
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: chatPanel,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Expanded(child: _chatColumn()),
           if (findingsPanel != null)
             SizedBox(width: AppLayout.panelMaxWidth, child: findingsPanel!),
         ],
@@ -82,16 +84,39 @@ class ChatTemplate extends StatelessWidget {
       ),
       bottomSheet: findingsPanel == null
           ? null
-          : ColoredBox(
-              color: AppColors.surface,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight:
-                      availableHeight * _narrowFindingsSheetHeightFraction,
-                ),
-                child: findingsPanel!,
-              ),
+          : DraggableFindingsSheet(
+              availableHeight: availableHeight,
+              child: findingsPanel!,
             ),
+    );
+  }
+
+  // Medium (and whatever's left of expanded once three panes don't fit):
+  // conversations collapse to a 64px rail, findings become a trailing
+  // slide-over via Scaffold.endDrawer (§9.5).
+  Widget _buildRail() {
+    return Scaffold(
+      backgroundColor: AppColors.surfacePage,
+      appBar: appBar,
+      drawer: drawer,
+      endDrawer: findingsPanel == null
+          ? null
+          : SizedBox(width: AppLayout.panelMaxWidth, child: findingsPanel!),
+      // Builder gives Scaffold.of a context below this Scaffold, not the one
+      // building it -- required for openDrawer()/openEndDrawer() to find it.
+      body: Builder(
+        builder: (context) => Row(
+          children: [
+            CollapsedNavRail(
+              onMenuTap: () => Scaffold.of(context).openDrawer(),
+              onFindingsTap: findingsPanel == null
+                  ? null
+                  : () => Scaffold.of(context).openEndDrawer(),
+            ),
+            Expanded(child: _chatColumn()),
+          ],
+        ),
+      ),
     );
   }
 }
