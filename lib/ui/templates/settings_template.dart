@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
+import 'package:radiologist_helper/ui/molecules/section_card.dart';
+import 'package:radiologist_helper/ui/molecules/section_index_tile.dart';
 
-/// One titled block of settings content. The template owns the card chrome —
+/// One titled block of settings content, rendered in a [SectionCard] —
 /// callers supply only the title and the content underneath it.
 class SettingsSection {
   const SettingsSection({required this.title, required this.child});
@@ -57,7 +58,8 @@ class SettingsTemplate extends StatelessWidget {
       ),
       itemCount: sections.length,
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xxl),
-      itemBuilder: (_, i) => _SectionCard(section: sections[i]),
+      itemBuilder: (_, i) =>
+          SectionCard(title: sections[i].title, child: sections[i].child),
     );
     if (isCompact) return list;
     // Medium: capped, not full-bleed, like every other single-column page
@@ -80,7 +82,7 @@ class SettingsTemplate extends StatelessWidget {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
             itemCount: sections.length,
-            itemBuilder: (context, i) => _SectionIndexTile(
+            itemBuilder: (context, i) => SectionIndexTile(
               title: sections[i].title,
               isSelected: i == index,
               onTap: onSectionSelected == null
@@ -100,75 +102,15 @@ class SettingsTemplate extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 720),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.xl),
-                child: _SectionCard(section: sections[index]),
+                child: SectionCard(
+                  title: sections[index].title,
+                  child: sections[index].child,
+                ),
               ),
             ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SectionIndexTile extends StatelessWidget {
-  const _SectionIndexTile({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String title;
-  final bool isSelected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        color: isSelected ? colors.surfaceSubdued : null,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: AppText(
-          title,
-          style: AppTypography.labelMd,
-          color: isSelected ? colors.interactivePrimary : colors.textPrimary,
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.section});
-
-  final SettingsSection section;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: AppRadius.borderCard,
-        boxShadow: AppElevation.card,
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            section.title,
-            style: AppTypography.headingSm,
-            color: colors.textPrimary,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          section.child,
-        ],
-      ),
     );
   }
 }
