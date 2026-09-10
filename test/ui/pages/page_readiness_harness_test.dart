@@ -95,7 +95,9 @@ class _SettingsPageHarness extends StatelessWidget {
   Widget build(BuildContext context) {
     return SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
-      sections: const [Text('settings-ready')],
+      sections: const [
+        SettingsSection(title: 'Section', child: Text('settings-ready')),
+      ],
     );
   }
 }
