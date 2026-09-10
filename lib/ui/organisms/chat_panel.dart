@@ -27,7 +27,7 @@ class ChatPanel extends StatelessWidget {
     return Column(
       children: [
         Expanded(child: messageList),
-        const Divider(height: 1, thickness: 1, color: AppColors.borderSubdued),
+        Divider(height: 1, thickness: 1, color: context.colors.borderSubdued),
         ChatInput(
           controller: controller,
           onSubmit: onSubmit,
