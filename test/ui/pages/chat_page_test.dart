@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
@@ -23,6 +24,19 @@ void main() {
       );
 
       expect(find.text('Chat'), findsOneWidget);
+    });
+
+    testWidgets('app bar title renders in headingMd, not the platform default',
+        (tester) async {
+      // Regression guard for gap 11: AppBar titles used to fall back to
+      // Flutter's own Roboto Typography because buildAppTheme() set no
+      // titleTextStyle and no textTheme.
+      await tester.pumpWidget(
+        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
+      );
+
+      final paragraph = tester.renderObject<RenderParagraph>(find.text('Chat'));
+      expect(paragraph.text.style?.fontFamily, AppTypography.headingMd.fontFamily);
     });
 
     testWidgets('renders ChatPanel slot', (tester) async {

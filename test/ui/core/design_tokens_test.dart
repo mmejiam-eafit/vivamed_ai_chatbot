@@ -99,4 +99,30 @@ void main() {
       expect(theme.colorScheme.error, AppColorsData.light.statusError);
     });
   });
+
+  group('buildAppTheme appBarTheme.titleTextStyle (gap 11)', () {
+    test('uses headingMd, not the platform default', () {
+      // Regression guard: with no titleTextStyle set, AppBar titles fell
+      // back to Flutter's own Typography (Roboto) — buildAppTheme() sets no
+      // textTheme, so nothing else intercepted it.
+      final theme = buildAppTheme();
+      final style = theme.appBarTheme.titleTextStyle!;
+      expect(style.fontFamily, AppTypography.headingMd.fontFamily);
+      expect(style.fontWeight, AppTypography.headingMd.fontWeight);
+      expect(style.fontSize, AppTypography.headingMd.fontSize);
+    });
+
+    test('color matches textOnBrand in both modes', () {
+      final light = buildAppTheme(Brightness.light);
+      expect(
+        light.appBarTheme.titleTextStyle!.color,
+        AppColorsData.light.textOnBrand,
+      );
+      final dark = buildAppTheme(Brightness.dark);
+      expect(
+        dark.appBarTheme.titleTextStyle!.color,
+        AppColorsData.dark.textOnBrand,
+      );
+    });
+  });
 }

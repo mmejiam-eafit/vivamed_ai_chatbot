@@ -1492,6 +1492,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       foregroundColor: colors.textOnBrand,
       elevation: NavigationTokens.appBarElevation,
       centerTitle: true,
+      titleTextStyle: AppTypography.headingMd.copyWith(color: colors.textOnBrand),
     ),
     cardTheme: CardThemeData(
       color: colors.surface,
