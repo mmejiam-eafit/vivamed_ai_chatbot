@@ -29,7 +29,11 @@ class CaseListTemplate extends StatelessWidget {
       appBar: appBar,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= AppLayout.templateSplitWidth;
+          // Compact: a single scanning column. Medium and up: a grid — the
+          // real deliverable there is a dense sortable table (DT §9.5), not
+          // yet built (gap 17); the grid is the interim, not the destination.
+          final isWide =
+              constraints.maxWidth.layoutTier != AppLayoutTier.compact;
           return Column(
             children: [
               if (statusBar != null) statusBar!,

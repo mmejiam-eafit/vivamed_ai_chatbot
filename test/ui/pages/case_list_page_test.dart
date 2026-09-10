@@ -40,11 +40,11 @@ void main() {
       expect(find.text('Abdominal CT'), findsOneWidget);
     });
 
-    // ── Responsive breakpoint: 767 (narrow) ──────────────────────────────────
+    // ── Responsive breakpoint: mediumMinWidth - 1 (narrow) ───────────────────
 
-    testWidgets('narrow at 767: ListView visible', (tester) async {
+    testWidgets('narrow below mediumMinWidth: ListView visible', (tester) async {
       tester.view.physicalSize =
-          const Size((AppLayout.templateSplitWidth - 1) * 3, 844 * 3);
+          const Size((AppLayout.mediumMinWidth - 1) * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -57,11 +57,11 @@ void main() {
       expect(find.byType(GridView), findsNothing);
     });
 
-    // ── Responsive breakpoint: 768 (wide — at split) ─────────────────────────
+    // ── Responsive breakpoint: mediumMinWidth (wide — at split) ──────────────
 
-    testWidgets('wide at 768: GridView visible', (tester) async {
+    testWidgets('wide at mediumMinWidth: GridView visible', (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.templateSplitWidth * 3, 844 * 3);
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -74,11 +74,11 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
-    // ── Responsive breakpoint: 769 (wide — above split) ──────────────────────
+    // ── Responsive breakpoint: mediumMinWidth + 1 (wide — above split) ───────
 
-    testWidgets('wide at 769: GridView visible', (tester) async {
+    testWidgets('wide above mediumMinWidth: GridView visible', (tester) async {
       tester.view.physicalSize =
-          const Size((AppLayout.templateSplitWidth + 1) * 3, 844 * 3);
+          const Size((AppLayout.mediumMinWidth + 1) * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);

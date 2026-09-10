@@ -141,8 +141,8 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
-    testWidgets('uses ListView below template split width', (tester) async {
-      const width = AppLayout.templateSplitWidth - 1;
+    testWidgets('uses ListView below mediumMinWidth', (tester) async {
+      const width = AppLayout.mediumMinWidth - 1;
       tester.view.physicalSize = const Size(width * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -161,9 +161,9 @@ void main() {
       expect(find.byType(GridView), findsNothing);
     });
 
-    testWidgets('uses GridView at template split width', (tester) async {
+    testWidgets('uses GridView at mediumMinWidth', (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.templateSplitWidth * 3, 844 * 3);
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
