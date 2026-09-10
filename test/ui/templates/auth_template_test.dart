@@ -26,62 +26,99 @@ void main() {
       expect(scaffold.backgroundColor, AppColors.surfacePage);
     });
 
-    testWidgets('card is constrained to panelMaxWidth', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: const AuthTemplate(formContent: SizedBox()),
-        ),
-      );
-      // Find the ConstrainedBox that is a direct child of SingleChildScrollView —
-      // that is our card constraint, not a framework-injected one.
-      final box = tester.widget<ConstrainedBox>(
-        find.descendant(
-          of: find.byType(SingleChildScrollView),
-          matching: find.byType(ConstrainedBox),
-        ),
-      );
-      expect(box.constraints.maxWidth, AppLayout.panelMaxWidth);
+    // ── Compact: full-bleed, no card (DT §9.5) ────────────────────────────────
+
+    group('compact (< mediumMinWidth)', () {
+      Future<void> pumpCompact(WidgetTester tester) async {
+        tester.view.physicalSize =
+            const Size((AppLayout.mediumMinWidth - 1) * 3, 844 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: const AuthTemplate(formContent: Text('form')),
+          ),
+        );
+      }
+
+      testWidgets('renders no card container', (tester) async {
+        await pumpCompact(tester);
+        expect(
+          find.descendant(
+              of: find.byType(AuthTemplate), matching: find.byType(Container)),
+          findsNothing,
+        );
+      });
+
+      testWidgets('page margin is lg, not xl', (tester) async {
+        await pumpCompact(tester);
+        final scrollView =
+            tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
+        final scrollPadding = scrollView.padding! as EdgeInsets;
+        expect(scrollPadding.left, AppSpacing.lg);
+        expect(scrollPadding.top, AppSpacing.lg);
+      });
     });
 
-    testWidgets('card uses overlay elevation', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: const AuthTemplate(formContent: SizedBox()),
-        ),
-      );
-      final container = tester.widget<Container>(
-        find.descendant(
-            of: find.byType(AuthTemplate), matching: find.byType(Container)),
-      );
-      expect(container.decoration, isA<BoxDecoration>());
-      final decoration = container.decoration! as BoxDecoration;
-      expect(decoration.boxShadow, AppElevation.overlay);
-    });
+    // ── Medium and up: centered card at formMaxWidth (DT §9.5, gap 22) ───────
 
-    testWidgets('applies template spacing contract', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: const AuthTemplate(formContent: SizedBox()),
-        ),
-      );
+    group('medium and up (>= mediumMinWidth)', () {
+      Future<void> pumpMedium(WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: const AuthTemplate(formContent: SizedBox()),
+          ),
+        );
+      }
 
-      final scrollView = tester.widget<SingleChildScrollView>(
-        find.byType(SingleChildScrollView),
-      );
-      final scrollPadding = scrollView.padding! as EdgeInsets;
-      expect(scrollPadding.left, AppSpacing.xl);
-      expect(scrollPadding.top, AppSpacing.xl);
+      testWidgets('card is constrained to formMaxWidth, not panelMaxWidth',
+          (tester) async {
+        await pumpMedium(tester);
+        // Find the ConstrainedBox that is a direct child of SingleChildScrollView —
+        // that is our card constraint, not a framework-injected one.
+        final box = tester.widget<ConstrainedBox>(
+          find.descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(ConstrainedBox),
+          ),
+        );
+        expect(box.constraints.maxWidth, AppLayout.formMaxWidth);
+        expect(box.constraints.maxWidth, isNot(AppLayout.panelMaxWidth));
+      });
 
-      final container = tester.widget<Container>(
-        find.descendant(
-            of: find.byType(AuthTemplate), matching: find.byType(Container)),
-      );
-      final cardPadding = container.padding! as EdgeInsets;
-      expect(cardPadding.left, AppSpacing.xl);
-      expect(cardPadding.top, AppSpacing.xl);
+      testWidgets('card carries no shadow — it is resting content, not raised',
+          (tester) async {
+        await pumpMedium(tester);
+        final container = tester.widget<Container>(
+          find.descendant(
+              of: find.byType(AuthTemplate), matching: find.byType(Container)),
+        );
+        expect(container.decoration, isA<BoxDecoration>());
+        final decoration = container.decoration! as BoxDecoration;
+        expect(decoration.boxShadow, anyOf(isNull, isEmpty));
+      });
+
+      testWidgets('applies template spacing contract', (tester) async {
+        await pumpMedium(tester);
+
+        final scrollView = tester.widget<SingleChildScrollView>(
+          find.byType(SingleChildScrollView),
+        );
+        final scrollPadding = scrollView.padding! as EdgeInsets;
+        expect(scrollPadding.left, AppSpacing.lg);
+        expect(scrollPadding.top, AppSpacing.lg);
+
+        final container = tester.widget<Container>(
+          find.descendant(
+              of: find.byType(AuthTemplate), matching: find.byType(Container)),
+        );
+        final cardPadding = container.padding! as EdgeInsets;
+        expect(cardPadding.left, AppSpacing.xl);
+        expect(cardPadding.top, AppSpacing.xl);
+      });
     });
   });
 }

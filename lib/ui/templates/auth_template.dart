@@ -15,22 +15,38 @@ class AuthTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfacePage,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppLayout.panelMaxWidth),
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: AppRadius.borderPanel,
-                boxShadow: AppElevation.overlay,
-              ),
-              child: formContent,
+      // resizeToAvoidBottomInset (Scaffold's default) plus a scrollable body
+      // is what lets compact scroll the form above the keyboard (DT §9.5).
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact =
+              constraints.maxWidth.layoutTier == AppLayoutTier.compact;
+          return Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              // Compact: full-bleed, no card, no shadow — just the margin
+              // above. Medium and up: a centered card at formMaxWidth; DT
+              // §9.5 asks for ultrawide to center that same card inside a
+              // wider 640 column, which is indistinguishable from centering
+              // it directly whenever the content is already narrower than
+              // 640, as it is here — so there is nothing further to build.
+              child: isCompact
+                  ? formContent
+                  : ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(maxWidth: AppLayout.formMaxWidth),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.xl),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: AppRadius.borderPanel,
+                        ),
+                        child: formContent,
+                      ),
+                    ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
