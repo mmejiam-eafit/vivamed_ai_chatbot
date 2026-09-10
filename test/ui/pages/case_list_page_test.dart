@@ -60,7 +60,7 @@ void main() {
 
     // ── Responsive breakpoint: mediumMinWidth (wide — at split) ──────────────
 
-    testWidgets('wide at mediumMinWidth: GridView visible', (tester) async {
+    testWidgets('wide at mediumMinWidth: two-column Wrap visible', (tester) async {
       tester.view.physicalSize =
           const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -71,13 +71,14 @@ void main() {
         MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
       );
 
-      expect(find.byType(GridView), findsOneWidget);
+      expect(find.byType(Wrap), findsOneWidget);
+      expect(find.byType(GridView), findsNothing);
       expect(find.byType(ListView), findsNothing);
     });
 
     // ── Responsive breakpoint: mediumMinWidth + 1 (wide — above split) ───────
 
-    testWidgets('wide above mediumMinWidth: GridView visible', (tester) async {
+    testWidgets('wide above mediumMinWidth: two-column Wrap visible', (tester) async {
       tester.view.physicalSize =
           const Size((AppLayout.mediumMinWidth + 1) * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -88,7 +89,8 @@ void main() {
         MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
       );
 
-      expect(find.byType(GridView), findsOneWidget);
+      expect(find.byType(Wrap), findsOneWidget);
+      expect(find.byType(GridView), findsNothing);
       expect(find.byType(ListView), findsNothing);
     });
 

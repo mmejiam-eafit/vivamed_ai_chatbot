@@ -77,20 +77,30 @@ class CaseListTemplate extends StatelessWidget {
         );
 
       case AppLayoutTier.medium:
+        // Two columns via Wrap, not GridView's fixed-aspect-ratio delegate
+        // (the only kind Flutter's grid delegates offer) -- a StudyInfoCard
+        // with more metadata fields, or 200%-scaled text, needs its row to
+        // grow with it rather than clip inside a fixed-height cell (gap 20).
         return Center(
           child: ConstrainedBox(
             constraints:
                 const BoxConstraints(maxWidth: AppLayout.contentMaxWidth),
-            child: GridView.builder(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: AppSpacing.lg,
-                mainAxisSpacing: AppSpacing.lg,
-                childAspectRatio: 1.4,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final columnWidth =
+                      (constraints.maxWidth - AppSpacing.lg) / 2;
+                  return Wrap(
+                    spacing: AppSpacing.lg,
+                    runSpacing: AppSpacing.lg,
+                    children: [
+                      for (final slot in caseSlots)
+                        SizedBox(width: columnWidth, child: slot),
+                    ],
+                  );
+                },
               ),
-              itemCount: caseSlots.length,
-              itemBuilder: (_, i) => caseSlots[i],
             ),
           ),
         );
