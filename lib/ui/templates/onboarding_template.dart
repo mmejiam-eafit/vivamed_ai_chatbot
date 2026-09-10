@@ -13,7 +13,27 @@ class OnboardingTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfacePage,
-      body: SafeArea(child: carousel),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Medium: cap content width, matching every other single-column
+            // page at this tier (DT §9.5). Expanded/ultrawide's own spec —
+            // image left, copy right — needs OnboardingCarousel to accept a
+            // layout mode it doesn't have yet; deferred (gap 17), not built
+            // here as a half version of it.
+            final isCompact =
+                constraints.maxWidth.layoutTier == AppLayoutTier.compact;
+            return isCompact
+                ? carousel
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: carousel,
+                    ),
+                  );
+          },
+        ),
+      ),
     );
   }
 }

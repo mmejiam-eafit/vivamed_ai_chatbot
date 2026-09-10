@@ -45,5 +45,44 @@ void main() {
       );
       expect(find.byType(AppBar), findsNothing);
     });
+
+    // ── Content width (DT §9.5) ────────────────────────────────────────────
+
+    Finder find560Cap() => find.byWidgetPredicate(
+          (w) => w is ConstrainedBox && w.constraints.maxWidth == 560,
+          description: 'ConstrainedBox capped at 560',
+        );
+
+    testWidgets('compact: carousel is not width-capped', (tester) async {
+      tester.view.physicalSize =
+          const Size((AppLayout.mediumMinWidth - 1) * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: const OnboardingTemplate(carousel: Text('carousel')),
+        ),
+      );
+      expect(find560Cap(), findsNothing);
+    });
+
+    testWidgets('medium and up: carousel is capped at 560', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: const OnboardingTemplate(carousel: Text('carousel')),
+        ),
+      );
+      expect(find560Cap(), findsOneWidget);
+    });
   });
 }
