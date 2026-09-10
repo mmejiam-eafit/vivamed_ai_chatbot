@@ -92,10 +92,9 @@ void main() {
   testWidgets('drawer width reads NavigationTokens.drawerWidth, not a literal',
       (tester) async {
     await tester.pumpWidget(wrap(const ConversationDrawer(conversations: [])));
-    expect(
-      tester.getSize(find.byType(Container).first).width,
-      NavigationTokens.drawerWidth,
-    );
+    final drawer = tester.widget<Drawer>(find.byType(Drawer));
+    expect(drawer.width, NavigationTokens.drawerWidth);
+    expect(tester.getSize(find.byType(Drawer)).width, NavigationTokens.drawerWidth);
   });
 
   // ── Text scale (DT §3.7 / gap 20b) ─────────────────────────────────────────
@@ -123,8 +122,8 @@ void main() {
         body: ConversationDrawer(conversations: conversations, selectedId: '1'),
       ),
     ));
-    final drawerContainer = tester.widget<Container>(find.byType(Container).first);
-    expect(drawerContainer.color, AppColorsData.dark.surfaceBrandSecondary);
+    final drawer = tester.widget<Drawer>(find.byType(Drawer));
+    expect(drawer.backgroundColor, AppColorsData.dark.surfaceBrandSecondary);
 
     final username = tester.widget<Text>(find.text('Radiologist'));
     expect(username.style?.color, AppColorsData.dark.textOnBrand);

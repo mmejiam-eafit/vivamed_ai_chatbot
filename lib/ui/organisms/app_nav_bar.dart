@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
-import 'package:radiologist_helper/ui/molecules/nav_item.dart';
 
+/// The app's bottom navigation — Chat / Studies / Settings. Built on Flutter's
+/// own `NavigationBar`/`NavigationDestination` rather than a hand-rolled row of
+/// `NavItem`s: three destinations with a filled/outline icon swap per selection
+/// is exactly what `NavigationDestination.icon`/`.selectedIcon` already do.
 class AppNavBar extends StatelessWidget {
   const AppNavBar({
     super.key,
@@ -16,38 +19,50 @@ class AppNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final selectedColor = NavigationTokens.bottomNavSelected(context);
+    final unselectedColor = NavigationTokens.bottomNavUnselected(context);
+
     return Container(
       decoration: BoxDecoration(
         color: NavigationTokens.bottomNavBackground(context),
-        border: Border(top: BorderSide(color: context.colors.borderSubdued)),
+        border: Border(top: BorderSide(color: colors.borderSubdued)),
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              NavItem(
-                icon: selectedIndex == 0 ? Icons.chat_bubble : Icons.chat_bubble_outline,
-                label: 'Chat',
-                isSelected: selectedIndex == 0,
-                onTap: () => onDestinationSelected(0),
-              ),
-              NavItem(
-                icon: selectedIndex == 1 ? Icons.folder : Icons.folder_outlined,
-                label: 'Studies',
-                isSelected: selectedIndex == 1,
-                onTap: () => onDestinationSelected(1),
-              ),
-              NavItem(
-                icon: selectedIndex == 2 ? Icons.settings : Icons.settings_outlined,
-                label: 'Settings',
-                isSelected: selectedIndex == 2,
-                onTap: () => onDestinationSelected(2),
-              ),
-            ],
+        child: NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onDestinationSelected,
+          // The Container above already carries the token background — this
+          // stays transparent rather than painting the same color twice.
+          backgroundColor: Colors.transparent,
+          // No M3 selection pill — matches this bar's existing look, which
+          // signals selection through icon/label color alone.
+          indicatorColor: Colors.transparent,
+          labelTextStyle: WidgetStateProperty.resolveWith(
+            (states) => AppTypography.labelSm.copyWith(
+              color: states.contains(WidgetState.selected)
+                  ? selectedColor
+                  : unselectedColor,
+            ),
           ),
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.chat_bubble_outline, color: unselectedColor),
+              selectedIcon: Icon(Icons.chat_bubble, color: selectedColor),
+              label: 'Chat',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.folder_outlined, color: unselectedColor),
+              selectedIcon: Icon(Icons.folder, color: selectedColor),
+              label: 'Studies',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined, color: unselectedColor),
+              selectedIcon: Icon(Icons.settings, color: selectedColor),
+              label: 'Settings',
+            ),
+          ],
         ),
       ),
     );

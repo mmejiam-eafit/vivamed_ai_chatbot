@@ -21,8 +21,8 @@ void main() {
     await tester.pumpWidget(wrap(
       SectionIndexTile(title: 'Account', isSelected: false, onTap: () {}),
     ));
-    final container = tester.widget<Container>(find.byType(Container));
-    expect(container.color, isNull);
+    final tile = tester.widget<ListTile>(find.byType(ListTile));
+    expect(tile.selected, isFalse);
     final text = tester.widget<Text>(find.text('Account'));
     expect(text.style?.color, AppColorsData.light.textPrimary);
   });
@@ -32,8 +32,9 @@ void main() {
     await tester.pumpWidget(wrap(
       SectionIndexTile(title: 'Account', isSelected: true, onTap: () {}),
     ));
-    final container = tester.widget<Container>(find.byType(Container));
-    expect(container.color, AppColorsData.light.surfaceSubdued);
+    final tile = tester.widget<ListTile>(find.byType(ListTile));
+    expect(tile.selected, isTrue);
+    expect(tile.selectedTileColor, AppColorsData.light.surfaceSubdued);
     final text = tester.widget<Text>(find.text('Account'));
     expect(text.style?.color, AppColorsData.light.interactivePrimary);
   });
@@ -66,8 +67,8 @@ void main() {
       SectionIndexTile(title: 'Account', isSelected: true, onTap: () {}),
       brightness: Brightness.dark,
     ));
-    final container = tester.widget<Container>(find.byType(Container));
-    expect(container.color, AppColorsData.dark.surfaceSubdued);
+    final tile = tester.widget<ListTile>(find.byType(ListTile));
+    expect(tile.selectedTileColor, AppColorsData.dark.surfaceSubdued);
     final text = tester.widget<Text>(find.text('Account'));
     expect(text.style?.color, AppColorsData.dark.interactivePrimary);
   });

@@ -42,9 +42,14 @@ class ConversationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // Drawer, not a bare Container: this is Flutter's own purpose-built
+    // container for a Scaffold.drawer slot — it carries the standard
+    // elevation/shape and a semantic drawer label for screen readers that a
+    // plain Container never gets, for the same width/background this always
+    // had.
+    return Drawer(
       width: NavigationTokens.drawerWidth,
-      color: NavigationTokens.drawerBackground(context),
+      backgroundColor: NavigationTokens.drawerBackground(context),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
