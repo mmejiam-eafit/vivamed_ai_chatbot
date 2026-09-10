@@ -75,10 +75,11 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 | Forbidden | Use instead |
 |---|---|
-| `Color(0xFF...)` inline | Semantic token from `AppColors` |
-| `Colors.black` / `Colors.white` | `AppColors.textPrimary` / `AppColors.surface` |
-| `_Palette.anything` | `AppColors` only — `_Palette` is library-private |
-| `Theme.of(context).colorScheme.X` in custom widgets | `AppColors.*` or domain token class — Material's scheme is not our semantic layer |
+| `Color(0xFF...)` inline | Semantic token from `context.colors` |
+| `Colors.black` / `Colors.white` | `context.colors.textPrimary` / `context.colors.surface` |
+| `_Palette.anything` | `context.colors`/`context.severity` only — `_Palette` is library-private |
+| `Theme.of(context).colorScheme.X` in custom widgets | `context.colors.*`/`context.severity.*` or domain token class — Material's scheme is not our semantic layer |
+| `AppColors.*` / `SeverityTokens.*` static reads | `context.colors.*` / `context.severity.*` — both statics are `@Deprecated`, kept only as light-mode aliases for call sites that haven't migrated |
 | A font weight other than 400 / 600 / 700 | Only those three have real files; anything else is silently faux-bolded |
 | `SizedBox(height: 16)` or any bare spacing number | `AppSpacing.lg` (or whichever token matches) |
 | `BorderRadius.circular(12)` | `AppRadius.borderCard` (or whichever role token matches) |
@@ -91,17 +92,19 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 `AppTypography` styles have no baked-in color. Always apply color explicitly.
 
-**Pick the token whose _name_ matches the surface you are on — never the one whose value looks right.** Those give the same answer today and different answers once dark mode lands, because on a dark page `textPrimary` is light. Name-matching stays correct in both modes; eyeballing does not.
+**Pick the token whose _name_ matches the surface you are on — never the one whose value looks right.** Dark mode is built and shipped (the `ThemeExtension` mechanism, wired in `app.dart`), so this already matters today, not eventually: name-matching gives the correct answer in both modes, because on a dark page `textPrimary` is light. Eyeballing a value only ever gives the light-mode answer.
+
+Read colors through `context.colors` (an `AppColorsData`) or `context.severity` (a `SeverityData`) — never the deprecated `AppColors`/`SeverityTokens` statics (see the "Never do" table above):
 
 ```dart
 // light surface
-AppTypography.bodyMd.copyWith(color: AppColors.textPrimary)
+AppTypography.bodyMd.copyWith(color: context.colors.textPrimary)
 
 // dark surface (surfaceBrand / surfaceBrandSecondary)
-AppTypography.headingLg.copyWith(color: AppColors.textOnBrand)
+AppTypography.headingLg.copyWith(color: context.colors.textOnBrand)
 
 // accent-tinted surface (surfaceAccent)
-AppTypography.labelMd.copyWith(color: AppColors.textOnAccent)
+AppTypography.labelMd.copyWith(color: context.colors.textOnAccent)
 ```
 
 ---
@@ -112,11 +115,13 @@ Apply only the token classes appropriate for a widget's level. Pages apply **no 
 
 | Level | Primary token classes |
 |---|---|
-| Atom | `AppColors`, `AppTypography`, `AppRadius`, `AppSpacing` (internal padding only) |
-| Molecule | `AppSpacing` (gaps between atoms), `AppElevation` (container only), domain-specific classes (`ChatTokens`, `SeverityTokens`) |
-| Organism | `AppSpacing` (section-level padding), `AppElevation`, `AppMotion`, `NavigationTokens`, `SeverityTokens` |
-| Template | `AppSpacing` (screen margins / zone padding), `AppColors.surfacePage` (scaffold background only) |
+| Atom | `context.colors`/`context.severity` (own primitives), `AppTypography`, `AppRadius`, `AppSpacing` (internal padding only) |
+| Molecule | `context.colors`/`context.severity` (own composition), `AppSpacing` (gaps between atoms), `AppElevation` (container only), domain-specific classes (`ChatTokens`) |
+| Organism | `context.colors`/`context.severity` (own composition), `AppSpacing` (section-level padding), `AppElevation`, `AppMotion`, `NavigationTokens` |
+| Template | `context.colors.surfacePage` (scaffold background only), `AppSpacing` (screen margins / zone padding) |
 | Page | None |
+
+`context.colors`/`context.severity` read the same at every level — the distinction is *scope*, not access: atoms reach for their own single value, molecules and above reach for it because they own a composition (design_tokens.md: "molecules and above read `context.colors` directly — they own composition, not primitives"). A template's use stays narrowly the scaffold background; real content styling belongs in the organism/molecule/atom that owns it, not inlined in the template (if you find yourself reaching for anything beyond `surfacePage` in a template, that's a sign the styling belongs one level down).
 
 If you find a token reference in a page file, move it into the atom, molecule, or organism that owns the visual element.
 
@@ -130,12 +135,12 @@ Use for: message bubbles, chat input field, timestamps, typing indicator.
 Scope: chat atoms, molecules, and organisms (`ChatBubble`, `ChatInput`, `ChatMessageList`, `ChatPanel`, `TypingIndicator`).
 Never use in: study review, settings, onboarding, or navigation widgets.
 
-### `SeverityTokens` — clinical findings only
+### `context.severity` — clinical findings only
 
-Use for: severity chips, severity dots, finding badges — anything that represents how urgent a radiology finding is.
-Never substitute `AppColors.status*` for clinical severity. These are separate systems:
-- `SeverityTokens` → how urgent is this *clinical finding*?
-- `AppColors.status*` → did an *app operation* succeed or fail?
+Use for: severity chips, severity dots, finding badges — anything that represents how urgent a radiology finding is. (`SeverityTokens` is the same values as a deprecated static; new code reads `context.severity`.)
+Never substitute `context.colors.status*` for clinical severity. These are separate systems:
+- `context.severity` → how urgent is this *clinical finding*?
+- `context.colors.status*` → did an *app operation* succeed or fail?
 
 Even when the colors look similar, use the correct class for the context.
 
@@ -144,14 +149,15 @@ Even when the colors look similar, use the correct class for the context.
 Use in: `ConversationDrawer`, `AppNavBar`, custom `AppBar` implementations.
 Never use in other organisms, molecules, or atoms.
 
-### `AppColors.status*` — app-level operations only
+### `context.colors.status*` — app-level operations only
 
 Use for: upload results, server errors, connection issues, confirmational banners.
 Pattern: pair subdued background + base foreground:
 ```dart
+final colors = context.colors;
 Container(
-  color: AppColors.statusWarningSubdued,
-  child: Text('Low confidence', style: AppTypography.bodyMd.copyWith(color: AppColors.statusWarning)),
+  color: colors.statusWarningSubdued,
+  child: Text('Low confidence', style: AppTypography.bodyMd.copyWith(color: colors.statusWarning)),
 )
 ```
 
@@ -310,10 +316,10 @@ Before marking a task done, verify:
 - [ ] `flutter test test/ui/<level>/` passes with zero failures.
 - [ ] Every new public parameter, enum variant, callback, and state has at least one test.
 - [ ] `flutter analyze lib/ui/<level>/` reports zero errors and zero warnings.
-- [ ] No `Color(0xFF...)`, `Colors.black`, `Colors.white`, or `_Palette` references.
+- [ ] No `Color(0xFF...)`, `Colors.black`, `Colors.white`, `_Palette`, or deprecated `AppColors`/`SeverityTokens` static references — read `context.colors`/`context.severity` instead.
 - [ ] No bare numeric spacing, `BorderRadius.circular(...)`, inline `TextStyle`, or `Duration(milliseconds: ...)`.
 - [ ] `ChatTokens` used only within chat-feature widgets.
-- [ ] `SeverityTokens` used only for clinical findings; `AppColors.status*` only for app-level status.
+- [ ] `context.severity` used only for clinical findings; `context.colors.status*` only for app-level status.
 - [ ] `NavigationTokens` used only in navigation organisms and custom app bars.
 - [ ] Every text color token's **name** matches the surface it sits on — `textOnBrand` on brand surfaces, `textOnAccent` on accent surfaces, `textPrimary`/`textSecondary`/`textTertiary` on page and card grounds. Not chosen by appearance.
 - [ ] Numbers in a column use `AppTypography.numeric`; prose does not.
