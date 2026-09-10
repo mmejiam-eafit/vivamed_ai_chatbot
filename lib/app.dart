@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
@@ -19,26 +20,34 @@ abstract final class Routes {
 }
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({super.key, required this.themeController});
+
+  final ThemeController themeController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Radiologist Helper',
-      theme: buildAppTheme(Brightness.light),
-      darkTheme: buildAppTheme(Brightness.dark),
-      themeMode: ThemeMode.dark,
-      debugShowCheckedModeBanner: false,
-      initialRoute: Routes.login,
-      routes: {
-        Routes.login: (_) => const LoginPage(),
-        Routes.onboarding: (_) => const OnboardingPage(),
-        Routes.chat: (_) => const ChatPage(),
-        Routes.studyReview: (_) => const StudyReviewPage(),
-        Routes.caseList: (_) => const CaseListPage(),
-        Routes.heatmapViewer: (_) => const HeatmapViewerPage(),
-        Routes.settings: (_) => const SettingsPage(),
-      },
+    return ThemeControllerScope(
+      controller: themeController,
+      child: ListenableBuilder(
+        listenable: themeController,
+        builder: (context, _) => MaterialApp(
+          title: 'Radiologist Helper',
+          theme: buildAppTheme(Brightness.light),
+          darkTheme: buildAppTheme(Brightness.dark),
+          themeMode: themeController.mode,
+          debugShowCheckedModeBanner: false,
+          initialRoute: Routes.login,
+          routes: {
+            Routes.login: (_) => const LoginPage(),
+            Routes.onboarding: (_) => const OnboardingPage(),
+            Routes.chat: (_) => const ChatPage(),
+            Routes.studyReview: (_) => const StudyReviewPage(),
+            Routes.caseList: (_) => const CaseListPage(),
+            Routes.heatmapViewer: (_) => const HeatmapViewerPage(),
+            Routes.settings: (_) => const SettingsPage(),
+          },
+        ),
+      ),
     );
   }
 }
