@@ -73,6 +73,46 @@ void main() {
       expect(find.text('findings'), findsOneWidget);
     });
 
+    testWidgets(
+        'narrow layout: bottom sheet height scales with available height, '
+        'not a fixed pixel value', (tester) async {
+      // Regression guard for gap 25: the sheet used to be capped at the
+      // literal AppLayout.panelMaxWidth (a width constant) treated as a
+      // height, so it never changed with the screen.
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      Future<double> sheetMaxHeightAt(double height) async {
+        tester.view.physicalSize = Size(390 * 3, height * 3);
+        tester.view.devicePixelRatio = 3.0;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: ChatTemplate(
+              appBar: AppBar(),
+              chatPanel: const SizedBox(),
+              findingsPanel: const Text('findings'),
+            ),
+          ),
+        );
+        final constrainedBoxes = tester.widgetList<ConstrainedBox>(
+          find.ancestor(
+            of: find.text('findings'),
+            matching: find.byType(ConstrainedBox),
+          ),
+        );
+        return constrainedBoxes
+            .firstWhere((box) => box.constraints.maxHeight.isFinite)
+            .constraints
+            .maxHeight;
+      }
+
+      final shortSheet = await sheetMaxHeightAt(600);
+      final tallSheet = await sheetMaxHeightAt(900);
+
+      expect(tallSheet / shortSheet, closeTo(900 / 600, 0.001));
+    });
+
     testWidgets('narrow layout has no bottom sheet when findings null',
         (tester) async {
       tester.view.physicalSize = const Size(390 * 3, 844 * 3);

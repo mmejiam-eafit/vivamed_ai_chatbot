@@ -19,6 +19,12 @@ class ChatTemplate extends StatelessWidget {
   final Widget? statusBar;
   final Widget? drawer;
 
+  /// Interim proportion of the available height given to the findings
+  /// bottom sheet at narrow widths. DT §9.5 specifies this slot as a
+  /// draggable sheet (gap 17); until that's built, this keeps the sheet's
+  /// height responsive to the screen instead of a fixed pixel value.
+  static const double _narrowFindingsSheetHeightFraction = 0.4;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -28,7 +34,9 @@ class ChatTemplate extends StatelessWidget {
         // used to leave a chat column as narrow as 168px (§9.1).
         final fitsThreePanes =
             constraints.maxWidth >= AppLayout.threePaneMinWidth;
-        return fitsThreePanes ? _buildWide() : _buildNarrow();
+        return fitsThreePanes
+            ? _buildWide()
+            : _buildNarrow(constraints.maxHeight);
       },
     );
   }
@@ -61,7 +69,7 @@ class ChatTemplate extends StatelessWidget {
     );
   }
 
-  Widget _buildNarrow() {
+  Widget _buildNarrow(double availableHeight) {
     return Scaffold(
       backgroundColor: AppColors.surfacePage,
       appBar: appBar,
@@ -77,8 +85,10 @@ class ChatTemplate extends StatelessWidget {
           : ColoredBox(
               color: AppColors.surface,
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(maxHeight: AppLayout.panelMaxWidth),
+                constraints: BoxConstraints(
+                  maxHeight:
+                      availableHeight * _narrowFindingsSheetHeightFraction,
+                ),
                 child: findingsPanel!,
               ),
             ),
