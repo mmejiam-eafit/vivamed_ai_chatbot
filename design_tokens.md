@@ -592,6 +592,8 @@ Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 
 App status reuses these four pairs under its own token names — the two systems stay separately named so they can diverge later (**DL §3.5**).
 
+**Tooltip:** light mode keeps `TooltipTokens.background`/`.foreground` (`#061625`/`#F4F4F4`) unchanged. Dark mode does not carry the same navy over — reuses `surfaceOverlay`/`textPrimary` instead, the elevation ladder's own top step (**DL D-017**). No new value.
+
 **Diagnostic canvas:** `#0A0C0E`. Mode-exempt, and deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp (**DL §3.7**). It is listed here because this is where the value was first written down, but it is **not a dark-mode value** — it is the same in both modes. It lives in `DiagnosticImageTokens.canvasGround` (§2.10).
 
 ### 10.5 Runtime

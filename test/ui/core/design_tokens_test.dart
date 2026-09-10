@@ -125,4 +125,56 @@ void main() {
       );
     });
   });
+
+  group('buildAppTheme scrollbarTheme (gap 30)', () {
+    test('light mode reuses surfaceSubdued/borderSubdued/border', () {
+      final scrollbar = buildAppTheme(Brightness.light).scrollbarTheme;
+      expect(scrollbar.trackColor?.resolve(<WidgetState>{}),
+          AppColorsData.light.surfaceSubdued);
+      expect(scrollbar.thumbColor?.resolve(<WidgetState>{}),
+          AppColorsData.light.borderSubdued);
+      expect(
+        scrollbar.thumbColor?.resolve(<WidgetState>{WidgetState.hovered}),
+        AppColorsData.light.border,
+      );
+    });
+
+    test('dark mode reuses its own surfaceSubdued/borderSubdued/border',
+        () {
+      final scrollbar = buildAppTheme(Brightness.dark).scrollbarTheme;
+      expect(scrollbar.trackColor?.resolve(<WidgetState>{}),
+          AppColorsData.dark.surfaceSubdued);
+      expect(scrollbar.thumbColor?.resolve(<WidgetState>{}),
+          AppColorsData.dark.borderSubdued);
+      expect(
+        scrollbar.thumbColor?.resolve(<WidgetState>{WidgetState.hovered}),
+        AppColorsData.dark.border,
+      );
+    });
+  });
+
+  group('buildAppTheme tooltipTheme (gap 30, DL D-017)', () {
+    test('light mode uses the near-black navy pair unchanged', () {
+      final theme = buildAppTheme(Brightness.light);
+      final decoration = theme.tooltipTheme.decoration! as BoxDecoration;
+      expect(decoration.color, TooltipTokens.background);
+      expect(theme.tooltipTheme.textStyle?.color, TooltipTokens.foreground);
+    });
+
+    test(
+        'dark mode reuses the elevation ladder\'s top step, not the light '
+        'navy', () {
+      // Regression guard: reusing TooltipTokens.background as-is in dark
+      // mode would put a #061625 chip on a #0E141B page — contrast ≈1.01,
+      // effectively invisible (DL D-017).
+      final theme = buildAppTheme(Brightness.dark);
+      final decoration = theme.tooltipTheme.decoration! as BoxDecoration;
+      expect(decoration.color, AppColorsData.dark.surfaceOverlay);
+      expect(decoration.color, isNot(TooltipTokens.background));
+      expect(
+        theme.tooltipTheme.textStyle?.color,
+        AppColorsData.dark.textPrimary,
+      );
+    });
+  });
 }

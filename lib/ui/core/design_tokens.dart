@@ -66,6 +66,7 @@ abstract final class _Palette {
   static const Color gray600 = Color(0xFF636363);
   static const Color gray500 = Color(0xFF7D7D7D);
   static const Color gray400 = Color(0xFFA0A0A0);
+  // ignore: unused_field
   static const Color gray300 = Color(0xFFC4C4C4);
   static const Color gray200 = Color(0xFFDCDCDC);
   static const Color gray100 = Color(0xFFEEEEEE);
@@ -1355,7 +1356,12 @@ abstract final class AppInteraction {
 // Scrollbar
 // ============================================================================
 // Web/desktop shows scrollbars persistently; mobile shows them transiently.
-// Wired into buildAppTheme() via ScrollbarThemeData.
+// Wired into buildAppTheme() via ScrollbarThemeData. Colors are not defined
+// here — the geometry below is mode-invariant, but track/thumb color is
+// mode-dependent and only ever consumed from inside buildAppTheme(), which
+// already has the resolved AppColorsData in scope; it reads
+// colors.surfaceSubdued/borderSubdued/border directly rather than through a
+// separate accessor on this class.
 
 abstract final class AppScrollbar {
   /// Default scrollbar thumb width.
@@ -1363,15 +1369,6 @@ abstract final class AppScrollbar {
 
   /// Thumb width while hovered.
   static const double thicknessHovered = 12.0;
-
-  /// Scrollbar track (background channel).
-  static const Color trackColor = _Palette.gray100;
-
-  /// Resting scrollbar thumb — subtle, not distracting.
-  static const Color thumbColor = _Palette.gray300;
-
-  /// Hovered scrollbar thumb — darker for clear pointer feedback.
-  static const Color thumbHoverColor = _Palette.gray500;
 
   /// Corner radius of the scrollbar thumb pill.
   static const double thumbRadius = AppRadius.button;
@@ -1384,10 +1381,13 @@ abstract final class AppScrollbar {
 // Wired into buildAppTheme() via TooltipThemeData.
 
 abstract final class TooltipTokens {
-  /// Dark brand surface — authoritative, matches app header palette.
+  /// Light-mode tooltip surface — a near-black navy, deliberately darker
+  /// than surfaceBrand, so it reads as a distinct floating chip rather than
+  /// a stray piece of header chrome (design_tokens.md §10.4, DL D-017).
+  /// Dark mode does not reuse this value — see buildAppTheme().
   static const Color background = _Palette.deepNavy900;
 
-  /// Off-white text on the dark tooltip background.
+  /// Off-white text on the light-mode tooltip background (see [background]).
   static const Color foreground = _Palette.offWhite;
 
   /// Corner radius — matches the inline element token.
@@ -1435,9 +1435,6 @@ abstract final class DiagnosticImageTokens {
 /// Builds the app's [ThemeData] for the given [brightness] (design_tokens.md
 /// §10.5). Defaults to light so existing callers are unaffected; `app.dart`
 /// passes both brightnesses explicitly for `MaterialApp.theme`/`darkTheme`.
-///
-/// Tooltip and scrollbar colors are not yet brightness-aware — no dark value
-/// is specified for them anywhere in the design docs (§12 gap 1 follow-up).
 ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
   final isDark = brightness == Brightness.dark;
   final colors = isDark ? AppColorsData.dark : AppColorsData.light;
@@ -1539,11 +1536,16 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-        color: TooltipTokens.background,
+        // Dark mode doesn't reuse the light-mode navy — it would barely
+        // separate from a page that's already near-black (DL D-017). It
+        // reuses the dark elevation ladder's own top step instead.
+        color: isDark ? colors.surfaceOverlay : TooltipTokens.background,
         borderRadius: BorderRadius.circular(TooltipTokens.borderRadius),
         boxShadow: AppElevation.overlay,
       ),
-      textStyle: AppTypography.bodySm.copyWith(color: TooltipTokens.foreground),
+      textStyle: AppTypography.bodySm.copyWith(
+        color: isDark ? colors.textPrimary : TooltipTokens.foreground,
+      ),
       padding: TooltipTokens.padding,
       verticalOffset: TooltipTokens.verticalOffset,
     ),
@@ -1555,10 +1557,10 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       ),
       thumbColor: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.hovered)
-            ? AppScrollbar.thumbHoverColor
-            : AppScrollbar.thumbColor,
+            ? colors.border
+            : colors.borderSubdued,
       ),
-      trackColor: WidgetStateProperty.all(AppScrollbar.trackColor),
+      trackColor: WidgetStateProperty.all(colors.surfaceSubdued),
       radius: const Radius.circular(AppScrollbar.thumbRadius),
     ),
   );
