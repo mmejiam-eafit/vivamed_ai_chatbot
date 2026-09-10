@@ -97,6 +97,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel> {
   }
 
   Widget _buildDots() {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Row(
@@ -109,9 +110,7 @@ class _OnboardingCarouselState extends State<OnboardingCarousel> {
             height: 8.0,
             decoration: BoxDecoration(
               borderRadius: AppRadius.borderInput,
-              color: isActive
-                  ? AppColors.interactivePrimary
-                  : AppColors.borderSubdued,
+              color: isActive ? colors.interactivePrimary : colors.borderSubdued,
             ),
           );
         }),
@@ -127,32 +126,44 @@ class _SlidePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AppImage(
-            url: slide.imageUrl,
-            height: 240,
-            width: double.infinity,
-            borderRadius: AppRadius.borderCard,
+      // A LayoutBuilder + scroll view, not a plain Column: at 200% text scale
+      // the title and description need somewhere to grow into, and a fixed
+      // 240px image left them none (DL §8.6, DT §3.7).
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AppImage(
+                  url: slide.imageUrl,
+                  height: 240,
+                  width: double.infinity,
+                  borderRadius: AppRadius.borderCard,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AppText(
+                  slide.title,
+                  style: AppTypography.displaySm,
+                  color: colors.textPrimary,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppText(
+                  slide.description,
+                  style: AppTypography.bodyMd,
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.xl),
-          AppText(
-            slide.title,
-            style: AppTypography.displaySm,
-            color: AppColors.textPrimary,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          AppText(
-            slide.description,
-            style: AppTypography.bodyMd,
-            color: AppColors.textSecondary,
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
