@@ -43,15 +43,15 @@ class ConversationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 280,
-      color: NavigationTokens.drawerBackground,
+      width: NavigationTokens.drawerWidth,
+      color: NavigationTokens.drawerBackground(context),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             const AppDivider(),
-            Expanded(child: _buildConversationList()),
+            Expanded(child: _buildConversationList(context)),
             const AppDivider(),
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -70,7 +70,7 @@ class ConversationDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
@@ -81,9 +81,11 @@ class ConversationDrawer extends StatelessWidget {
             child: AppText(
               userName ?? 'Radiologist',
               style: AppTypography.labelLg,
-              color: AppColors.textOnBrand,
+              color: context.colors.textOnBrand,
+              // Was clamped to 1 line at a fixed width — no room to grow at
+              // 200% text scale (DT §3.7).
               overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+              maxLines: 2,
             ),
           ),
         ],
@@ -91,13 +93,13 @@ class ConversationDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildConversationList() {
+  Widget _buildConversationList(BuildContext context) {
     if (conversations.isEmpty) {
-      return const Center(
+      return Center(
         child: AppText(
           'No conversations yet.',
           style: AppTypography.bodySm,
-          color: AppColors.textOnBrand,
+          color: context.colors.textOnBrand,
         ),
       );
     }
@@ -128,10 +130,11 @@ class _ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return InkWell(
       onTap: onTap,
       child: Container(
-        color: isSelected ? AppColors.surfaceBrandSecondarySubdued : null,
+        color: isSelected ? colors.surfaceBrandSecondarySubdued : null,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
@@ -141,8 +144,8 @@ class _ConversationTile extends StatelessWidget {
             AppIcon(
               Icons.chat_bubble_outline,
               color: isSelected
-                  ? NavigationTokens.bottomNavSelected
-                  : AppColors.iconOnBrand,
+                  ? NavigationTokens.bottomNavSelected(context)
+                  : colors.iconOnBrand,
               size: 20.0,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -154,16 +157,18 @@ class _ConversationTile extends StatelessWidget {
                   AppText(
                     item.title,
                     style: AppTypography.labelMd,
-                    color: AppColors.textOnBrand,
+                    color: colors.textOnBrand,
+                    // Was clamped to 1 line inside a fixed-width drawer — no
+                    // room to grow at 200% text scale (DT §3.7).
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                    maxLines: 2,
                   ),
                   AppText(
                     item.subtitle,
                     style: AppTypography.caption,
-                    color: AppColors.textMuted,
+                    color: colors.textMuted,
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                    maxLines: 2,
                   ),
                 ],
               ),

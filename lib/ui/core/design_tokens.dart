@@ -982,36 +982,49 @@ abstract final class AppIconSize {
 // ============================================================================
 // Chat-specific tokens
 // ============================================================================
-// Already semantic — updated to reference AppColors semantic layer.
+// Color members take BuildContext and resolve through context.colors, so they
+// switch with theme mode instead of being frozen at whatever AppColors.X
+// aliased to at compile time.
 
 abstract final class ChatTokens {
   // Bubble colors
-  static const Color userBubble = AppColors.interactivePrimary;
-  static const Color userBubbleText = AppColors.interactivePrimaryForeground;
-  static const Color assistantBubble = AppColors.surface;
-  static const Color assistantBubbleText = AppColors.textPrimary;
-  static const Color assistantBubbleBorder = AppColors.borderSubdued;
+  static Color userBubble(BuildContext context) =>
+      context.colors.interactivePrimary;
+  static Color userBubbleText(BuildContext context) =>
+      context.colors.interactivePrimaryForeground;
+  static Color assistantBubble(BuildContext context) => context.colors.surface;
+  static Color assistantBubbleText(BuildContext context) =>
+      context.colors.textPrimary;
+  static Color assistantBubbleBorder(BuildContext context) =>
+      context.colors.borderSubdued;
 
   // Input field
-  static const Color inputBackground = AppColors.surface;
-  static const Color inputBorder = AppColors.border;
-  static const Color inputBorderFocused = AppColors.borderFocused;
-  static const Color inputPlaceholder = AppColors.textPlaceholder;
-  static const Color inputText = AppColors.textPrimary;
+  static Color inputBackground(BuildContext context) => context.colors.surface;
+  static Color inputBorder(BuildContext context) => context.colors.border;
+  static Color inputBorderFocused(BuildContext context) =>
+      context.colors.borderFocused;
+  static Color inputPlaceholder(BuildContext context) =>
+      context.colors.textPlaceholder;
+  static Color inputText(BuildContext context) => context.colors.textPrimary;
 
   // Misc
-  static const Color timestamp = AppColors.textMuted;
-  static const Color typingIndicator = AppColors.interactiveAccent;
+  static Color timestamp(BuildContext context) => context.colors.textMuted;
+  static Color typingIndicator(BuildContext context) =>
+      context.colors.interactiveAccent;
 
-  // Input focus / selection (wired into buildAppTheme via textSelectionTheme)
+  // Input focus / selection — buildAppTheme wires its own textSelectionTheme
+  // straight from AppColorsData; these are for widget-level call sites.
   /// Blinking text cursor inside the chat input.
-  static const Color inputCursorColor = AppColors.interactivePrimary;
+  static Color inputCursorColor(BuildContext context) =>
+      context.colors.interactivePrimary;
 
   /// Text selection highlight inside the chat input.
-  static const Color inputSelectionColor = AppColors.surfaceAccent;
+  static Color inputSelectionColor(BuildContext context) =>
+      context.colors.surfaceAccent;
 
   /// Input fill color when focused — subtle brand tint.
-  static const Color inputFocusedBackground = AppColors.surfaceAccent;
+  static Color inputFocusedBackground(BuildContext context) =>
+      context.colors.surfaceAccent;
   static const double bubbleRadius = 18.0;
   static const double bubbleMaxWidthFraction = 0.78;
   // Hard cap so bubbles never span the full page on wide desktop screens.
@@ -1035,22 +1048,37 @@ abstract final class ChatTokens {
 // ============================================================================
 // Navigation tokens
 // ============================================================================
-// Already semantic — updated to reference AppColors semantic layer.
+// Color members take BuildContext and resolve through context.colors, so they
+// switch with theme mode instead of being frozen at whatever AppColors.X
+// aliased to at compile time.
 
 abstract final class NavigationTokens {
-  static const Color appBarBackground = AppColors.surfaceBrand;
-  static const Color appBarForeground = AppColors.textOnBrand;
-  static const Color drawerBackground = AppColors.surfaceBrandSecondary;
-  static const Color drawerForeground = AppColors.textOnBrand;
-  static const Color bottomNavBackground = AppColors.surface;
-  static const Color bottomNavSelected = AppColors.iconAccent;
-  static const Color bottomNavUnselected = AppColors.textMuted;
+  static Color appBarBackground(BuildContext context) =>
+      context.colors.surfaceBrand;
+  static Color appBarForeground(BuildContext context) =>
+      context.colors.textOnBrand;
+  static Color drawerBackground(BuildContext context) =>
+      context.colors.surfaceBrandSecondary;
+  static Color drawerForeground(BuildContext context) =>
+      context.colors.textOnBrand;
+  static Color bottomNavBackground(BuildContext context) =>
+      context.colors.surface;
+  static Color bottomNavSelected(BuildContext context) =>
+      context.colors.iconAccent;
+  static Color bottomNavUnselected(BuildContext context) =>
+      context.colors.textMuted;
   // Side navigation (web / desktop sidebar)
-  static const Color sideNavBackground = AppColors.surfaceBrandSecondary;
-  static const Color sideNavSelected = AppColors.interactivePrimary;
-  static const Color sideNavUnselected = AppColors.iconOnBrand;
+  static Color sideNavBackground(BuildContext context) =>
+      context.colors.surfaceBrandSecondary;
+  static Color sideNavSelected(BuildContext context) =>
+      context.colors.interactivePrimary;
+  static Color sideNavUnselected(BuildContext context) =>
+      context.colors.iconOnBrand;
 
   /// Hover fill on an unselected sidebar item (on brand-dark background).
+  /// Stays a flat constant: nothing reads it yet (`MouseRegion` itself is
+  /// unwired - gap 23), so there is no live call site to derive a dark
+  /// value against.
   static const Color sideNavHoverColor = _Palette.mediumNavy600;
 
   /// Border radius applied to each sidebar nav item pill.

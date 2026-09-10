@@ -19,14 +19,18 @@ void main() {
         home: Scaffold(body: child),
       );
 
-  Container findBubble(WidgetTester tester, {required bool isUser}) {
+  Container findBubble(
+    WidgetTester tester, {
+    required bool isUser,
+    AppColorsData colors = AppColorsData.light,
+  }) {
     return tester.widget<Container>(
       find.byWidgetPredicate(
         (w) =>
             w is Container &&
             w.decoration is BoxDecoration &&
             (w.decoration as BoxDecoration).color ==
-                (isUser ? ChatTokens.userBubble : ChatTokens.assistantBubble),
+                (isUser ? colors.interactivePrimary : colors.surface),
         description: 'bubble container',
       ),
     );
@@ -82,13 +86,13 @@ void main() {
   testWidgets('user bubble uses userBubble color', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: true)));
     final dec = findBubble(tester, isUser: true).decoration! as BoxDecoration;
-    expect(dec.color, ChatTokens.userBubble);
+    expect(dec.color, AppColorsData.light.interactivePrimary);
   });
 
   testWidgets('assistant bubble uses assistantBubble color', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: false)));
     final dec = findBubble(tester, isUser: false).decoration! as BoxDecoration;
-    expect(dec.color, ChatTokens.assistantBubble);
+    expect(dec.color, AppColorsData.light.surface);
   });
 
   // ── Text color ─────────────────────────────────────────────────────────────
@@ -96,13 +100,13 @@ void main() {
   testWidgets('user bubble uses userBubbleText color', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: true)));
     final text = tester.widget<Text>(find.text('Hi'));
-    expect(text.style?.color, ChatTokens.userBubbleText);
+    expect(text.style?.color, AppColorsData.light.interactivePrimaryForeground);
   });
 
   testWidgets('assistant bubble uses assistantBubbleText color', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: false)));
     final text = tester.widget<Text>(find.text('Hi'));
-    expect(text.style?.color, ChatTokens.assistantBubbleText);
+    expect(text.style?.color, AppColorsData.light.textPrimary);
   });
 
   // ── Border radius ──────────────────────────────────────────────────────────
@@ -173,5 +177,20 @@ void main() {
   testWidgets('no avatar when neither imageUrl nor initials provided', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: true)));
     expect(find.byType(AppAvatar), findsNothing);
+  });
+
+  // ── Dark theme ─────────────────────────────────────────────────────────────
+
+  testWidgets('resolves bubble and text colors against the dark theme',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(body: ChatBubble(message: 'Hi', isUser: true)),
+    ));
+    final dec = findBubble(tester, isUser: true, colors: AppColorsData.dark)
+        .decoration! as BoxDecoration;
+    expect(dec.color, AppColorsData.dark.interactivePrimary);
+    final text = tester.widget<Text>(find.text('Hi'));
+    expect(text.style?.color, AppColorsData.dark.interactivePrimaryForeground);
   });
 }

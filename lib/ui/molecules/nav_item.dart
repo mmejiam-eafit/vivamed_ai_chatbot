@@ -31,8 +31,8 @@ class NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected
-        ? NavigationTokens.bottomNavSelected
-        : NavigationTokens.bottomNavUnselected;
+        ? NavigationTokens.bottomNavSelected(context)
+        : NavigationTokens.bottomNavUnselected(context);
 
     final iconWidget = AppIcon(icon, color: color, size: 24.0);
     final labelWidget = AppText(label, style: AppTypography.labelSm, color: color);

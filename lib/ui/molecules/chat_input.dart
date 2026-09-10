@@ -26,7 +26,7 @@ class ChatInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: ChatTokens.inputBackground,
+      color: ChatTokens.inputBackground(context),
       // Generous, not dense — the composer is a deciding surface, not a
       // scanning one (DL §7.1).
       padding: const EdgeInsets.symmetric(

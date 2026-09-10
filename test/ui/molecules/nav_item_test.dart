@@ -30,7 +30,7 @@ void main() {
       isSelected: false,
     )));
     final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, NavigationTokens.bottomNavUnselected);
+    expect(icon.color, AppColorsData.light.textMuted);
   });
 
   testWidgets('selected: icon uses bottomNavSelected color', (tester) async {
@@ -40,7 +40,7 @@ void main() {
       isSelected: true,
     )));
     final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, NavigationTokens.bottomNavSelected);
+    expect(icon.color, AppColorsData.light.iconAccent);
   });
 
   // ── Label color ────────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ void main() {
       isSelected: false,
     )));
     final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, NavigationTokens.bottomNavUnselected);
+    expect(text.style?.color, AppColorsData.light.textMuted);
   });
 
   testWidgets('selected: label uses bottomNavSelected color', (tester) async {
@@ -62,7 +62,7 @@ void main() {
       isSelected: true,
     )));
     final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, NavigationTokens.bottomNavSelected);
+    expect(text.style?.color, AppColorsData.light.iconAccent);
   });
 
   // ── onTap ──────────────────────────────────────────────────────────────────
@@ -156,5 +156,19 @@ void main() {
     ));
     final decoration = ringContainer.decoration! as BoxDecoration;
     expect(decoration.border!.top.color, AppColorsData.dark.borderFocused);
+  });
+
+  testWidgets('selected icon/label resolve against the dark theme',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: NavItem(icon: Icons.home, label: 'Home', isSelected: true),
+      ),
+    ));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
+    expect(icon.color, AppColorsData.dark.iconAccent);
+    final text = tester.widget<Text>(find.text('Home'));
+    expect(text.style?.color, AppColorsData.dark.iconAccent);
   });
 }

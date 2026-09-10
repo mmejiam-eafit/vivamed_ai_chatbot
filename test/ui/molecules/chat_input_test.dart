@@ -119,4 +119,28 @@ void main() {
           horizontal: AppSpacing.lg, vertical: AppSpacing.md),
     );
   });
+
+  // ── Background color ───────────────────────────────────────────────────────
+
+  testWidgets('background uses ChatTokens.inputBackground', (tester) async {
+    await tester.pumpWidget(wrap(ChatInput(
+      controller: TextEditingController(),
+      onSubmit: () {},
+    )));
+    final container = tester.widget<Container>(find.byType(Container).first);
+    expect(container.color, AppColorsData.light.surface);
+  });
+
+  // ── Dark theme ─────────────────────────────────────────────────────────────
+
+  testWidgets('background resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: Scaffold(
+        body: ChatInput(controller: TextEditingController(), onSubmit: () {}),
+      ),
+    ));
+    final container = tester.widget<Container>(find.byType(Container).first);
+    expect(container.color, AppColorsData.dark.surface);
+  });
 }

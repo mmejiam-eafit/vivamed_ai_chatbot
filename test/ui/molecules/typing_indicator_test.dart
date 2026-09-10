@@ -37,7 +37,10 @@ void main() {
     await tester.pumpWidget(wrap(const TypingIndicator()));
     await tester.pump();
     final dot = tester.firstWidget<Container>(dotFinder);
-    expect((dot.decoration! as BoxDecoration).color, ChatTokens.typingIndicator);
+    expect(
+      (dot.decoration! as BoxDecoration).color,
+      AppColorsData.light.interactiveAccent,
+    );
   });
 
   testWidgets('uses assistantBubbleRadiusAssistant border radius', (tester) async {
@@ -52,6 +55,22 @@ void main() {
                 ChatTokens.bubbleRadiusAssistant,
         description: 'assistant bubble container',
       ),
+    );
+  });
+
+  // ── Dark theme ─────────────────────────────────────────────────────────────
+
+  testWidgets('dots resolve typingIndicator color against the dark theme',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(body: TypingIndicator()),
+    ));
+    await tester.pump();
+    final dot = tester.firstWidget<Container>(dotFinder);
+    expect(
+      (dot.decoration! as BoxDecoration).color,
+      AppColorsData.dark.interactiveAccent,
     );
   });
 }

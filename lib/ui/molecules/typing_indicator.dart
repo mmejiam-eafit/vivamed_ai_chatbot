@@ -35,9 +35,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: ChatTokens.assistantBubble,
+        color: ChatTokens.assistantBubble(context),
         borderRadius: ChatTokens.bubbleRadiusAssistant,
-        border: Border.all(color: ChatTokens.assistantBubbleBorder),
+        border: Border.all(color: ChatTokens.assistantBubbleBorder(context)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -75,9 +75,9 @@ class _Dot extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
         width: 8.0,
         height: 8.0,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: ChatTokens.typingIndicator,
+          color: ChatTokens.typingIndicator(context),
         ),
       ),
     );

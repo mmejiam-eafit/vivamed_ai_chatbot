@@ -17,9 +17,9 @@ class AppNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: NavigationTokens.bottomNavBackground,
-        border: Border(top: BorderSide(color: AppColors.borderSubdued)),
+      decoration: BoxDecoration(
+        color: NavigationTokens.bottomNavBackground(context),
+        border: Border(top: BorderSide(color: context.colors.borderSubdued)),
       ),
       child: SafeArea(
         top: false,

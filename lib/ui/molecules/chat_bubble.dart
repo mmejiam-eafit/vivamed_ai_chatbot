@@ -41,13 +41,15 @@ class ChatBubble extends StatelessWidget {
             vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
-            color: isUser ? ChatTokens.userBubble : ChatTokens.assistantBubble,
+            color: isUser
+                ? ChatTokens.userBubble(context)
+                : ChatTokens.assistantBubble(context),
             borderRadius: isUser
                 ? ChatTokens.bubbleRadiusUser
                 : ChatTokens.bubbleRadiusAssistant,
             border: isUser
                 ? null
-                : Border.all(color: ChatTokens.assistantBubbleBorder),
+                : Border.all(color: ChatTokens.assistantBubbleBorder(context)),
           ),
           child: AppText(
             message,
@@ -55,8 +57,8 @@ class ChatBubble extends StatelessWidget {
             // up from the default body size.
             style: AppTypography.bodyLg,
             color: isUser
-                ? ChatTokens.userBubbleText
-                : ChatTokens.assistantBubbleText,
+                ? ChatTokens.userBubbleText(context)
+                : ChatTokens.assistantBubbleText(context),
           ),
         );
 
@@ -101,7 +103,7 @@ class ChatBubble extends StatelessWidget {
                 AppText(
                   timestamp!,
                   style: AppTypography.caption,
-                  color: ChatTokens.timestamp,
+                  color: ChatTokens.timestamp(context),
                 ),
               ],
             ],
