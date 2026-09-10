@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/ui/atoms/app_tab_bar.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
@@ -44,6 +45,7 @@ class StudyReviewTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -51,44 +53,30 @@ class StudyReviewTemplate extends StatelessWidget {
         // actually fit — below that, chat lives inside the tab strip instead
         // of losing its own column to an unfittable width (§9.1).
         if (width >= AppLayout.threePaneMinWidth) {
-          return _buildThreeZone(isUltrawide: width >= AppLayout.ultrawideMinWidth);
+          return _buildThreeZone(
+            colors,
+            isUltrawide: width >= AppLayout.ultrawideMinWidth,
+          );
         }
         // Viewer and tabs side by side once there's room for both without
         // either going unreadably narrow, even if that's not yet room for
         // nav and chat as their own zones too.
         if (width >= AppLayout.twoPaneMinWidth) {
-          return _buildViewerAndTabs();
+          return _buildViewerAndTabs(colors);
         }
-        return _buildNarrow();
+        return _buildNarrow(colors);
       },
     );
   }
 
   Widget _tabs() {
-    return DefaultTabController(
-      length: 2,
-      child: Column(
-        children: [
-          const TabBar(
-            indicatorColor: AppColors.interactivePrimary,
-            labelColor: AppColors.interactivePrimary,
-            unselectedLabelColor: AppColors.textSecondary,
-            tabs: [
-              Tab(text: 'Findings'),
-              Tab(text: 'Chat'),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
-              children: [findingsPanel, chatPanel],
-            ),
-          ),
-        ],
-      ),
+    return AppTabBar(
+      tabs: const ['Findings', 'Chat'],
+      tabViews: [findingsPanel, chatPanel],
     );
   }
 
-  Widget _buildThreeZone({required bool isUltrawide}) {
+  Widget _buildThreeZone(AppColorsData colors, {required bool isUltrawide}) {
     // Ultrawide: viewer and findings sit side by side, and the viewer absorbs
     // the extra width rather than the pair simply growing taller stacked.
     final primaryContent = isUltrawide
@@ -107,7 +95,7 @@ class StudyReviewTemplate extends StatelessWidget {
             ],
           );
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       appBar: appBar,
       body: Row(
         children: [
@@ -137,9 +125,9 @@ class StudyReviewTemplate extends StatelessWidget {
   /// and the findings/chat tabs side by side, but not yet for nav and chat as
   /// their own separate zones too — so the drawer stays an overlay rather
   /// than sitting inline half-finished.
-  Widget _buildViewerAndTabs() {
+  Widget _buildViewerAndTabs(AppColorsData colors) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       appBar: appBar,
       drawer: drawer,
       body: Column(
@@ -170,9 +158,9 @@ class StudyReviewTemplate extends StatelessWidget {
   /// branch (design_tokens.md §12 gap 15).
   static const double _narrowImageHeightFraction = 0.45;
 
-  Widget _buildNarrow() {
+  Widget _buildNarrow(AppColorsData colors) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       appBar: appBar,
       drawer: drawer,
       body: Column(

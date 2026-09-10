@@ -118,7 +118,7 @@ void main() {
       );
       expect(
         tester.widget<Scaffold>(find.byType(Scaffold)).backgroundColor,
-        AppColors.surfacePage,
+        AppColorsData.light.surfacePage,
       );
     });
 
@@ -479,7 +479,7 @@ void main() {
       testWidgets('image slot sits on canvasGround', (tester) async {
         final canvas = await canvasFor(tester, Brightness.light);
         expect(canvas.color, DiagnosticImageTokens.canvasGround);
-        expect(canvas.color, isNot(AppColors.surfacePage));
+        expect(canvas.color, isNot(AppColorsData.light.surfacePage));
       });
 
       testWidgets('is identical in light and dark', (tester) async {
@@ -488,20 +488,33 @@ void main() {
         expect(light.color, dark.color);
       });
 
-      testWidgets('the Scaffold around it stays themed', (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: buildAppTheme(),
-            home: StudyReviewTemplate(
-              appBar: AppBar(),
-              imageViewer: const SizedBox(),
-              findingsPanel: const SizedBox(),
-              chatPanel: const SizedBox(),
+      testWidgets('the Scaffold around it stays themed, unlike the canvas',
+          (tester) async {
+        Future<Scaffold> scaffoldFor(Brightness brightness) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: buildAppTheme(brightness),
+              home: StudyReviewTemplate(
+                appBar: AppBar(),
+                imageViewer: const SizedBox(),
+                findingsPanel: const SizedBox(),
+                chatPanel: const SizedBox(),
+              ),
             ),
-          ),
-        );
-        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-        expect(scaffold.backgroundColor, AppColors.surfacePage);
+          );
+          // Two pumps share one tester, so the second is a live light-to-dark
+          // transition, not a fresh mount -- MaterialApp animates that theme
+          // change, and a single frame lands mid-interpolation rather than at
+          // the target color.
+          await tester.pumpAndSettle();
+          return tester.widget<Scaffold>(find.byType(Scaffold));
+        }
+
+        final light = await scaffoldFor(Brightness.light);
+        expect(light.backgroundColor, AppColorsData.light.surfacePage);
+        final dark = await scaffoldFor(Brightness.dark);
+        expect(dark.backgroundColor, AppColorsData.dark.surfacePage);
+        expect(dark.backgroundColor, isNot(light.backgroundColor));
       });
     });
   });

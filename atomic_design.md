@@ -36,6 +36,7 @@ Atoms are the smallest visual building blocks. Each atom maps to exactly one Mat
 | `AppLoadingIndicator` | `CircularProgressIndicator` | Indeterminate spinner. |
 | `AppChip` | `Chip` / `FilterChip` | Compact label with optional dismiss or selection. Used for tags and filters. |
 | `AppImage` | `Image` / `CachedNetworkImage` | Displays raster images (X-ray thumbnails, avatars). Handles loading and error states. |
+| `AppTabBar` | `DefaultTabController` + `TabBar` + `TabBarView` | Labeled tab strip with its paired content views. Used by `StudyReviewTemplate`'s narrower tiers to switch between Findings and Chat. |
 | `SeverityDot` | `Container` (circle) | A small colored dot indicating finding severity level. |
 | `AppLogo` | `SvgPicture` (`flutter_svg`) | The RadAsk brand mark (bubble icon, optionally with wordmark). Loads a static SVG with brand colors baked in — mode-invariant, never `context.colors`. |
 
@@ -89,7 +90,7 @@ An organism is a self-contained section of the interface that fulfills a distinc
 | `FindingsPanel` | `FindingRow` (many), `AppText` (section header) | A collapsible panel listing all AI-generated findings for the current study, grouped by region or severity. |
 | `StudyInfoCard` | `MetadataField` (many), `ImageThumbnail`, `AppText` (title) | Displays study metadata: patient pseudonym, modality, date, study UID, and a representative thumbnail. |
 | `ConversationDrawer` | `NavItem` (many), `AppAvatar`, `AppText` | Side drawer listing past conversations. Each item shows a summary and timestamp. |
-| `AppNavBar` | `NavItem` (many) | Bottom navigation bar with destinations: Chat, Studies, Settings. |
+| `AppNavBar` | `NavigationBar`/`NavigationDestination` (native) | Bottom navigation bar with destinations: Chat, Studies, Settings. |
 | `StatusBar` | `StatusBanner` | Persistent bar at the top of the screen showing connectivity or system status. |
 | `OnboardingCarousel` | `AppImage`, `AppText`, `AppButton` | A swipeable set of introductory slides shown on first launch. |
 
