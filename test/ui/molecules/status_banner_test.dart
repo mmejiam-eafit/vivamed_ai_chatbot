@@ -65,28 +65,44 @@ void main() {
     await tester.pumpWidget(wrap(
       const StatusBanner(message: 'Msg', variant: StatusBannerVariant.info),
     ));
-    expect(_bannerDecoration(tester).color, AppColors.statusInfoSubdued);
+    expect(_bannerDecoration(tester).color, AppColorsData.light.statusInfoSubdued);
   });
 
   testWidgets('warning: background is statusWarningSubdued', (tester) async {
     await tester.pumpWidget(wrap(
       const StatusBanner(message: 'Msg', variant: StatusBannerVariant.warning),
     ));
-    expect(_bannerDecoration(tester).color, AppColors.statusWarningSubdued);
+    expect(_bannerDecoration(tester).color, AppColorsData.light.statusWarningSubdued);
   });
 
   testWidgets('error: background is statusErrorSubdued', (tester) async {
     await tester.pumpWidget(wrap(
       const StatusBanner(message: 'Msg', variant: StatusBannerVariant.error),
     ));
-    expect(_bannerDecoration(tester).color, AppColors.statusErrorSubdued);
+    expect(_bannerDecoration(tester).color, AppColorsData.light.statusErrorSubdued);
   });
 
   testWidgets('success: background is statusSuccessSubdued', (tester) async {
     await tester.pumpWidget(wrap(
       const StatusBanner(message: 'Msg', variant: StatusBannerVariant.success),
     ));
-    expect(_bannerDecoration(tester).color, AppColors.statusSuccessSubdued);
+    expect(_bannerDecoration(tester).color, AppColorsData.light.statusSuccessSubdued);
+  });
+
+  // ── Dark theme (gap 18) ────────────────────────────────────────────────────
+
+  testWidgets('resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildAppTheme(Brightness.dark),
+        home: const Scaffold(
+          body: StatusBanner(message: 'Msg', variant: StatusBannerVariant.error),
+        ),
+      ),
+    );
+    expect(_bannerDecoration(tester).color, AppColorsData.dark.statusErrorSubdued);
+    final message = tester.widget<Text>(find.text('Msg'));
+    expect(message.style?.color, AppColorsData.dark.statusError);
   });
 
   // ── Action button ──────────────────────────────────────────────────────────

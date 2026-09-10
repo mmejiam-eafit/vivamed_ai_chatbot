@@ -152,4 +152,22 @@ void main() {
       reason: 'StudyInfoCard must scroll rather than overflow',
     );
   });
+
+  // ── Dark theme (gap 18) ────────────────────────────────────────────────────
+
+  testWidgets('resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: StudyInfoCard(title: 'Chest CT', fields: []),
+      ),
+    ));
+    final container = tester.widget<Container>(find.byType(Container).first);
+    final decoration = container.decoration! as BoxDecoration;
+    expect(decoration.color, AppColorsData.dark.surface);
+    expect(decoration.border, Border.all(color: AppColorsData.dark.border));
+
+    final title = tester.widget<Text>(find.text('Chest CT'));
+    expect(title.style?.color, AppColorsData.dark.textPrimary);
+  });
 }

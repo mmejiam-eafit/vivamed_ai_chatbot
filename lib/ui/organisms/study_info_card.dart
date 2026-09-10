@@ -36,12 +36,13 @@ class StudyInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: AppRadius.borderCard,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
         boxShadow: AppElevation.card,
       ),
       // SingleChildScrollView prevents RenderFlex overflow when the card is
@@ -57,7 +58,7 @@ class StudyInfoCard extends StatelessWidget {
                   child: AppText(
                     title,
                     style: AppTypography.headingSm,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                 ),
                 if (thumbnailUrl != null) ...[

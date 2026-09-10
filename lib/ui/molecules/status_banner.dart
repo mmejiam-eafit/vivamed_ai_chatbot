@@ -27,23 +27,24 @@ class StatusBanner extends StatelessWidget {
         StatusBannerVariant.success => Icons.check_circle_outline,
       };
 
-  static Color _bgFor(StatusBannerVariant v) => switch (v) {
-        StatusBannerVariant.info => AppColors.statusInfoSubdued,
-        StatusBannerVariant.warning => AppColors.statusWarningSubdued,
-        StatusBannerVariant.error => AppColors.statusErrorSubdued,
-        StatusBannerVariant.success => AppColors.statusSuccessSubdued,
+  static Color _bgFor(AppColorsData colors, StatusBannerVariant v) => switch (v) {
+        StatusBannerVariant.info => colors.statusInfoSubdued,
+        StatusBannerVariant.warning => colors.statusWarningSubdued,
+        StatusBannerVariant.error => colors.statusErrorSubdued,
+        StatusBannerVariant.success => colors.statusSuccessSubdued,
       };
 
-  static Color _fgFor(StatusBannerVariant v) => switch (v) {
-        StatusBannerVariant.info => AppColors.statusInfo,
-        StatusBannerVariant.warning => AppColors.statusWarning,
-        StatusBannerVariant.error => AppColors.statusError,
-        StatusBannerVariant.success => AppColors.statusSuccess,
+  static Color _fgFor(AppColorsData colors, StatusBannerVariant v) => switch (v) {
+        StatusBannerVariant.info => colors.statusInfo,
+        StatusBannerVariant.warning => colors.statusWarning,
+        StatusBannerVariant.error => colors.statusError,
+        StatusBannerVariant.success => colors.statusSuccess,
       };
 
   @override
   Widget build(BuildContext context) {
-    final fg = _fgFor(variant);
+    final colors = context.colors;
+    final fg = _fgFor(colors, variant);
     final hasAction = actionLabel != null && onAction != null;
 
     return Container(
@@ -52,7 +53,7 @@ class StatusBanner extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: _bgFor(variant),
+        color: _bgFor(colors, variant),
         borderRadius: AppRadius.borderCard,
       ),
       child: Row(
