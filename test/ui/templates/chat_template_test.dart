@@ -163,9 +163,8 @@ void main() {
       expect(find.text('drawer-inline'), findsOneWidget);
     });
 
-    testWidgets('uses narrow layout below template split width',
-        (tester) async {
-      const width = AppLayout.templateSplitWidth - 1;
+    testWidgets('uses narrow layout below threePaneMinWidth', (tester) async {
+      const width = AppLayout.threePaneMinWidth - 1;
       tester.view.physicalSize = const Size(width * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -186,9 +185,9 @@ void main() {
       expect(scaffold.bottomSheet, isNotNull);
     });
 
-    testWidgets('uses wide layout at template split width', (tester) async {
+    testWidgets('uses wide layout at threePaneMinWidth', (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.templateSplitWidth * 3, 844 * 3);
+          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);

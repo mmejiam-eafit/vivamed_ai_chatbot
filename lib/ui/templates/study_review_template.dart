@@ -46,13 +46,66 @@ class StudyReviewTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= AppLayout.templateSplitWidth;
-        return isWide ? _buildWide() : _buildNarrow();
+        final width = constraints.maxWidth;
+        // Three named zones (nav, viewer+findings, chat) only once all three
+        // actually fit — below that, chat lives inside the tab strip instead
+        // of losing its own column to an unfittable width (§9.1).
+        if (width >= AppLayout.threePaneMinWidth) {
+          return _buildThreeZone(isUltrawide: width >= AppLayout.ultrawideMinWidth);
+        }
+        // Viewer and tabs side by side once there's room for both without
+        // either going unreadably narrow, even if that's not yet room for
+        // nav and chat as their own zones too.
+        if (width >= AppLayout.twoPaneMinWidth) {
+          return _buildViewerAndTabs();
+        }
+        return _buildNarrow();
       },
     );
   }
 
-  Widget _buildWide() {
+  Widget _tabs() {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          const TabBar(
+            indicatorColor: AppColors.interactivePrimary,
+            labelColor: AppColors.interactivePrimary,
+            unselectedLabelColor: AppColors.textSecondary,
+            tabs: [
+              Tab(text: 'Findings'),
+              Tab(text: 'Chat'),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [findingsPanel, chatPanel],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThreeZone({required bool isUltrawide}) {
+    // Ultrawide: viewer and findings sit side by side, and the viewer absorbs
+    // the extra width rather than the pair simply growing taller stacked.
+    final primaryContent = isUltrawide
+        ? Row(
+            children: [
+              Expanded(flex: 3, child: _canvas(imageViewer)),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(flex: 2, child: findingsPanel),
+            ],
+          )
+        : Column(
+            children: [
+              Expanded(flex: 3, child: _canvas(imageViewer)),
+              const SizedBox(height: AppSpacing.lg),
+              Expanded(flex: 2, child: findingsPanel),
+            ],
+          );
     return Scaffold(
       backgroundColor: AppColors.surfacePage,
       appBar: appBar,
@@ -68,13 +121,7 @@ class StudyReviewTemplate extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      children: [
-                        Expanded(flex: 3, child: _canvas(imageViewer)),
-                        const SizedBox(height: AppSpacing.lg),
-                        Expanded(flex: 2, child: findingsPanel),
-                      ],
-                    ),
+                    child: primaryContent,
                   ),
                 ),
               ],
@@ -86,6 +133,43 @@ class StudyReviewTemplate extends StatelessWidget {
     );
   }
 
+  /// Between `twoPaneMinWidth` and `threePaneMinWidth`: room for the viewer
+  /// and the findings/chat tabs side by side, but not yet for nav and chat as
+  /// their own separate zones too — so the drawer stays an overlay rather
+  /// than sitting inline half-finished.
+  Widget _buildViewerAndTabs() {
+    return Scaffold(
+      backgroundColor: AppColors.surfacePage,
+      appBar: appBar,
+      drawer: drawer,
+      body: Column(
+        children: [
+          if (statusBar != null) statusBar!,
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: _canvas(imageViewer),
+                  ),
+                ),
+                Expanded(flex: 2, child: _tabs()),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Caps the narrow layout's image slot so a 4:3 `AspectRatio` cannot demand
+  /// `width × 0.75` regardless of the height actually available — which
+  /// overflowed in exactly this way once a short, wide window reached this
+  /// branch (design_tokens.md §12 gap 15).
+  static const double _narrowImageHeightFraction = 0.45;
+
   Widget _buildNarrow() {
     return Scaffold(
       backgroundColor: AppColors.surfacePage,
@@ -94,29 +178,23 @@ class StudyReviewTemplate extends StatelessWidget {
       body: Column(
         children: [
           if (statusBar != null) statusBar!,
-          AspectRatio(aspectRatio: 4 / 3, child: _canvas(imageViewer)),
-          const SizedBox(height: AppSpacing.sm),
           Expanded(
-            child: DefaultTabController(
-              length: 2,
-              child: Column(
-                children: [
-                  const TabBar(
-                    indicatorColor: AppColors.interactivePrimary,
-                    labelColor: AppColors.interactivePrimary,
-                    unselectedLabelColor: AppColors.textSecondary,
-                    tabs: [
-                      Tab(text: 'Findings'),
-                      Tab(text: 'Chat'),
-                    ],
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [findingsPanel, chatPanel],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final imageHeight =
+                    constraints.maxHeight * _narrowImageHeightFraction;
+                return Column(
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: imageHeight),
+                      child:
+                          AspectRatio(aspectRatio: 4 / 3, child: _canvas(imageViewer)),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Expanded(child: _tabs()),
+                  ],
+                );
+              },
             ),
           ),
         ],

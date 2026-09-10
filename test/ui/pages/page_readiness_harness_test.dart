@@ -20,6 +20,14 @@ void main() {
 
     testWidgets('Study review page harness maps to StudyReviewTemplate',
         (tester) async {
+      // Wide, not the default size: below threePaneMinWidth, chatPanel lives
+      // inside the (unselected-by-default) second tab and isn't laid out.
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(
         MaterialApp(theme: buildAppTheme(), home: _StudyReviewPageHarness()),
       );

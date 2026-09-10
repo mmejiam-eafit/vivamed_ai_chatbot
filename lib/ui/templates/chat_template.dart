@@ -23,8 +23,12 @@ class ChatTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= AppLayout.templateSplitWidth;
-        return isWide ? _buildWide() : _buildNarrow();
+        // Nav, chat, and findings side by side only once all three actually
+        // fit — not at a flat width, which is how nav (240) + panel (360)
+        // used to leave a chat column as narrow as 168px (§9.1).
+        final fitsThreePanes =
+            constraints.maxWidth >= AppLayout.threePaneMinWidth;
+        return fitsThreePanes ? _buildWide() : _buildNarrow();
       },
     );
   }

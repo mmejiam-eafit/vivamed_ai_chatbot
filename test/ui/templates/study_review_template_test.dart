@@ -51,6 +51,14 @@ void main() {
     });
 
     testWidgets('renders chatPanel slot', (tester) async {
+      // Wide, not the default size: below threePaneMinWidth, chat lives
+      // inside the (unselected-by-default) second tab and isn't laid out.
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(
         MaterialApp(
           theme: buildAppTheme(),
@@ -114,7 +122,7 @@ void main() {
       );
     });
 
-    group('narrow layout (< 768px)', () {
+    group('narrow layout (< twoPaneMinWidth)', () {
       setUp(() {});
 
       testWidgets('shows TabBar with Findings and Chat tabs', (tester) async {
@@ -162,9 +170,9 @@ void main() {
         expect(scaffold.drawer, isNotNull);
       });
 
-      testWidgets('uses narrow layout below template split width',
+      testWidgets('uses narrow layout up to twoPaneMinWidth - 1',
           (tester) async {
-        const width = AppLayout.templateSplitWidth - 1;
+        const width = AppLayout.twoPaneMinWidth - 1;
         tester.view.physicalSize = const Size(width * 3, 844 * 3);
         tester.view.devicePixelRatio = 3.0;
         addTearDown(tester.view.resetPhysicalSize);
@@ -183,10 +191,61 @@ void main() {
         );
 
         expect(find.byType(TabBar), findsOneWidget);
+        expect(find.byType(AspectRatio), findsOneWidget);
       });
     });
 
-    group('wide layout (>= 768px)', () {
+    group('viewer + tabs layout (twoPaneMinWidth to threePaneMinWidth - 1)',
+        () {
+      testWidgets('shows the tabs beside the viewer, not stacked under it',
+          (tester) async {
+        tester.view.physicalSize =
+            const Size(AppLayout.twoPaneMinWidth * 3, 800 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const SizedBox(),
+              findingsPanel: const SizedBox(),
+              chatPanel: const SizedBox(),
+            ),
+          ),
+        );
+        expect(find.byType(TabBar), findsOneWidget);
+        expect(find.byType(AspectRatio), findsNothing);
+      });
+
+      testWidgets('drawer stays an overlay just below threePaneMinWidth',
+          (tester) async {
+        const width = AppLayout.threePaneMinWidth - 1;
+        tester.view.physicalSize = const Size(width * 3, 800 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const SizedBox(),
+              findingsPanel: const SizedBox(),
+              chatPanel: const SizedBox(),
+              drawer: const Text('drawer-content'),
+            ),
+          ),
+        );
+        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+        expect(scaffold.drawer, isNotNull);
+      });
+    });
+
+    group('three-zone layout (>= threePaneMinWidth)', () {
       testWidgets('shows Row layout, no TabBar', (tester) async {
         tester.view.physicalSize = const Size(1200 * 3, 800 * 3);
         tester.view.devicePixelRatio = 3.0;
@@ -208,7 +267,8 @@ void main() {
         expect(find.byType(Row), findsWidgets);
       });
 
-      testWidgets('drawer is rendered inline (Scaffold.drawer is null) on wide',
+      testWidgets(
+          'drawer is rendered inline (Scaffold.drawer is null) on wide',
           (tester) async {
         tester.view.physicalSize = const Size(1200 * 3, 800 * 3);
         tester.view.devicePixelRatio = 3.0;
@@ -232,9 +292,10 @@ void main() {
         expect(find.text('drawer-content'), findsOneWidget);
       });
 
-      testWidgets('uses wide layout at template split width', (tester) async {
+      testWidgets('uses three-zone layout at threePaneMinWidth',
+          (tester) async {
         tester.view.physicalSize =
-            const Size(AppLayout.templateSplitWidth * 3, 844 * 3);
+            const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
         tester.view.devicePixelRatio = 3.0;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
@@ -302,6 +363,57 @@ void main() {
           ),
           findsOneWidget,
         );
+      });
+    });
+
+    group('ultrawide: viewer and findings go side by side', () {
+      testWidgets('sit side by side at ultrawideMinWidth', (tester) async {
+        tester.view.physicalSize =
+            const Size(AppLayout.ultrawideMinWidth * 3, 900 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const Text('viewer-content'),
+              findingsPanel: const Text('findings-content'),
+              chatPanel: const SizedBox(),
+            ),
+          ),
+        );
+
+        final viewerPos = tester.getTopLeft(find.text('viewer-content'));
+        final findingsPos = tester.getTopLeft(find.text('findings-content'));
+        expect(viewerPos.dx, isNot(closeTo(findingsPos.dx, 1)));
+        expect(viewerPos.dy, closeTo(findingsPos.dy, 1));
+      });
+
+      testWidgets('still stack just under ultrawideMinWidth', (tester) async {
+        const width = AppLayout.ultrawideMinWidth - 1;
+        tester.view.physicalSize = const Size(width * 3, 900 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const Text('viewer-content'),
+              findingsPanel: const Text('findings-content'),
+              chatPanel: const SizedBox(),
+            ),
+          ),
+        );
+
+        final viewerPos = tester.getTopLeft(find.text('viewer-content'));
+        final findingsPos = tester.getTopLeft(find.text('findings-content'));
+        expect(viewerPos.dy, isNot(closeTo(findingsPos.dy, 1)));
       });
     });
 

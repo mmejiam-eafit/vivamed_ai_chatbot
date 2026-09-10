@@ -41,12 +41,12 @@ void main() {
       expect(find.byType(FindingsPanel), findsOneWidget);
     });
 
-    // ── Responsive breakpoint: 767 (narrow) ──────────────────────────────────
+    // ── Responsive breakpoint: threePaneMinWidth - 1 (narrow) ────────────────
 
-    testWidgets('narrow at 767: drawer assigned to Scaffold.drawer',
+    testWidgets('narrow below threePaneMinWidth: drawer assigned to Scaffold.drawer',
         (tester) async {
       tester.view.physicalSize =
-          const Size((AppLayout.templateSplitWidth - 1) * 3, 844 * 3);
+          const Size((AppLayout.threePaneMinWidth - 1) * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -59,10 +59,10 @@ void main() {
       expect(scaffold.drawer, isNotNull);
     });
 
-    testWidgets('narrow at 767: findings rendered as bottom sheet',
+    testWidgets('narrow below threePaneMinWidth: findings rendered as bottom sheet',
         (tester) async {
       tester.view.physicalSize =
-          const Size((AppLayout.templateSplitWidth - 1) * 3, 844 * 3);
+          const Size((AppLayout.threePaneMinWidth - 1) * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -75,11 +75,11 @@ void main() {
       expect(scaffold.bottomSheet, isNotNull);
     });
 
-    // ── Responsive breakpoint: 768 (wide — at split) ─────────────────────────
+    // ── Responsive breakpoint: threePaneMinWidth (wide — at split) ──────────
 
-    testWidgets('wide at 768: Scaffold.drawer is null', (tester) async {
+    testWidgets('wide at threePaneMinWidth: Scaffold.drawer is null', (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.templateSplitWidth * 3, 844 * 3);
+          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -92,9 +92,9 @@ void main() {
       expect(scaffold.drawer, isNull);
     });
 
-    testWidgets('wide at 768: findings inline — no bottom sheet', (tester) async {
+    testWidgets('wide at threePaneMinWidth: findings inline — no bottom sheet', (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.templateSplitWidth * 3, 844 * 3);
+          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -107,11 +107,11 @@ void main() {
       expect(scaffold.bottomSheet, isNull);
     });
 
-    // ── Responsive breakpoint: 769 (wide — above split) ──────────────────────
+    // ── Responsive breakpoint: threePaneMinWidth + 1 (wide — above split) ───
 
-    testWidgets('wide at 769: drawer is inline and Row is used', (tester) async {
+    testWidgets('wide above threePaneMinWidth: drawer is inline and Row is used', (tester) async {
       tester.view.physicalSize =
-          const Size((AppLayout.templateSplitWidth + 1) * 3, 844 * 3);
+          const Size((AppLayout.threePaneMinWidth + 1) * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);

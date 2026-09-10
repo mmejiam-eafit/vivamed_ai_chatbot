@@ -1288,6 +1288,21 @@ abstract final class AppLayout {
   static const double panelMaxWidth = 360.0;
 }
 
+/// A template's four responsive postures (§9.2). Drives nav pattern and
+/// density — never layout fit, which pane minimums decide instead (§9.1).
+enum AppLayoutTier { compact, medium, expanded, ultrawide }
+
+extension AppLayoutTierResolver on double {
+  /// Resolves a width — always a `LayoutBuilder` constraint, never
+  /// `MediaQuery.of(context).size` (§9.6) — to its tier.
+  AppLayoutTier get layoutTier {
+    if (this < AppLayout.mediumMinWidth) return AppLayoutTier.compact;
+    if (this < AppLayout.expandedMinWidth) return AppLayoutTier.medium;
+    if (this < AppLayout.ultrawideMinWidth) return AppLayoutTier.expanded;
+    return AppLayoutTier.ultrawide;
+  }
+}
+
 // ============================================================================
 // Interactive States
 // ============================================================================
