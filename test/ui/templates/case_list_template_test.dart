@@ -323,7 +323,22 @@ void main() {
         ),
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, AppColors.surfacePage);
+      expect(scaffold.backgroundColor, AppColorsData.light.surfacePage);
+    });
+
+    testWidgets('resolves against the dark theme', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(Brightness.dark),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [],
+            worklistTable: const Text('table'),
+          ),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
     });
   });
 }

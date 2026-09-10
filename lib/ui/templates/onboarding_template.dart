@@ -12,7 +12,7 @@ class OnboardingTemplate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: context.colors.surfacePage,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

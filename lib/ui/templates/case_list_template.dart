@@ -36,7 +36,7 @@ class CaseListTemplate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: context.colors.surfacePage,
       appBar: appBar,
       body: LayoutBuilder(
         builder: (context, constraints) {

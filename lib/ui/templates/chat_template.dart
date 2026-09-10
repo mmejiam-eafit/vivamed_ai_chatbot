@@ -23,6 +23,7 @@ class ChatTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return LayoutBuilder(
       builder: (context, constraints) {
         // Nav, chat, and findings side by side only once all three actually
@@ -30,15 +31,15 @@ class ChatTemplate extends StatelessWidget {
         // used to leave a chat column as narrow as 168px (§9.1).
         final fitsThreePanes =
             constraints.maxWidth >= AppLayout.threePaneMinWidth;
-        if (fitsThreePanes) return _buildWide();
+        if (fitsThreePanes) return _buildWide(colors);
         // Below that, compact keeps the drawer + bottom sheet; medium (and
         // whatever's left of expanded once panes don't fit) collapses to a
         // rail instead (§9.5).
         final isCompact =
             constraints.maxWidth.layoutTier == AppLayoutTier.compact;
         return isCompact
-            ? _buildNarrow(constraints.maxHeight)
-            : _buildRail();
+            ? _buildNarrow(colors, constraints.maxHeight)
+            : _buildRail(colors);
       },
     );
   }
@@ -55,9 +56,9 @@ class ChatTemplate extends StatelessWidget {
         ],
       );
 
-  Widget _buildWide() {
+  Widget _buildWide(AppColorsData colors) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       appBar: appBar,
       body: Row(
         children: [
@@ -71,9 +72,9 @@ class ChatTemplate extends StatelessWidget {
     );
   }
 
-  Widget _buildNarrow(double availableHeight) {
+  Widget _buildNarrow(AppColorsData colors, double availableHeight) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       appBar: appBar,
       drawer: drawer,
       body: Column(
@@ -94,9 +95,9 @@ class ChatTemplate extends StatelessWidget {
   // Medium (and whatever's left of expanded once three panes don't fit):
   // conversations collapse to a 64px rail, findings become a trailing
   // slide-over via Scaffold.endDrawer (§9.5).
-  Widget _buildRail() {
+  Widget _buildRail(AppColorsData colors) {
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       appBar: appBar,
       drawer: drawer,
       endDrawer: findingsPanel == null

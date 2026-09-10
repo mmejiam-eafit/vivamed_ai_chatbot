@@ -23,7 +23,28 @@ void main() {
         ),
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, AppColors.surfacePage);
+      expect(scaffold.backgroundColor, AppColorsData.light.surfacePage);
+    });
+
+    // ── Dark theme (gap 18) ──────────────────────────────────────────────────
+
+    testWidgets('resolves against the dark theme', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(Brightness.dark),
+          home: const AuthTemplate(formContent: SizedBox()),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
+
+      // Medium and up renders the card; default test size already is.
+      final container = tester.widget<Container>(
+        find.descendant(
+            of: find.byType(AuthTemplate), matching: find.byType(Container)),
+      );
+      final decoration = container.decoration! as BoxDecoration;
+      expect(decoration.color, AppColorsData.dark.surface);
     });
 
     // ── Compact: full-bleed, no card (DT §9.5) ────────────────────────────────

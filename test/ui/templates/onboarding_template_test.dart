@@ -23,7 +23,18 @@ void main() {
         ),
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, AppColors.surfacePage);
+      expect(scaffold.backgroundColor, AppColorsData.light.surfacePage);
+    });
+
+    testWidgets('resolves against the dark theme', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(Brightness.dark),
+          home: const OnboardingTemplate(carousel: SizedBox()),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
     });
 
     testWidgets('wraps carousel in SafeArea', (tester) async {

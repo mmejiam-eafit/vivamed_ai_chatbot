@@ -49,7 +49,22 @@ void main() {
       );
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, AppColors.surfacePage);
+      expect(scaffold.backgroundColor, AppColorsData.light.surfacePage);
+    });
+
+    testWidgets('resolves against the dark theme', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(Brightness.dark),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
     });
 
     // ── Compact (< mediumMinWidth): drawer + draggable bottom sheet ────────

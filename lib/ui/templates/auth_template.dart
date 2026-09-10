@@ -13,8 +13,9 @@ class AuthTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.surfacePage,
+      backgroundColor: colors.surfacePage,
       // resizeToAvoidBottomInset (Scaffold's default) plus a scrollable body
       // is what lets compact scroll the form above the keyboard (DT §9.5).
       body: LayoutBuilder(
@@ -38,7 +39,7 @@ class AuthTemplate extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(AppSpacing.xl),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: colors.surface,
                           borderRadius: AppRadius.borderPanel,
                         ),
                         child: formContent,
