@@ -36,27 +36,65 @@ class HeatmapViewerTemplate extends StatelessWidget {
   /// depends on the ambient theme (design_tokens.md §10.2, DL §6.5).
   static final ThemeData _forcedDark = buildAppTheme(Brightness.dark);
 
+  /// Width of the persistent control rail at expanded and up (DT §9.5).
+  static const double _railWidth = 280.0;
+
+  /// Explicit control-bar height at medium — compact keeps its intrinsic
+  /// height, this tier pins it (DT §9.5).
+  static const double _mediumControlBarHeight = 56.0;
+
   @override
   Widget build(BuildContext context) {
+    final canvas = Stack(
+      fit: StackFit.expand,
+      children: [
+        baseImage,
+        if (heatmapOverlay != null) heatmapOverlay!,
+      ],
+    );
+
     return Theme(
       data: _forcedDark,
-      child: Scaffold(
-        backgroundColor: DiagnosticImageTokens.canvasGround,
-        appBar: appBar,
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            baseImage,
-            if (heatmapOverlay != null) heatmapOverlay!,
-          ],
-        ),
-        bottomNavigationBar: ColoredBox(
-          color: DiagnosticImageTokens.canvasGround,
-          child: Padding(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tier = constraints.maxWidth.layoutTier;
+          final isRailTier = tier == AppLayoutTier.expanded ||
+              tier == AppLayoutTier.ultrawide;
+
+          if (isRailTier) {
+            return Scaffold(
+              backgroundColor: DiagnosticImageTokens.canvasGround,
+              appBar: appBar,
+              body: Row(
+                children: [
+                  Expanded(child: canvas),
+                  Container(
+                    width: _railWidth,
+                    color: DiagnosticImageTokens.canvasGround,
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: opacityControl,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final controlBar = Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: opacityControl,
-          ),
-        ),
+          );
+          return Scaffold(
+            backgroundColor: DiagnosticImageTokens.canvasGround,
+            appBar: appBar,
+            body: canvas,
+            bottomNavigationBar: ColoredBox(
+              color: DiagnosticImageTokens.canvasGround,
+              child: tier == AppLayoutTier.medium
+                  ? SizedBox(height: _mediumControlBarHeight, child: controlBar)
+                  : controlBar,
+            ),
+          );
+        },
       ),
     );
   }

@@ -165,5 +165,85 @@ void main() {
       final bottomBar = scaffold.bottomNavigationBar! as ColoredBox;
       expect(bottomBar.color, DiagnosticImageTokens.canvasGround);
     });
+
+    // ── Responsive tiers (DT §9.5) ─────────────────────────────────────────
+
+    testWidgets('medium: control bar is pinned to 56px', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: HeatmapViewerTemplate(
+            appBar: AppBar(),
+            baseImage: const SizedBox(),
+            opacityControl: const Text('control'),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      final bottomBar = scaffold.bottomNavigationBar! as ColoredBox;
+      expect((bottomBar.child! as SizedBox).height, 56.0);
+    });
+
+    testWidgets('expanded: controls move to a 280px right rail, no bottom bar',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.expandedMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: HeatmapViewerTemplate(
+            appBar: AppBar(),
+            baseImage: const SizedBox(),
+            opacityControl: const Text('control'),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNull);
+
+      final railFinder = find.ancestor(
+        of: find.text('control'),
+        matching: find.byType(Container),
+      );
+      expect(tester.getSize(railFinder).width, 280.0);
+      final rail = tester.widget<Container>(railFinder);
+      expect(rail.color, DiagnosticImageTokens.canvasGround);
+    });
+
+    testWidgets('ultrawide: also uses the right rail, not the bottom bar',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.ultrawideMinWidth * 3, 900 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: HeatmapViewerTemplate(
+            appBar: AppBar(),
+            baseImage: const SizedBox(),
+            opacityControl: const Text('control'),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNull);
+      expect(find.text('control'), findsOneWidget);
+    });
   });
 }
