@@ -58,6 +58,25 @@ void main() {
     expect(called, isTrue);
   });
 
+  // ── Touch target (DL §8.5, gap 14) ────────────────────────────────────────
+
+  testWidgets('send and attach buttons meet the 44px floor', (tester) async {
+    await tester.pumpWidget(wrap(ChatInput(
+      controller: TextEditingController(),
+      onSubmit: () {},
+      onAttach: () {},
+    )));
+
+    for (final icon in [Icons.send, Icons.attach_file]) {
+      final size = tester.getSize(find.ancestor(
+        of: find.byIcon(icon),
+        matching: find.byType(IconButton),
+      ));
+      expect(size.width, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+      expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+    }
+  });
+
   // ── onSubmit ───────────────────────────────────────────────────────────────
 
   testWidgets('onSubmit fires when send button tapped', (tester) async {

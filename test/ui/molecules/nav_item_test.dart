@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 import 'package:radiologist_helper/ui/molecules/nav_item.dart';
 
 void main() {
@@ -66,6 +67,30 @@ void main() {
   });
 
   // ── onTap ──────────────────────────────────────────────────────────────────
+
+  // ── Touch target (DL §8.5, gap 14) ────────────────────────────────────────
+
+  testWidgets('vertical layout meets the 44px floor', (tester) async {
+    await tester.pumpWidget(wrap(
+      const NavItem(icon: Icons.home, label: 'Home'),
+    ));
+    final size = tester.getSize(find.byType(FocusRing));
+    expect(size.width, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+    expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+  });
+
+  testWidgets('horizontal layout meets the 44px floor', (tester) async {
+    await tester.pumpWidget(wrap(
+      const NavItem(
+        icon: Icons.home,
+        label: 'Home',
+        layout: NavItemLayout.horizontal,
+      ),
+    ));
+    final size = tester.getSize(find.byType(FocusRing));
+    expect(size.width, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+    expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
+  });
 
   testWidgets('onTap fires on tap', (tester) async {
     var called = false;

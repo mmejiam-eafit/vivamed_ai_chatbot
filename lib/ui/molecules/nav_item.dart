@@ -56,27 +56,37 @@ class NavItem extends StatelessWidget {
         ),
     };
 
-    return FocusRing(
-      // The ring sits outside the control by focusRingOffset, so its own
-      // radius grows by the same amount — mirrors AppButton's ring (DL §8.4).
-      borderRadius: BorderRadius.circular(
-        AppRadius.button + AppInteraction.focusRingOffset,
+    return ConstrainedBox(
+      // 44px floor in every direction (DL §8.5) — neither layout's natural
+      // padding+content reliably clears it (the horizontal layout's height
+      // is ~40px), so this wraps the whole tappable area rather than relying
+      // on padding tuning per layout.
+      constraints: const BoxConstraints(
+        minWidth: AppInteraction.minTouchTarget,
+        minHeight: AppInteraction.minTouchTarget,
       ),
-      child: InkWell(
-        onTap: onTap,
-        focusNode: focusNode,
-        borderRadius: AppRadius.borderButton,
-        child: Padding(
-          padding: layout == NavItemLayout.horizontal
-              ? const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                )
-              : const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-          child: child,
+      child: FocusRing(
+        // The ring sits outside the control by focusRingOffset, so its own
+        // radius grows by the same amount — mirrors AppButton's ring (DL §8.4).
+        borderRadius: BorderRadius.circular(
+          AppRadius.button + AppInteraction.focusRingOffset,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          focusNode: focusNode,
+          borderRadius: AppRadius.borderButton,
+          child: Padding(
+            padding: layout == NavItemLayout.horizontal
+                ? const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  )
+                : const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+            child: Center(child: child),
+          ),
         ),
       ),
     );
