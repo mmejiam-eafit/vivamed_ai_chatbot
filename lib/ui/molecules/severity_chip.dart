@@ -57,13 +57,18 @@ class SeverityChip extends StatelessWidget {
         children: [
           SeverityDot(severity: severity),
           const SizedBox(width: AppSpacing.xs),
-          AppText(
-            label ?? labelFor(severity),
-            // labelMd, not labelSm — labelSm's 10px sits below the 12px
-            // clinical floor (DL §4.5) and this label carries the colour-
-            // vision-deficiency redundancy channel (DL §3.6).
-            style: AppTypography.labelMd,
-            color: colorFor(severityColors, severity),
+          // Flexible, not a bare AppText: a fixed-width host (a dense table
+          // column, e.g.) has nowhere to put an overflow otherwise — this
+          // lets the label wrap instead of forcing the Row past its bounds.
+          Flexible(
+            child: AppText(
+              label ?? labelFor(severity),
+              // labelMd, not labelSm — labelSm's 10px sits below the 12px
+              // clinical floor (DL §4.5) and this label carries the colour-
+              // vision-deficiency redundancy channel (DL §3.6).
+              style: AppTypography.labelMd,
+              color: colorFor(severityColors, severity),
+            ),
           ),
         ],
       ),

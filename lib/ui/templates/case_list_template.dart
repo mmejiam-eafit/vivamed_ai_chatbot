@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
+import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
+import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 
 class CaseListTemplate extends StatelessWidget {
@@ -11,13 +13,22 @@ class CaseListTemplate extends StatelessWidget {
     super.key,
     required this.appBar,
     required this.caseSlots,
+    required this.worklistTable,
     this.header,
     this.statusBar,
     this.emptyState,
   });
 
   final PreferredSizeWidget appBar;
+
+  /// Compact and medium tiers — one `StudyInfoCard` per case.
   final List<Widget> caseSlots;
+
+  /// Expanded and ultrawide tiers — the dense sortable table (DT §9.5).
+  /// An opaque slot like every other template slot: this template never sees
+  /// the underlying case data, only whatever widget the page builds from it.
+  final Widget worklistTable;
+
   final Widget? header;
   final Widget? statusBar;
   final Widget? emptyState;
@@ -29,11 +40,7 @@ class CaseListTemplate extends StatelessWidget {
       appBar: appBar,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Compact: a single scanning column. Medium and up: a grid — the
-          // real deliverable there is a dense sortable table (DT §9.5), not
-          // yet built (gap 17); the grid is the interim, not the destination.
-          final isWide =
-              constraints.maxWidth.layoutTier != AppLayoutTier.compact;
+          final tier = constraints.maxWidth.layoutTier;
           return Column(
             children: [
               if (statusBar != null) statusBar!,
@@ -47,7 +54,7 @@ class CaseListTemplate extends StatelessWidget {
                   ),
                   child: header,
                 ),
-              Expanded(child: _buildContent(isWide)),
+              Expanded(child: _buildContent(tier)),
             ],
           );
         },
@@ -55,37 +62,52 @@ class CaseListTemplate extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(bool isWide) {
+  Widget _buildContent(AppLayoutTier tier) {
     if (caseSlots.isEmpty && emptyState != null) {
       return Center(child: emptyState);
     }
 
-    if (isWide) {
-      return Center(
-        child: ConstrainedBox(
-          constraints:
-              const BoxConstraints(maxWidth: AppLayout.contentMaxWidth),
-          child: GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: AppSpacing.lg,
-              mainAxisSpacing: AppSpacing.lg,
-              childAspectRatio: 1.4,
-            ),
-            itemCount: caseSlots.length,
-            itemBuilder: (_, i) => caseSlots[i],
-          ),
-        ),
-      );
-    }
+    switch (tier) {
+      case AppLayoutTier.compact:
+        return ListView.separated(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          itemCount: caseSlots.length,
+          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.lg),
+          itemBuilder: (_, i) => caseSlots[i],
+        );
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      itemCount: caseSlots.length,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.lg),
-      itemBuilder: (_, i) => caseSlots[i],
-    );
+      case AppLayoutTier.medium:
+        return Center(
+          child: ConstrainedBox(
+            constraints:
+                const BoxConstraints(maxWidth: AppLayout.contentMaxWidth),
+            child: GridView.builder(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: AppSpacing.lg,
+                mainAxisSpacing: AppSpacing.lg,
+                childAspectRatio: 1.4,
+              ),
+              itemCount: caseSlots.length,
+              itemBuilder: (_, i) => caseSlots[i],
+            ),
+          ),
+        );
+
+      case AppLayoutTier.expanded:
+      case AppLayoutTier.ultrawide:
+        // Ultrawide caps at worklistMaxWidth (DT §9.5); expanded has no
+        // narrower ceiling of its own to apply, so the constraint is a no-op
+        // there (its own tier max, 1599, is already below the cap).
+        return Center(
+          child: ConstrainedBox(
+            constraints:
+                const BoxConstraints(maxWidth: AppLayout.worklistMaxWidth),
+            child: worklistTable,
+          ),
+        );
+    }
   }
 }
 
@@ -127,6 +149,33 @@ List<Widget> _previewCaseCards(int count, List<StudyMetadataField> fields) =>
       ),
     );
 
+List<CaseSummary> _previewCases() => [
+      CaseSummary(
+        title: 'Chest X-Ray — PA view 1',
+        patient: 'Anonymous 1',
+        modality: 'CXR',
+        date: DateTime(2026, 4, 12),
+        confidence: 0.94,
+        severity: SeverityLevel.critical,
+      ),
+      CaseSummary(
+        title: 'Chest X-Ray — PA view 2',
+        patient: 'Anonymous 2',
+        modality: 'CXR',
+        date: DateTime(2026, 3, 28),
+        confidence: 0.81,
+        severity: SeverityLevel.moderate,
+      ),
+      CaseSummary(
+        title: 'Chest X-Ray — PA view 3',
+        patient: 'Anonymous 3',
+        modality: 'CXR',
+        date: DateTime(2025, 11, 3),
+        confidence: 0.67,
+        severity: SeverityLevel.normal,
+      ),
+    ];
+
 @Preview(
     name: 'wide — similar cases',
     size: Size(900, 700),
@@ -139,6 +188,7 @@ Widget previewCaseListWide() => CaseListTemplate(
         color: AppColors.textPrimary,
       ),
       caseSlots: _previewCaseCards(3, _previewCaseFields),
+      worklistTable: CaseWorklistTable(cases: _previewCases()),
     );
 
 @Preview(
@@ -148,12 +198,24 @@ Widget previewCaseListWide() => CaseListTemplate(
 Widget previewCaseListNarrow() => CaseListTemplate(
       appBar: AppBar(title: const Text('Patient History')),
       caseSlots: _previewCaseCards(4, _previewHistoryFields),
+      worklistTable: CaseWorklistTable(cases: _previewCases()),
+    );
+
+@Preview(
+    name: 'expanded — worklist table',
+    size: Size(1200, 700),
+    wrapper: previewWrapperFull)
+Widget previewCaseListExpanded() => CaseListTemplate(
+      appBar: AppBar(title: const Text('Similar Cases')),
+      caseSlots: _previewCaseCards(3, _previewCaseFields),
+      worklistTable: CaseWorklistTable(cases: _previewCases()),
     );
 
 @Preview(name: 'empty state', size: Size(390, 400), wrapper: previewWrapperFull)
 Widget previewCaseListEmpty() => CaseListTemplate(
       appBar: AppBar(title: const Text('Similar Cases')),
       caseSlots: const [],
+      worklistTable: const CaseWorklistTable(cases: []),
       emptyState: const AppText(
         'No similar cases found.',
         style: AppTypography.bodyMd,

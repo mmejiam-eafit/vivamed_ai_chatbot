@@ -12,6 +12,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(title: const Text('Cases')),
             caseSlots: const [],
+            worklistTable: const Text('table'),
           ),
         ),
       );
@@ -25,6 +26,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [Text('case-1'), Text('case-2'), Text('case-3')],
+            worklistTable: const Text('table'),
           ),
         ),
       );
@@ -40,6 +42,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [],
+            worklistTable: const Text('table'),
             header: const Text('section header'),
           ),
         ),
@@ -54,6 +57,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [],
+            worklistTable: const Text('table'),
           ),
         ),
       );
@@ -67,6 +71,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [],
+            worklistTable: const Text('table'),
             statusBar: const Text('status'),
           ),
         ),
@@ -81,6 +86,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [],
+            worklistTable: const Text('table'),
             emptyState: const Text('no cases'),
           ),
         ),
@@ -96,6 +102,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [Text('a')],
+            worklistTable: const Text('table'),
             emptyState: const Text('no cases'),
           ),
         ),
@@ -103,43 +110,7 @@ void main() {
       expect(find.text('no cases'), findsNothing);
     });
 
-    testWidgets('narrow layout uses ListView', (tester) async {
-      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: CaseListTemplate(
-            appBar: AppBar(),
-            caseSlots: const [Text('a'), Text('b')],
-          ),
-        ),
-      );
-      expect(find.byType(ListView), findsOneWidget);
-      expect(find.byType(GridView), findsNothing);
-    });
-
-    testWidgets('wide layout uses GridView', (tester) async {
-      tester.view.physicalSize = const Size(1200 * 3, 800 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: CaseListTemplate(
-            appBar: AppBar(),
-            caseSlots: const [Text('a'), Text('b')],
-          ),
-        ),
-      );
-      expect(find.byType(GridView), findsOneWidget);
-      expect(find.byType(ListView), findsNothing);
-    });
+    // ── Compact: ListView (< mediumMinWidth) ──────────────────────────────
 
     testWidgets('uses ListView below mediumMinWidth', (tester) async {
       const width = AppLayout.mediumMinWidth - 1;
@@ -154,12 +125,39 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [Text('a'), Text('b')],
+            worklistTable: const Text('table'),
           ),
         ),
       );
       expect(find.byType(ListView), findsOneWidget);
       expect(find.byType(GridView), findsNothing);
+      expect(find.text('table'), findsNothing);
     });
+
+    testWidgets('applies list padding on compact', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [Text('a')],
+            worklistTable: const Text('table'),
+          ),
+        ),
+      );
+
+      final listView = tester.widget<ListView>(find.byType(ListView));
+      final insets = listView.padding! as EdgeInsets;
+      expect(insets.left, AppSpacing.lg);
+      expect(insets.top, AppSpacing.lg);
+    });
+
+    // ── Medium: GridView (mediumMinWidth to expandedMinWidth) ─────────────
 
     testWidgets('uses GridView at mediumMinWidth', (tester) async {
       tester.view.physicalSize =
@@ -174,60 +172,18 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [Text('a'), Text('b')],
+            worklistTable: const Text('table'),
           ),
         ),
       );
       expect(find.byType(GridView), findsOneWidget);
       expect(find.byType(ListView), findsNothing);
+      expect(find.text('table'), findsNothing);
     });
 
-    testWidgets('applies header padding contract', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: CaseListTemplate(
-            appBar: AppBar(),
-            caseSlots: const [],
-            header: const Text('header'),
-          ),
-        ),
-      );
-
-      final padding = tester.widget<Padding>(
-        find.ancestor(of: find.text('header'), matching: find.byType(Padding)),
-      );
-      final insets = padding.padding as EdgeInsets;
-      expect(insets.left, AppSpacing.lg);
-      expect(insets.top, AppSpacing.lg);
-      expect(insets.right, AppSpacing.lg);
-      expect(insets.bottom, 0);
-    });
-
-    testWidgets('applies list padding on narrow layout', (tester) async {
-      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildAppTheme(),
-          home: CaseListTemplate(
-            appBar: AppBar(),
-            caseSlots: const [Text('a')],
-          ),
-        ),
-      );
-
-      final listView = tester.widget<ListView>(find.byType(ListView));
-      final insets = listView.padding! as EdgeInsets;
-      expect(insets.left, AppSpacing.lg);
-      expect(insets.top, AppSpacing.lg);
-    });
-
-    testWidgets('applies grid delegate contract on wide layout',
-        (tester) async {
-      tester.view.physicalSize = const Size(1200 * 3, 800 * 3);
+    testWidgets('applies grid delegate contract at medium', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 800 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -238,6 +194,7 @@ void main() {
           home: CaseListTemplate(
             appBar: AppBar(),
             caseSlots: const [Text('a'), Text('b')],
+            worklistTable: const Text('table'),
           ),
         ),
       );
@@ -255,11 +212,114 @@ void main() {
       expect(delegate.childAspectRatio, 1.4);
     });
 
+    // ── Expanded/ultrawide: worklistTable slot ────────────────────────────
+
+    testWidgets('uses the worklistTable slot at expandedMinWidth',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [Text('a'), Text('b')],
+            worklistTable: const Text('table'),
+          ),
+        ),
+      );
+      expect(find.text('table'), findsOneWidget);
+      expect(find.byType(GridView), findsNothing);
+      expect(find.byType(ListView), findsNothing);
+    });
+
+    testWidgets('caps the worklistTable at worklistMaxWidth at ultrawide',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.ultrawideMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [Text('a'), Text('b')],
+            worklistTable: const Text('table'),
+          ),
+        ),
+      );
+
+      final box = tester.widget<ConstrainedBox>(find.ancestor(
+        of: find.text('table'),
+        matching: find.byType(ConstrainedBox),
+      ));
+      expect(box.constraints.maxWidth, AppLayout.worklistMaxWidth);
+    });
+
+    testWidgets('emptyState still wins over worklistTable when empty',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [],
+            worklistTable: const Text('table'),
+            emptyState: const Text('no cases'),
+          ),
+        ),
+      );
+      expect(find.text('no cases'), findsOneWidget);
+      expect(find.text('table'), findsNothing);
+    });
+
+    // ── Other ──────────────────────────────────────────────────────────────
+
+    testWidgets('applies header padding contract', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [],
+            worklistTable: const Text('table'),
+            header: const Text('header'),
+          ),
+        ),
+      );
+
+      final padding = tester.widget<Padding>(
+        find.ancestor(of: find.text('header'), matching: find.byType(Padding)),
+      );
+      final insets = padding.padding as EdgeInsets;
+      expect(insets.left, AppSpacing.lg);
+      expect(insets.top, AppSpacing.lg);
+      expect(insets.right, AppSpacing.lg);
+      expect(insets.bottom, 0);
+    });
+
     testWidgets('has Scaffold with surfacePage background', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildAppTheme(),
-          home: CaseListTemplate(appBar: AppBar(), caseSlots: const []),
+          home: CaseListTemplate(
+            appBar: AppBar(),
+            caseSlots: const [],
+            worklistTable: const Text('table'),
+          ),
         ),
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));

@@ -1287,6 +1287,9 @@ abstract final class AppLayout {
 
   /// Max width for side panels (findings list, study info card) on desktop.
   static const double panelMaxWidth = 360.0;
+
+  /// Max width of the Case List worklist table at ultrawide (§9.5).
+  static const double worklistMaxWidth = 1440.0;
 }
 
 /// A template's four responsive postures (§9.2). Drives nav pattern and

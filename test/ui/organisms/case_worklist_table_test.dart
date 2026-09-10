@@ -1,0 +1,174 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
+import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
+
+void main() {
+  final cases = [
+    CaseSummary(
+      title: 'Case B',
+      patient: 'Beatrix Kiddo',
+      modality: 'CT',
+      date: DateTime(2026, 1, 1),
+      confidence: 0.50,
+      severity: SeverityLevel.moderate,
+    ),
+    CaseSummary(
+      title: 'Case A',
+      patient: 'Aaron Cross',
+      modality: 'CXR',
+      date: DateTime(2026, 3, 1),
+      confidence: 0.90,
+      severity: SeverityLevel.critical,
+    ),
+    CaseSummary(
+      title: 'Case C',
+      patient: 'Cameron Poe',
+      modality: 'MRI',
+      date: DateTime(2026, 2, 1),
+      confidence: 0.10,
+      severity: SeverityLevel.normal,
+    ),
+  ];
+
+  Widget wrap(Widget child, {Brightness brightness = Brightness.light}) =>
+      MaterialApp(
+        theme: buildAppTheme(brightness),
+        home: Scaffold(body: child),
+      );
+
+  DataTable table(WidgetTester tester) =>
+      tester.widget<DataTable>(find.byType(DataTable));
+
+  testWidgets('renders every patient name', (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    expect(find.text('Beatrix Kiddo'), findsOneWidget);
+    expect(find.text('Aaron Cross'), findsOneWidget);
+    expect(find.text('Cameron Poe'), findsOneWidget);
+  });
+
+  testWidgets('renders empty list without error', (tester) async {
+    await tester.pumpWidget(wrap(const CaseWorklistTable(cases: [])));
+    expect(tester.takeException(), isNull);
+    expect(find.byType(DataRow), findsNothing);
+  });
+
+  // ── D-010: reflow, not clipping (gap 17) ───────────────────────────────────
+
+  testWidgets('dataRowMaxHeight is infinite — rows grow instead of clipping',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    expect(table(tester).dataRowMaxHeight, double.infinity);
+  });
+
+  testWidgets('every column has an explicit FlexColumnWidth', (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    for (final column in table(tester).columns) {
+      expect(column.columnWidth, isA<FlexColumnWidth>());
+    }
+  });
+
+  testWidgets('survives 200% text scale with no exception', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildAppTheme(),
+        home: MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+          child: Scaffold(body: CaseWorklistTable(cases: cases)),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('Beatrix Kiddo'), findsOneWidget);
+  });
+
+  // ── Sorting ─────────────────────────────────────────────────────────────
+
+  testWidgets('tapping a header sorts ascending by that column',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    await tester.tap(find.text('Patient'));
+    await tester.pump();
+
+    final names = tester
+        .widgetList<Text>(find.descendant(
+          of: find.byType(DataTable),
+          matching: find.byType(Text),
+        ))
+        .map((t) => t.data)
+        .whereType<String>()
+        .toList();
+    final aaronIndex = names.indexOf('Aaron Cross');
+    final beatrixIndex = names.indexOf('Beatrix Kiddo');
+    final cameronIndex = names.indexOf('Cameron Poe');
+    expect(aaronIndex, lessThan(beatrixIndex));
+    expect(beatrixIndex, lessThan(cameronIndex));
+  });
+
+  testWidgets('tapping the same header again reverses to descending',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    await tester.tap(find.text('Patient'));
+    await tester.pump();
+    await tester.tap(find.text('Patient'));
+    await tester.pump();
+
+    expect(table(tester).sortAscending, isFalse);
+    expect(table(tester).sortColumnIndex, 0);
+  });
+
+  testWidgets('tapping a different header resets to ascending on it',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    await tester.tap(find.text('Patient'));
+    await tester.pump();
+    await tester.tap(find.text('Patient'));
+    await tester.pump();
+    await tester.tap(find.text('Modality'));
+    await tester.pump();
+
+    expect(table(tester).sortAscending, isTrue);
+    expect(table(tester).sortColumnIndex, 1);
+  });
+
+  // ── Severity / confidence / date rendering ─────────────────────────────────
+
+  testWidgets('severity renders as a SeverityChip with the level label',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    expect(find.text('CRITICAL'), findsOneWidget);
+    expect(find.text('MODERATE'), findsOneWidget);
+    expect(find.text('NORMAL'), findsOneWidget);
+  });
+
+  testWidgets('confidence renders as a rounded percentage in numeric style',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    final text = tester.widget<Text>(find.text('90%'));
+    expect(text.style?.fontFamily, AppTypography.numeric.fontFamily);
+  });
+
+  testWidgets('date renders formatted in numeric style', (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    final text = tester.widget<Text>(find.text('2026-03-01'));
+    expect(text.style?.fontFamily, AppTypography.numeric.fontFamily);
+  });
+
+  // ── Dark theme ──────────────────────────────────────────────────────────
+
+  testWidgets('resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(wrap(
+      CaseWorklistTable(cases: cases),
+      brightness: Brightness.dark,
+    ));
+    final text = tester.widget<Text>(find.text('Aaron Cross'));
+    expect(text.style?.color, AppColorsData.dark.textPrimary);
+
+    final theme = tester.widget<Theme>(find.ancestor(
+      of: find.byType(DataTable),
+      matching: find.byType(Theme),
+    ).first);
+    expect(theme.data.dividerColor, AppColorsData.dark.borderSubdued);
+  });
+}
