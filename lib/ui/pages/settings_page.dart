@@ -43,4 +43,35 @@ class _SettingsPageState extends State<SettingsPage> {
 // ── Previews ──────────────────────────────────────────────────────────────────
 
 @Preview(name: 'settings', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewSettingsPage() => const SettingsPage();
+Widget previewSettingsPage() => const _SettingsPagePreview();
+
+/// SettingsPage reads ThemeControllerScope.of(context) directly, which the
+/// shared preview wrappers don't provide. ThemeController.load() is async
+/// and a @Preview function must return a Widget synchronously, so this
+/// awaits it once (via FutureBuilder, not a second construction path on
+/// the controller itself) rather than skipping the preview.
+class _SettingsPagePreview extends StatefulWidget {
+  const _SettingsPagePreview();
+
+  @override
+  State<_SettingsPagePreview> createState() => _SettingsPagePreviewState();
+}
+
+class _SettingsPagePreviewState extends State<_SettingsPagePreview> {
+  late final Future<ThemeController> _controller = ThemeController.load();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<ThemeController>(
+      future: _controller,
+      builder: (context, snapshot) {
+        final controller = snapshot.data;
+        if (controller == null) return const SizedBox();
+        return ThemeControllerScope(
+          controller: controller,
+          child: const SettingsPage(),
+        );
+      },
+    );
+  }
+}
