@@ -188,7 +188,7 @@ abstract final class AppColors {
 
   // ── Borders ─────────────────────────────────────────────────────────────
   @Deprecated('Use context.colors.border')
-  static const Color border = _Palette.gray300;
+  static const Color border = _Palette.gray500;
   @Deprecated('Use context.colors.borderSubdued')
   static const Color borderSubdued = _Palette.gray200;
   @Deprecated('Use context.colors.borderFocused')
@@ -400,7 +400,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     iconOnBrand: _Palette.offWhite,
     iconAccent: _Palette.tealBlue,
     iconDisabled: _Palette.gray400,
-    border: _Palette.gray300,
+    border: _Palette.gray500,
     borderSubdued: _Palette.gray200,
     borderFocused: _Palette.tealBlue400,
     borderSelected: _Palette.tealBlue,

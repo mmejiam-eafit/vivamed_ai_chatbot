@@ -47,6 +47,42 @@ void main() {
     });
   });
 
+  group('AppColorsData.light.border meaningful-border floor (D-016)', () {
+    test('border reuses gray500, not the old decorative-only gray300', () {
+      expect(AppColorsData.light.border, const Color(0xFF7D7D7D));
+    });
+
+    test('border clears the 3:1 floor against both page and surface', () {
+      double contrastRatio(Color a, Color b) {
+        final la = a.computeLuminance();
+        final lb = b.computeLuminance();
+        final lighter = la > lb ? la : lb;
+        final darker = la > lb ? lb : la;
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      expect(
+        contrastRatio(
+          AppColorsData.light.border,
+          AppColorsData.light.surfacePage,
+        ),
+        greaterThanOrEqualTo(3.0),
+      );
+      expect(
+        contrastRatio(AppColorsData.light.border, AppColorsData.light.surface),
+        greaterThanOrEqualTo(3.0),
+      );
+    });
+
+    test('the deprecated AppColors.border alias did not drift from it', () {
+      // Regression guard: the two are independent literals, not one
+      // delegating to the other, so a copy-paste fix to only one of them
+      // would otherwise go uncaught.
+      // ignore: deprecated_member_use_from_same_package
+      expect(AppColors.border, AppColorsData.light.border);
+    });
+  });
+
   group('buildAppTheme colorScheme.onError (§10.5)', () {
     test('dark mode resolves to a genuinely dark-toned color', () {
       // Regression guard: this used to resolve to textPrimary, which is

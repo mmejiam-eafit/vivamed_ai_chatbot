@@ -187,7 +187,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 
 | Token | Value | Ratio | Note |
 |---|---|---|---|
-| `border` | `#C4C4C4` | 1.59 on page · 1.74 on surface | **Fails 3:1** — decorative only (§12 gap 7) |
+| `border` | `#7D7D7D` | 3.74 on page · 4.12 on surface | **Meaningful borders only** — reuses `gray500`; matches dark mode's role for the same token (D-016) |
 | `borderSubdued` | `#DCDCDC` | 1.25 · 1.37 | Decorative, no floor |
 | `borderFocused` | `#3D95B8` | 3.08 on page · 3.39 on surface | Clears 3:1 — fine as a border at this value. `textLinkHover` used to share this hex and fail as text; it now has its own separate value instead, so `borderFocused` is unaffected. |
 | `borderSelected` | `#1D546C` | 7.53 · 8.28 | Clears with margin |
@@ -649,7 +649,6 @@ Live defects and unimplemented specifications. Delete entries as they close.
 | 3 | **The 168px chat column.** At 768 with nav and panel present, the primary column collapses. Fixed by §9.3. | `chat_template.dart`, `study_review_template.dart` |
 | 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. `DiagnosticImageTokens` now exists (§2.10) but carries only the canvas ground; the ramp is deliberately unbuilt, because deriving one means new color needing a decision-log entry against D-001, and there is no production heatmap to validate it against — the offending gradient is preview-only code. | `heatmap_viewer_template.dart` previews |
 | 6 | **`AppInteraction` hover tokens unwired.** Documented as web-only, but no `MouseRegion` anywhere reads them. | all levels |
-| 7 | **Default border fails 3:1** (1.74:1 on white). Acceptable decoratively, not for any border carrying meaning. | `AppColors.border` |
 | 9 | **Organism test coverage at 2 of 8.** | `test/ui/organisms/` |
 | 10 | **Templates with no responsive handling:** settings, onboarding, heatmap viewer. | `templates/` |
 | 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
