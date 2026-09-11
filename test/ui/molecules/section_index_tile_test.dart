@@ -62,6 +62,31 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('hover tints textPrimary at hoverOverlayOpacity', (tester) async {
+    await tester.pumpWidget(wrap(
+      SectionIndexTile(title: 'Account', isSelected: false, onTap: () {}),
+    ));
+    final tile = tester.widget<ListTile>(find.byType(ListTile));
+    expect(
+      tile.hoverColor,
+      AppColorsData.light.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('hover color resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(wrap(
+      SectionIndexTile(title: 'Account', isSelected: false, onTap: () {}),
+      brightness: Brightness.dark,
+    ));
+    final tile = tester.widget<ListTile>(find.byType(ListTile));
+    expect(
+      tile.hoverColor,
+      AppColorsData.dark.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
   testWidgets('resolves against the dark theme', (tester) async {
     await tester.pumpWidget(wrap(
       SectionIndexTile(title: 'Account', isSelected: true, onTap: () {}),

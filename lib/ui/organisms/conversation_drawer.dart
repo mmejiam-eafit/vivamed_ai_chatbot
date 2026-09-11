@@ -138,6 +138,7 @@ class _ConversationTile extends StatelessWidget {
     final colors = context.colors;
     return InkWell(
       onTap: onTap,
+      hoverColor: NavigationTokens.sideNavHoverColor,
       child: Container(
         color: isSelected ? colors.surfaceBrandSecondarySubdued : null,
         padding: const EdgeInsets.symmetric(

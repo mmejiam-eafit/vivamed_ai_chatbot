@@ -31,6 +31,9 @@ class SectionIndexTile extends StatelessWidget {
       ),
       selected: isSelected,
       selectedTileColor: colors.surfaceSubdued,
+      hoverColor: colors.textPrimary.withValues(
+        alpha: AppInteraction.hoverOverlayOpacity,
+      ),
       onTap: onTap,
     );
   }

@@ -41,6 +41,9 @@ class ThemeModeSelector extends StatelessWidget {
             trailing: selected == option.mode
                 ? AppIcon(Icons.check, color: colors.interactivePrimary, size: 20.0)
                 : null,
+            hoverColor: colors.textPrimary.withValues(
+              alpha: AppInteraction.hoverOverlayOpacity,
+            ),
             onTap: () => onChanged(option.mode),
           ),
       ],

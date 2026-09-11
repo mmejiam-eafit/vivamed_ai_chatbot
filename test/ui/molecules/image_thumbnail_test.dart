@@ -113,4 +113,33 @@ void main() {
     final decoration = ringContainer.decoration! as BoxDecoration;
     expect(decoration.border!.top.color, AppColorsData.light.borderFocused);
   });
+
+  // ── Hover (gap 23) ─────────────────────────────────────────────────────────
+
+  testWidgets('hover tints textPrimary at hoverOverlayOpacity', (tester) async {
+    await tester.pumpWidget(wrap(
+      const ImageThumbnail(url: 'https://example.com/img.png'),
+    ));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.light.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('hover color resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: ImageThumbnail(url: 'https://example.com/img.png'),
+      ),
+    ));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.dark.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
 }

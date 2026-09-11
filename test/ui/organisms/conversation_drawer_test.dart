@@ -113,6 +113,19 @@ void main() {
     expect(subtitle.maxLines, 2);
   });
 
+  // ── Hover (gap 23) ─────────────────────────────────────────────────────────
+
+  testWidgets('conversation tile hovers with sideNavHoverColor', (tester) async {
+    await tester.pumpWidget(wrap(const ConversationDrawer(
+      conversations: conversations,
+    )));
+    final inkWell = tester.widget<InkWell>(find.ancestor(
+      of: find.text('Chest CT — Patient A'),
+      matching: find.byType(InkWell),
+    ));
+    expect(inkWell.hoverColor, NavigationTokens.sideNavHoverColor);
+  });
+
   // ── Dark theme ─────────────────────────────────────────────────────────────
 
   testWidgets('resolves against the dark theme', (tester) async {

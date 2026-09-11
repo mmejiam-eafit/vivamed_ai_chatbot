@@ -68,6 +68,15 @@ void main() {
     }
   });
 
+  testWidgets('both icons hover with sideNavHoverColor', (tester) async {
+    await tester.pumpWidget(wrap(
+      CollapsedNavRail(onMenuTap: () {}, onFindingsTap: () {}),
+    ));
+    for (final inkWell in tester.widgetList<InkWell>(find.byType(InkWell))) {
+      expect(inkWell.hoverColor, NavigationTokens.sideNavHoverColor);
+    }
+  });
+
   testWidgets('resolves against the dark theme', (tester) async {
     await tester.pumpWidget(wrap(
       CollapsedNavRail(onMenuTap: () {}),

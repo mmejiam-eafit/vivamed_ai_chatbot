@@ -76,6 +76,9 @@ class FindingRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         focusNode: focusNode,
+        hoverColor: colors.textPrimary.withValues(
+          alpha: AppInteraction.hoverOverlayOpacity,
+        ),
         borderRadius: AppRadius.borderCard,
         child: Padding(
           // Dense, not generous — this is a scanning surface (DL §7.1).

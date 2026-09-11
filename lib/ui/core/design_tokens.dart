@@ -1077,9 +1077,12 @@ abstract final class NavigationTokens {
       context.colors.iconOnBrand;
 
   /// Hover fill on an unselected sidebar item (on brand-dark background).
-  /// Stays a flat constant: nothing reads it yet (`MouseRegion` itself is
-  /// unwired - gap 23), so there is no live call site to derive a dark
-  /// value against.
+  /// Read by `CollapsedNavRail` and `ConversationDrawer`'s tile via
+  /// `InkWell.hoverColor`. Still a flat constant, not mode-derived: it was
+  /// tuned as one step brighter than light theme's `surfaceBrandSecondary`
+  /// (`mediumNavy` -> `mediumNavy600`), but `surfaceBrandSecondary` itself
+  /// moves to `darkSurfaceBrandSecondary` in dark mode, and no dark-tuned
+  /// hover value has been derived against that background yet.
   static const Color sideNavHoverColor = _Palette.mediumNavy600;
 
   /// Border radius applied to each sidebar nav item pill.

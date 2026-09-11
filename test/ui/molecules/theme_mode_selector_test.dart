@@ -59,6 +59,30 @@ void main() {
     expect(picked, ThemeMode.system);
   });
 
+  testWidgets('every row hovers with textPrimary at hoverOverlayOpacity',
+      (tester) async {
+    await tester.pumpWidget(wrap(
+      ThemeModeSelector(selected: ThemeMode.dark, onChanged: (_) {}),
+    ));
+    final expected = AppColorsData.light.textPrimary
+        .withValues(alpha: AppInteraction.hoverOverlayOpacity);
+    for (final tile in tester.widgetList<ListTile>(find.byType(ListTile))) {
+      expect(tile.hoverColor, expected);
+    }
+  });
+
+  testWidgets('hover color resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(wrap(
+      ThemeModeSelector(selected: ThemeMode.dark, onChanged: (_) {}),
+      brightness: Brightness.dark,
+    ));
+    final expected = AppColorsData.dark.textPrimary
+        .withValues(alpha: AppInteraction.hoverOverlayOpacity);
+    for (final tile in tester.widgetList<ListTile>(find.byType(ListTile))) {
+      expect(tile.hoverColor, expected);
+    }
+  });
+
   testWidgets('resolves against the dark theme', (tester) async {
     await tester.pumpWidget(wrap(
       ThemeModeSelector(selected: ThemeMode.dark, onChanged: (_) {}),

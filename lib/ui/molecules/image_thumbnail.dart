@@ -24,6 +24,7 @@ class ImageThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return FocusRing(
       // Mirrors AppButton's ring: the control's own radius plus the offset
       // the ring sits outside it by (DL §8.4).
@@ -33,6 +34,9 @@ class ImageThumbnail extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         focusNode: focusNode,
+        hoverColor: colors.textPrimary.withValues(
+          alpha: AppInteraction.hoverOverlayOpacity,
+        ),
         borderRadius: AppRadius.borderCard,
         child: ClipRRect(
           borderRadius: AppRadius.borderCard,

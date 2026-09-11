@@ -73,6 +73,7 @@ class _RailIcon extends StatelessWidget {
           ),
           child: InkWell(
             onTap: onTap,
+            hoverColor: NavigationTokens.sideNavHoverColor,
             borderRadius:
                 BorderRadius.circular(NavigationTokens.sideNavItemBorderRadius),
             child: Center(

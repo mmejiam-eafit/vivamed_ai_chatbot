@@ -66,6 +66,49 @@ void main() {
     expect(text.style?.color, AppColorsData.light.iconAccent);
   });
 
+  // ── Hover (gap 23) ─────────────────────────────────────────────────────────
+
+  testWidgets('unselected: hover tints textMuted at hoverOverlayOpacity',
+      (tester) async {
+    await tester.pumpWidget(wrap(const NavItem(icon: Icons.home, label: 'Home')));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.light.textMuted
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('selected: hover tints iconAccent at hoverOverlayOpacity',
+      (tester) async {
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      isSelected: true,
+    )));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.light.iconAccent
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('hover color resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: NavItem(icon: Icons.home, label: 'Home'),
+      ),
+    ));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.dark.textMuted
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
   // ── onTap ──────────────────────────────────────────────────────────────────
 
   // ── Touch target (DL §8.5, gap 14) ────────────────────────────────────────

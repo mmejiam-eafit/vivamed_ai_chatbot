@@ -74,6 +74,7 @@ class NavItem extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           focusNode: focusNode,
+          hoverColor: color.withValues(alpha: AppInteraction.hoverOverlayOpacity),
           borderRadius: AppRadius.borderButton,
           child: Padding(
             padding: layout == NavItemLayout.horizontal

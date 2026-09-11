@@ -238,6 +238,36 @@ void main() {
     expect(decoration.border!.top.color, Colors.transparent);
   });
 
+  // ── Hover (gap 23) ─────────────────────────────────────────────────────────
+
+  testWidgets('hover tints textPrimary at hoverOverlayOpacity', (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.mild,
+    )));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.light.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('hover color resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: FindingRow(name: 'Finding', severity: SeverityLevel.mild),
+      ),
+    ));
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.dark.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
   // ── Dark theme ─────────────────────────────────────────────────────────────
 
   testWidgets('resolves against the dark theme', (tester) async {
