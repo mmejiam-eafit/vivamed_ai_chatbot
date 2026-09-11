@@ -47,7 +47,7 @@ void main() {
         ),
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, AppColors.surfacePage);
+      expect(scaffold.backgroundColor, AppColorsData.light.surfacePage);
     });
 
     testWidgets('renders empty sections without error', (tester) async {
@@ -225,6 +225,8 @@ void main() {
       ));
       final title = tester.widget<Text>(find.text('Account'));
       expect(title.style?.color, AppColorsData.dark.textPrimary);
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
     });
   });
 }

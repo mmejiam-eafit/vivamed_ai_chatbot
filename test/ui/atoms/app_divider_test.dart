@@ -28,7 +28,7 @@ void main() {
   testWidgets('defaults to borderSubdued color', (tester) async {
     await tester.pumpWidget(wrap(const AppDivider()));
     final divider = tester.widget<Divider>(find.byType(Divider));
-    expect(divider.color, AppColors.borderSubdued);
+    expect(divider.color, AppColorsData.light.borderSubdued);
   });
 
   testWidgets('applies custom color', (tester) async {
@@ -42,7 +42,18 @@ void main() {
     await tester.pumpWidget(wrap(const AppDivider(axis: Axis.vertical)));
     final divider =
         tester.widget<VerticalDivider>(find.byType(VerticalDivider));
-    expect(divider.color, AppColors.borderSubdued);
+    expect(divider.color, AppColorsData.light.borderSubdued);
+  });
+
+  testWidgets('defaults resolve against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: SizedBox(width: 200, height: 200, child: AppDivider()),
+      ),
+    ));
+    final divider = tester.widget<Divider>(find.byType(Divider));
+    expect(divider.color, AppColorsData.dark.borderSubdued);
   });
 
   // ── thickness / indent ─────────────────────────────────────────────────────

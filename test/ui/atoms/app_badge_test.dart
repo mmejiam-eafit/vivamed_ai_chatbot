@@ -28,14 +28,24 @@ void main() {
 
   testWidgets('defaults to interactivePrimary background', (tester) async {
     await tester.pumpWidget(wrap(const AppBadge(label: 'X')));
-    expect(_badgeDecoration(tester).color, AppColors.interactivePrimary);
+    expect(_badgeDecoration(tester).color, AppColorsData.light.interactivePrimary);
   });
 
   testWidgets('defaults to interactivePrimaryForeground text color',
       (tester) async {
     await tester.pumpWidget(wrap(const AppBadge(label: 'X')));
     final text = tester.widget<Text>(find.text('X'));
-    expect(text.style?.color, AppColors.interactivePrimaryForeground);
+    expect(text.style?.color, AppColorsData.light.interactivePrimaryForeground);
+  });
+
+  testWidgets('resolves default colors against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(body: AppBadge(label: 'X')),
+    ));
+    expect(_badgeDecoration(tester).color, AppColorsData.dark.interactivePrimary);
+    final text = tester.widget<Text>(find.text('X'));
+    expect(text.style?.color, AppColorsData.dark.interactivePrimaryForeground);
   });
 
   testWidgets('applies custom backgroundColor', (tester) async {

@@ -79,7 +79,7 @@ void main() {
       AppChip(label: 'Tag', onSelected: (_) {}),
     ));
     final chip = tester.widget<FilterChip>(find.byType(FilterChip));
-    expect(chip.backgroundColor, AppColors.surfaceAccent);
+    expect(chip.backgroundColor, AppColorsData.light.surfaceAccent);
   });
 
   testWidgets('FilterChip uses interactivePrimary as selectedColor',
@@ -88,7 +88,7 @@ void main() {
       AppChip(label: 'Tag', onSelected: (_) {}),
     ));
     final chip = tester.widget<FilterChip>(find.byType(FilterChip));
-    expect(chip.selectedColor, AppColors.interactivePrimary);
+    expect(chip.selectedColor, AppColorsData.light.interactivePrimary);
   });
 
   // ── avatar ─────────────────────────────────────────────────────────────────

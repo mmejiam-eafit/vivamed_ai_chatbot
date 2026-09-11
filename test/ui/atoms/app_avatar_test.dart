@@ -39,7 +39,7 @@ void main() {
       const AppAvatar(imageUrl: 'https://example.com/avatar.jpg'),
     ));
     final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
-    expect(avatar.backgroundColor, AppColors.surfaceBrandSecondary);
+    expect(avatar.backgroundColor, AppColorsData.light.surfaceBrandSecondary);
   });
 
   // ── initials variant ───────────────────────────────────────────────────────
@@ -52,13 +52,13 @@ void main() {
   testWidgets('initials: text uses textOnBrand color', (tester) async {
     await tester.pumpWidget(wrap(const AppAvatar(initials: 'AB')));
     final text = tester.widget<Text>(find.text('AB'));
-    expect(text.style?.color, AppColors.textOnBrand);
+    expect(text.style?.color, AppColorsData.light.textOnBrand);
   });
 
   testWidgets('initials: background is surfaceBrandSecondary', (tester) async {
     await tester.pumpWidget(wrap(const AppAvatar(initials: 'AB')));
     final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
-    expect(avatar.backgroundColor, AppColors.surfaceBrandSecondary);
+    expect(avatar.backgroundColor, AppColorsData.light.surfaceBrandSecondary);
   });
 
   testWidgets('initials: resolves against the dark theme', (tester) async {
@@ -82,7 +82,7 @@ void main() {
   testWidgets('fallback: background is surfaceBrandSecondary', (tester) async {
     await tester.pumpWidget(wrap(const AppAvatar()));
     final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
-    expect(avatar.backgroundColor, AppColors.surfaceBrandSecondary);
+    expect(avatar.backgroundColor, AppColorsData.light.surfaceBrandSecondary);
   });
 
   // ── radius ─────────────────────────────────────────────────────────────────

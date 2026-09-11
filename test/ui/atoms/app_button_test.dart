@@ -25,7 +25,18 @@ void main() {
     ));
     final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
     final bg = button.style?.backgroundColor?.resolve({});
-    expect(bg, AppColors.interactivePrimary);
+    expect(bg, AppColorsData.light.interactivePrimary);
+  });
+
+  testWidgets('primary variant resolves background against the dark theme',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(body: AppButton(label: 'OK', onPressed: null)),
+    ));
+    final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+    final bg = button.style?.backgroundColor?.resolve({});
+    expect(bg, AppColorsData.dark.interactivePrimary);
   });
 
   // ── Variant: secondary ─────────────────────────────────────────────────────

@@ -18,7 +18,17 @@ void main() {
     await tester.pumpWidget(wrap(const AppLoadingIndicator()));
     final indicator = tester.widget<CircularProgressIndicator>(
         find.byType(CircularProgressIndicator));
-    expect(indicator.color, AppColors.interactivePrimary);
+    expect(indicator.color, AppColorsData.light.interactivePrimary);
+  });
+
+  testWidgets('default color resolves against the dark theme', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(body: AppLoadingIndicator()),
+    ));
+    final indicator = tester.widget<CircularProgressIndicator>(
+        find.byType(CircularProgressIndicator));
+    expect(indicator.color, AppColorsData.dark.interactivePrimary);
   });
 
   testWidgets('applies custom color', (tester) async {

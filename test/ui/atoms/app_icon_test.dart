@@ -23,7 +23,7 @@ void main() {
   testWidgets('defaults to AppColors.icon color', (tester) async {
     await tester.pumpWidget(wrap(const AppIcon(Icons.star)));
     final icon = tester.widget<Icon>(find.byType(Icon));
-    expect(icon.color, AppColors.icon);
+    expect(icon.color, AppColorsData.light.icon);
   });
 
   testWidgets('applies custom color', (tester) async {

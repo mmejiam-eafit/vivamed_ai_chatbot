@@ -26,13 +26,13 @@ void main() {
   testWidgets('label uses textSecondary color', (tester) async {
     await tester.pumpWidget(wrap(const MetadataField(label: 'Study', value: 'CT-001')));
     final text = tester.widget<Text>(find.text('Study'));
-    expect(text.style?.color, AppColors.textSecondary);
+    expect(text.style?.color, AppColorsData.light.textSecondary);
   });
 
   testWidgets('value uses textPrimary color', (tester) async {
     await tester.pumpWidget(wrap(const MetadataField(label: 'Study', value: 'CT-001')));
     final text = tester.widget<Text>(find.text('CT-001'));
-    expect(text.style?.color, AppColors.textPrimary);
+    expect(text.style?.color, AppColorsData.light.textPrimary);
   });
 
   // ── Typography ─────────────────────────────────────────────────────────────

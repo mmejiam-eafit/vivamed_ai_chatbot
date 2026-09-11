@@ -23,7 +23,7 @@ void main() {
   testWidgets('defaults to textPrimary color', (tester) async {
     await tester.pumpWidget(wrap(const AppText('Hi')));
     final text = tester.widget<Text>(find.text('Hi'));
-    expect(text.style?.color, AppColors.textPrimary);
+    expect(text.style?.color, AppColorsData.light.textPrimary);
   });
 
   testWidgets('applies custom style', (tester) async {
