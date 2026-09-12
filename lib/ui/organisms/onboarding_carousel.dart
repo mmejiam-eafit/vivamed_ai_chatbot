@@ -1,22 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/data/onboarding.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
-
-class OnboardingSlide {
-  const OnboardingSlide({
-    required this.imageUrl,
-    required this.title,
-    required this.description,
-  });
-
-  final String imageUrl;
-  final String title;
-  final String description;
-}
 
 class OnboardingCarousel extends StatefulWidget {
   const OnboardingCarousel({

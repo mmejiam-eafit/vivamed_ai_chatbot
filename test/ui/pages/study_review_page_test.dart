@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
@@ -7,27 +8,28 @@ import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 
 void main() {
+  Widget wrap(Widget child) => ProviderScope(
+        child: MaterialApp(theme: buildAppTheme(), home: child),
+      );
+
   group('StudyReviewPage', () {
     testWidgets('renders StudyReviewTemplate', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(StudyReviewTemplate), findsOneWidget);
     });
 
     testWidgets('renders Study Review in app bar', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.text('Study Review'), findsOneWidget);
     });
 
     testWidgets('renders FindingsPanel slot', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(FindingsPanel), findsOneWidget);
     });
@@ -41,9 +43,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(ChatPanel), findsOneWidget);
     });
@@ -58,9 +59,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(TabBar), findsOneWidget);
     });
@@ -73,9 +73,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.drawer, isNotNull);
@@ -93,9 +92,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(TabBar), findsOneWidget);
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -112,9 +110,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const StudyReviewPage()),
-      );
+      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(TabBar), findsNothing);
       expect(find.byType(Row), findsWidgets);

@@ -1,34 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/data/case.dart';
+import 'package:radiologist_helper/data/mocks/case_mocks.dart';
+import 'package:radiologist_helper/services/providers.dart';
+import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
-import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
-
-/// One canonical placeholder list — the source both `caseSlots` (compact and
-/// medium) and `worklistTable` (expanded and up) are built from, so the two
-/// representations of "the same cases" can't drift out of sync.
-final _cases = [
-  CaseSummary(
-    title: 'Chest X-Ray',
-    patient: 'Anonymous 1',
-    modality: 'CXR',
-    date: DateTime(2026, 4, 12),
-    confidence: 0.94,
-    severity: SeverityLevel.moderate,
-  ),
-  CaseSummary(
-    title: 'Abdominal CT',
-    patient: 'Anonymous 2',
-    modality: 'CT',
-    date: DateTime(2026, 3, 5),
-    confidence: 0.78,
-    severity: SeverityLevel.normal,
-  ),
-];
 
 List<StudyMetadataField> _cardFields(CaseSummary c) => [
       StudyMetadataField(label: 'Modality', value: c.modality),
@@ -40,20 +22,36 @@ List<StudyMetadataField> _cardFields(CaseSummary c) => [
       ),
     ];
 
-class CaseListPage extends StatelessWidget {
+class CaseListPage extends ConsumerWidget {
   const CaseListPage({super.key});
 
+  static final _appBar = AppBar(title: const Text('Cases'));
+
   @override
-  Widget build(BuildContext context) {
-    return CaseListTemplate(
-      appBar: AppBar(title: const Text('Cases')),
-      caseSlots: [
-        for (final c in _cases)
-          StudyInfoCard(title: c.title, fields: _cardFields(c)),
-      ],
-      worklistTable: CaseWorklistTable(cases: _cases),
-      emptyState: const AppText('No cases available.'),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref.watch(casesProvider).when(
+          data: (cases) => CaseListTemplate(
+            appBar: _appBar,
+            caseSlots: [
+              for (final c in cases)
+                StudyInfoCard(
+                  title: c.title,
+                  fields: _cardFields(c),
+                  thumbnailUrl: mockThumbnailUrlFor(c.id),
+                ),
+            ],
+            worklistTable: CaseWorklistTable(cases: cases),
+            emptyState: const AppText('No cases available.'),
+          ),
+          loading: () => Scaffold(
+            appBar: _appBar,
+            body: const Center(child: AppLoadingIndicator()),
+          ),
+          error: (error, stackTrace) => Scaffold(
+            appBar: _appBar,
+            body: Center(child: Text('Could not load cases: $error')),
+          ),
+        );
   }
 }
 

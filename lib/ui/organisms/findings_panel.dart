@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/data/finding.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/finding_row.dart';
 import 'package:radiologist_helper/ui/molecules/severity_chip.dart';
-
-class FindingItem {
-  const FindingItem({required this.name, required this.severity});
-
-  final String name;
-  final SeverityLevel severity;
-}
 
 class FindingsPanel extends StatefulWidget {
   const FindingsPanel({

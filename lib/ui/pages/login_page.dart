@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_logo.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
@@ -7,22 +9,34 @@ import 'package:radiologist_helper/ui/atoms/app_text_field.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/templates/auth_template.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isSigningIn = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    setState(() => _isSigningIn = true);
+    // Nothing to navigate to yet -- exercising the call is the point of this
+    // pass; wiring where sign-in goes next is the later flow pass.
+    await ref.read(authServiceProvider).signIn(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+    if (mounted) setState(() => _isSigningIn = false);
   }
 
   @override
@@ -44,7 +58,11 @@ class _LoginPageState extends State<LoginPage> {
             hintText: 'Password',
             obscureText: true,
           ),
-          AppButton(label: 'Sign In', onPressed: () {}),
+          AppButton(
+            label: 'Sign In',
+            isLoading: _isSigningIn,
+            onPressed: _isSigningIn ? null : _signIn,
+          ),
         ],
       ),
     );

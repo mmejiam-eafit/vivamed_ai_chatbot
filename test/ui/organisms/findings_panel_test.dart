@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/finding.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/molecules/finding_row.dart';

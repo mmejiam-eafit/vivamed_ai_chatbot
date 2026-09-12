@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
@@ -7,6 +8,7 @@ import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 void main() {
   final cases = [
     CaseSummary(
+      id: 'case-b',
       title: 'Case B',
       patient: 'Beatrix Kiddo',
       modality: 'CT',
@@ -15,6 +17,7 @@ void main() {
       severity: SeverityLevel.moderate,
     ),
     CaseSummary(
+      id: 'case-a',
       title: 'Case A',
       patient: 'Aaron Cross',
       modality: 'CXR',
@@ -23,6 +26,7 @@ void main() {
       severity: SeverityLevel.critical,
     ),
     CaseSummary(
+      id: 'case-c',
       title: 'Case C',
       patient: 'Cameron Poe',
       modality: 'MRI',

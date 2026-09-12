@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
@@ -161,6 +162,7 @@ List<Widget> _previewCaseCards(int count, List<StudyMetadataField> fields) =>
 
 List<CaseSummary> _previewCases() => [
       CaseSummary(
+        id: 'preview-1',
         title: 'Chest X-Ray — PA view 1',
         patient: 'Anonymous 1',
         modality: 'CXR',
@@ -169,6 +171,7 @@ List<CaseSummary> _previewCases() => [
         severity: SeverityLevel.critical,
       ),
       CaseSummary(
+        id: 'preview-2',
         title: 'Chest X-Ray — PA view 2',
         patient: 'Anonymous 2',
         modality: 'CXR',
@@ -177,6 +180,7 @@ List<CaseSummary> _previewCases() => [
         severity: SeverityLevel.moderate,
       ),
       CaseSummary(
+        id: 'preview-3',
         title: 'Chest X-Ray — PA view 3',
         patient: 'Anonymous 3',
         modality: 'CXR',

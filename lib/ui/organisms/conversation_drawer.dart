@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/ui/atoms/app_avatar.dart';
 import 'package:radiologist_helper/ui/atoms/app_divider.dart';
 import 'package:radiologist_helper/ui/atoms/app_icon.dart';
@@ -7,18 +8,6 @@ import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/nav_item.dart';
-
-class ConversationItem {
-  const ConversationItem({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final String id;
-  final String title;
-  final String subtitle;
-}
 
 class ConversationDrawer extends StatelessWidget {
   const ConversationDrawer({

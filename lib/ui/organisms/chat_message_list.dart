@@ -1,26 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/chat_bubble.dart';
 import 'package:radiologist_helper/ui/molecules/typing_indicator.dart';
-
-class ChatMessageItem {
-  const ChatMessageItem({
-    required this.message,
-    required this.isUser,
-    this.avatarImageUrl,
-    this.avatarInitials,
-    this.timestamp,
-  });
-
-  final String message;
-  final bool isUser;
-  final String? avatarImageUrl;
-  final String? avatarInitials;
-  final String? timestamp;
-}
 
 class ChatMessageList extends StatefulWidget {
   const ChatMessageList({

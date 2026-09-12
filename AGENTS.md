@@ -54,6 +54,19 @@ Arrows mean "may depend on." No level may import from a level above it or at the
 - **Pages**: the only level that reads from providers/blocs, calls services, triggers `Navigator`/`GoRouter`, or writes to state. Each page instantiates exactly one template.
 - No organism imports another organism. No molecule imports another molecule.
 
+### Data layer: repositories, services, dependency injection
+
+Below the widget hierarchy, not part of it — only **pages** ever touch these, per the table above:
+
+- `lib/data/` — every domain type the app uses (`CaseSummary`, `FindingItem`, `UserProfile`, etc.), one file per concept. Nothing else owns a model; organisms/molecules that used to define one now import it from here.
+- `lib/data/mocks/` — instances of those types, standing in for a real backend until one exists.
+- `lib/repositories/` — the contract for *external* data, one repository per plausible real endpoint (an abstract interface + a `Mock*` implementation reading from `lib/data/mocks/`). No merging across repositories here.
+- `lib/services/` — sits above one or more repositories; where actual transformation/business logic goes (merging several repositories' output into what one screen needs, retry/caching once there's a real backend). A service that only needs one repository is a thin pass-through — that's fine.
+
+**Nothing constructs its own dependencies.** A service never instantiates a repository; a repository never instantiates an external client (`http.Client`, etc.). Every dependency is injected. The mechanism is **Riverpod** (`flutter_riverpod`, plain — no `riverpod_generator`/`build_runner`), chosen over running `get_it` alongside it: Riverpod is already a complete DI framework on its own, and a second package would only earn its keep for reasons that don't apply to this app (migrating an existing `get_it` codebase; needing repository access from plain Dart code with no `ref`). Don't add `get_it` or a hand-rolled service-locator/composition-root later without a real reason one of those has actually shown up.
+
+Providers are centralized per layer, not scattered per class: `lib/repositories/providers.dart` holds every repository provider, `lib/services/providers.dart` holds every service provider plus the screen-facing `FutureProvider`s pages actually read. A repository/service class file holds only the class; "how do I get one" lives in its layer's shared `providers.dart`. Swapping Mock → Real later is a one-line change in `repositories/providers.dart` — nothing else changes.
+
 ### Deciding where a new widget belongs
 
 1. Maps to a single Material widget with no composition? → **Atom**

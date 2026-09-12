@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
@@ -7,35 +8,35 @@ import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
 void main() {
+  Widget wrap(Widget child) => ProviderScope(
+        child: MaterialApp(theme: buildAppTheme(), home: child),
+      );
+
   group('CaseListPage', () {
     testWidgets('renders CaseListTemplate', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(CaseListTemplate), findsOneWidget);
     });
 
     testWidgets('renders Cases in app bar', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.text('Cases'), findsOneWidget);
     });
 
     testWidgets('renders placeholder case cards', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
-      expect(find.byType(StudyInfoCard), findsNWidgets(2));
+      expect(find.byType(StudyInfoCard), findsNWidgets(6));
     });
 
     testWidgets('renders case titles', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.text('Chest X-Ray'), findsOneWidget);
       expect(find.text('Abdominal CT'), findsOneWidget);
@@ -50,9 +51,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(ListView), findsOneWidget);
       expect(find.byType(GridView), findsNothing);
@@ -67,9 +67,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(Wrap), findsOneWidget);
       expect(find.byType(GridView), findsNothing);
@@ -85,9 +84,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(Wrap), findsOneWidget);
       expect(find.byType(GridView), findsNothing);
@@ -104,9 +102,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const CaseListPage()),
-      );
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(CaseWorklistTable), findsOneWidget);
       expect(find.byType(GridView), findsNothing);

@@ -1,29 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/data/mocks/settings_mocks.dart';
+import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/theme_controller.dart';
+import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
+import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
+import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/molecules/theme_mode_selector.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage> {
   int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final themeController = ThemeControllerScope.of(context);
+    final userAsync = ref.watch(currentUserProvider);
     return SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
       selectedIndex: _selectedIndex,
       onSectionSelected: (i) => setState(() => _selectedIndex = i),
       sections: [
-        const SettingsSection(title: 'Account', child: SizedBox()),
+        SettingsSection(
+          title: 'Account',
+          child: userAsync.when(
+            data: (user) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MetadataField(label: 'Name', value: user.name),
+                MetadataField(label: 'Role', value: user.role),
+                MetadataField(label: 'Email', value: user.email),
+              ],
+            ),
+            loading: () => const AppLoadingIndicator(),
+            error: (error, stackTrace) =>
+                AppText('Could not load account: $error'),
+          ),
+        ),
         SettingsSection(
           title: 'Appearance',
           // No extra ListenableBuilder needed: reading the scope above via
@@ -34,7 +56,16 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: themeController.setMode,
           ),
         ),
-        const SettingsSection(title: 'About', child: SizedBox()),
+        const SettingsSection(
+          title: 'About',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MetadataField(label: 'Version', value: mockAppVersion),
+              MetadataField(label: 'Build', value: mockAppBuild),
+            ],
+          ),
+        ),
       ],
     );
   }

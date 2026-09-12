@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/services/providers.dart';
+import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/organisms/chat_message_list.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
@@ -7,14 +10,19 @@ import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 
-class ChatPage extends StatefulWidget {
+// Neither takes a case/conversation parameter yet -- no navigation means
+// nothing selects one. The later flow-wiring pass is what makes these vary.
+const _conversationId = 'conv-1';
+const _caseId = 'case-1';
+
+class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({super.key});
 
   @override
-  State<ChatPage> createState() => _ChatPageState();
+  ConsumerState<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends ConsumerState<ChatPage> {
   final _chatController = TextEditingController();
 
   @override
@@ -23,17 +31,48 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
+  Future<void> _sendMessage() async {
+    final text = _chatController.text;
+    if (text.isEmpty) return;
+    _chatController.clear();
+    await ref.read(chatServiceProvider).sendMessage(_conversationId, text);
+    ref.invalidate(messagesProvider(_conversationId));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final appBar = AppBar(title: const Text('Chat'));
+    final conversationsAsync = ref.watch(conversationsProvider);
+    final userAsync = ref.watch(currentUserProvider);
+    final messagesAsync = ref.watch(messagesProvider(_conversationId));
+    final caseDetailAsync = ref.watch(caseDetailProvider(_caseId));
+
+    final isLoading = conversationsAsync.isLoading ||
+        userAsync.isLoading ||
+        messagesAsync.isLoading ||
+        caseDetailAsync.isLoading;
+    if (isLoading) {
+      return Scaffold(
+        appBar: appBar,
+        body: const Center(child: AppLoadingIndicator()),
+      );
+    }
+
     return ChatTemplate(
-      appBar: AppBar(title: const Text('Chat')),
+      appBar: appBar,
       chatPanel: ChatPanel(
-        messageList: const ChatMessageList(messages: []),
+        messageList: ChatMessageList(messages: messagesAsync.value ?? const []),
         controller: _chatController,
-        onSubmit: () {},
+        onSubmit: _sendMessage,
       ),
-      drawer: const ConversationDrawer(conversations: []),
-      findingsPanel: const FindingsPanel(findings: []),
+      drawer: ConversationDrawer(
+        conversations: conversationsAsync.value ?? const [],
+        userName: userAsync.value?.name,
+        userInitials: userAsync.value?.initials,
+      ),
+      findingsPanel: FindingsPanel(
+        findings: caseDetailAsync.value?.findings ?? const [],
+      ),
     );
   }
 }

@@ -1,29 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
-import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/molecules/severity_chip.dart';
-
-/// One row of the Case List worklist table (DT §9.5).
-class CaseSummary {
-  const CaseSummary({
-    required this.title,
-    required this.patient,
-    required this.modality,
-    required this.date,
-    required this.confidence,
-    required this.severity,
-  });
-
-  final String title;
-  final String patient;
-  final String modality;
-  final DateTime date;
-
-  /// 0–1; rendered as a percentage.
-  final double confidence;
-  final SeverityLevel severity;
-}
 
 enum _SortColumn { patient, modality, date, confidence, severity }
 

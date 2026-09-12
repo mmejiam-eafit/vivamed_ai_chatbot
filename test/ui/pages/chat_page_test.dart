@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
@@ -9,19 +10,21 @@ import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 
 void main() {
+  Widget wrap(Widget child) => ProviderScope(
+        child: MaterialApp(theme: buildAppTheme(), home: child),
+      );
+
   group('ChatPage', () {
     testWidgets('renders ChatTemplate', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(ChatTemplate), findsOneWidget);
     });
 
     testWidgets('renders Chat in app bar', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       expect(find.text('Chat'), findsOneWidget);
     });
@@ -31,18 +34,16 @@ void main() {
       // Regression guard for gap 11: AppBar titles used to fall back to
       // Flutter's own Roboto Typography because buildAppTheme() set no
       // titleTextStyle and no textTheme.
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       final paragraph = tester.renderObject<RenderParagraph>(find.text('Chat'));
       expect(paragraph.text.style?.fontFamily, AppTypography.headingMd.fontFamily);
     });
 
     testWidgets('renders ChatPanel slot', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(ChatPanel), findsOneWidget);
     });
@@ -57,9 +58,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(FindingsPanel), findsOneWidget);
     });
@@ -74,9 +74,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.drawer, isNotNull);
@@ -91,9 +90,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.bottomSheet, isNotNull);
@@ -108,9 +106,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.drawer, isNull);
@@ -123,9 +120,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.bottomSheet, isNull);
@@ -140,9 +136,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.drawer, isNull);
@@ -155,9 +150,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        MaterialApp(theme: buildAppTheme(), home: const ChatPage()),
-      );
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
 
       expect(find.byType(ConversationDrawer), findsOneWidget);
     });
