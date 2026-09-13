@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/pages/case_list_page.dart';
+import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +24,21 @@ void main() {
     );
   }
 
+  // For nav-bar tests that push/replace routes: ThemeControllerScope must
+  // wrap MaterialApp itself, not just `home` -- routes added later land in
+  // sibling Overlay entries that a scope placed only inside `home` doesn't
+  // cover (see home_hub_page_test.dart, where this was first hit).
+  Future<Widget> wrapForNav(Widget root) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = await ThemeController.load();
+    return ProviderScope(
+      child: ThemeControllerScope(
+        controller: controller,
+        child: MaterialApp(theme: buildAppTheme(), home: root),
+      ),
+    );
+  }
+
   group('SettingsPage', () {
     testWidgets('renders SettingsTemplate', (tester) async {
       await tester.pumpWidget(await wrap());
@@ -32,7 +49,13 @@ void main() {
     testWidgets('renders Settings in app bar', (tester) async {
       await tester.pumpWidget(await wrap());
       await tester.pumpAndSettle();
-      expect(find.text('Settings'), findsOneWidget);
+      // Not a bare find.text('Settings') -- the nav bar's own "Settings"
+      // destination label renders on this page too.
+      expect(
+        find.descendant(
+            of: find.byType(AppBar), matching: find.text('Settings')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders Account section label', (tester) async {
@@ -102,6 +125,60 @@ void main() {
       expect(find.text('Dr. A. Ramírez'), findsOneWidget);
       expect(find.text('Radiologist'), findsOneWidget);
       expect(find.text('aramirez@hospital.org'), findsOneWidget);
+    });
+
+    // ── Nav bar (own index 3) ────────────────────────────────────────────
+
+    testWidgets('tapping Home in the nav bar pops back to the root',
+        (tester) async {
+      await tester.pumpWidget(await wrapForNav(
+        Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                ),
+                child: const Text('go to settings'),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('go to settings'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsPage), findsOneWidget);
+
+      await tester.tap(find.text('Home'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsPage), findsNothing);
+    });
+
+    testWidgets('tapping Chat in the nav bar replaces with ChatPage',
+        (tester) async {
+      await tester.pumpWidget(await wrapForNav(const SettingsPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Chat'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ChatPage), findsOneWidget);
+      expect(find.byType(SettingsPage), findsNothing);
+    });
+
+    testWidgets('tapping Studies in the nav bar replaces with CaseListPage',
+        (tester) async {
+      await tester.pumpWidget(await wrapForNav(const SettingsPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Studies'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CaseListPage), findsOneWidget);
+      expect(find.byType(SettingsPage), findsNothing);
     });
   });
 }

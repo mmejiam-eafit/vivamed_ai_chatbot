@@ -2,17 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
+import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Widget wrap(Widget child) => ProviderScope(
         child: MaterialApp(theme: buildAppTheme(), home: child),
       );
+
+  // Settings is one of the nav bar's destinations, and it reads
+  // ThemeControllerScope.of(context) -- these tests need a real loaded
+  // controller as an ancestor of MaterialApp itself (not just `home`, which
+  // doesn't cover routes pushed/replaced later -- see home_hub_page_test.dart).
+  Future<Widget> wrapWithNav(Widget child) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = await ThemeController.load();
+    return ProviderScope(
+      child: ThemeControllerScope(
+        controller: controller,
+        child: MaterialApp(theme: buildAppTheme(), home: child),
+      ),
+    );
+  }
 
   group('ChatPage', () {
     testWidgets('renders ChatTemplate', (tester) async {
@@ -26,7 +45,12 @@ void main() {
       await tester.pumpWidget(wrap(const ChatPage()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Chat'), findsOneWidget);
+      // Not a bare find.text('Chat') -- the nav bar's own "Chat" destination
+      // label now renders on this page too.
+      expect(
+        find.descendant(of: find.byType(AppBar), matching: find.text('Chat')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('app bar title renders in headingMd, not the platform default',
@@ -37,7 +61,9 @@ void main() {
       await tester.pumpWidget(wrap(const ChatPage()));
       await tester.pumpAndSettle();
 
-      final paragraph = tester.renderObject<RenderParagraph>(find.text('Chat'));
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: find.byType(AppBar), matching: find.text('Chat')),
+      );
       expect(paragraph.text.style?.fontFamily, AppTypography.headingMd.fontFamily);
     });
 
@@ -154,6 +180,60 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ConversationDrawer), findsOneWidget);
+    });
+
+    // ── Nav bar (own index 1) ────────────────────────────────────────────
+
+    testWidgets('tapping Home in the nav bar pops back to the root',
+        (tester) async {
+      await tester.pumpWidget(await wrapWithNav(
+        Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ChatPage()),
+                ),
+                child: const Text('go to chat'),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('go to chat'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ChatPage), findsOneWidget);
+
+      await tester.tap(find.text('Home'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ChatPage), findsNothing);
+    });
+
+    testWidgets('tapping Studies in the nav bar replaces with CaseListPage',
+        (tester) async {
+      await tester.pumpWidget(await wrapWithNav(const ChatPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Studies'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CaseListPage), findsOneWidget);
+      expect(find.byType(ChatPage), findsNothing);
+    });
+
+    testWidgets('tapping Settings in the nav bar replaces with SettingsPage',
+        (tester) async {
+      await tester.pumpWidget(await wrapWithNav(const ChatPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsPage), findsOneWidget);
+      expect(find.byType(ChatPage), findsNothing);
     });
   });
 }

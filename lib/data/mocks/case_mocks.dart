@@ -67,6 +67,10 @@ String mockThumbnailUrlFor(String caseId) =>
 String mockCaseImageUrlFor(String caseId) =>
     'https://picsum.photos/seed/$caseId/800/800';
 
+/// Appends a newly "uploaded" case so it also shows up back in the Studies
+/// worklist afterward -- a stand-in for a real backend persisting it.
+void addMockCase(CaseSummary newCase) => mockCases.add(newCase);
+
 final _mockFindings = <String, List<FindingItem>>{
   'case-1': const [
     FindingItem(

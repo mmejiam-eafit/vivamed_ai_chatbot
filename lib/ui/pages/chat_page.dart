@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
+import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/chat_message_list.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
+import 'package:radiologist_helper/ui/pages/case_list_page.dart';
+import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 
 // Neither takes a case/conversation parameter yet -- no navigation means
@@ -39,6 +42,24 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     ref.invalidate(messagesProvider(_conversationId));
   }
 
+  Widget _navBar(BuildContext context) => AppNavBar(
+        selectedIndex: 1,
+        onDestinationSelected: (i) {
+          switch (i) {
+            case 0:
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            case 2:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const CaseListPage()),
+              );
+            case 3:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+          }
+        },
+      );
+
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(title: const Text('Chat'));
@@ -55,6 +76,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       return Scaffold(
         appBar: appBar,
         body: const Center(child: AppLoadingIndicator()),
+        bottomNavigationBar: _navBar(context),
       );
     }
 
@@ -73,6 +95,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       findingsPanel: FindingsPanel(
         findings: caseDetailAsync.value?.findings ?? const [],
       ),
+      navBar: _navBar(context),
     );
   }
 }

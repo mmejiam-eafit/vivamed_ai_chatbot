@@ -6,6 +6,7 @@ import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
+import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 
@@ -18,6 +19,7 @@ class CaseListTemplate extends StatelessWidget {
     this.header,
     this.statusBar,
     this.emptyState,
+    this.navBar,
   });
 
   final PreferredSizeWidget appBar;
@@ -33,12 +35,14 @@ class CaseListTemplate extends StatelessWidget {
   final Widget? header;
   final Widget? statusBar;
   final Widget? emptyState;
+  final Widget? navBar;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.surfacePage,
       appBar: appBar,
+      bottomNavigationBar: navBar,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final tier = constraints.maxWidth.layoutTier;
@@ -190,6 +194,9 @@ List<CaseSummary> _previewCases() => [
       ),
     ];
 
+AppNavBar _previewNavBar() =>
+    AppNavBar(selectedIndex: 2, onDestinationSelected: (_) {});
+
 @Preview(
     name: 'wide — similar cases',
     size: Size(900, 700),
@@ -223,6 +230,14 @@ Widget previewCaseListExpanded() => CaseListTemplate(
       appBar: AppBar(title: const Text('Similar Cases')),
       caseSlots: _previewCaseCards(3, _previewCaseFields),
       worklistTable: CaseWorklistTable(cases: _previewCases()),
+    );
+
+@Preview(name: 'studies — with nav bar', size: Size(390, 700), wrapper: previewWrapperFull)
+Widget previewCaseListWithNavBar() => CaseListTemplate(
+      appBar: AppBar(title: const Text('Studies')),
+      caseSlots: _previewCaseCards(3, _previewCaseFields),
+      worklistTable: CaseWorklistTable(cases: _previewCases()),
+      navBar: _previewNavBar(),
     );
 
 @Preview(name: 'empty state', size: Size(390, 400), wrapper: previewWrapperFull)

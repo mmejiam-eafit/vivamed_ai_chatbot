@@ -67,6 +67,8 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 | `StatusBanner` | `AppIcon`, `AppText`, `AppButton` (optional action) | A horizontal banner communicating a status message (info, warning, error). |
 | `TypingIndicator` | `AppLoadingIndicator` or animated dots | Shows that the assistant is generating a response. |
 | `ImageThumbnail` | `AppImage`, `AppBadge` (optional) | An X-ray thumbnail with an optional badge overlay (e.g., "3 findings"). |
+| `HubActionCard` | `AppIcon`, `AppText` (title), `AppText` (description) | One of the Home Hub's big primary choices (upload a study, view studies, chat) — icon, title, description, the whole card tappable. |
+| `UploadZone` | `AppIcon`/`AppLoadingIndicator`, `AppText` | The Upload screen's one interactive area — a tappable zone carrying its idle/uploading/analyzing states. |
 
 ### Rules for molecules
 
@@ -90,7 +92,7 @@ An organism is a self-contained section of the interface that fulfills a distinc
 | `FindingsPanel` | `FindingRow` (many), `AppText` (section header) | A collapsible panel listing all AI-generated findings for the current study, grouped by region or severity. |
 | `StudyInfoCard` | `MetadataField` (many), `ImageThumbnail`, `AppText` (title) | Displays study metadata: patient pseudonym, modality, date, study UID, and a representative thumbnail. |
 | `ConversationDrawer` | `NavItem` (many), `AppAvatar`, `AppText` | Side drawer listing past conversations. Each item shows a summary and timestamp. |
-| `AppNavBar` | `NavigationBar`/`NavigationDestination` (native) | Bottom navigation bar with destinations: Chat, Studies, Settings. |
+| `AppNavBar` | `NavigationBar`/`NavigationDestination` (native) | Bottom navigation bar with destinations: Home, Chat, Studies, Settings. Mounted on Chat, Case List, and Settings via each template's optional `navBar` slot — Home pops to the root; the other two use `pushReplacement` to keep the stack flat. |
 | `StatusBar` | `StatusBanner` | Persistent bar at the top of the screen showing connectivity or system status. |
 | `OnboardingCarousel` | `AppImage`, `AppText`, `AppButton` | A swipeable set of introductory slides shown on first launch. |
 
@@ -119,6 +121,8 @@ A template is a layout skeleton. It defines **where organisms go on screen** —
 | `SettingsTemplate` | App bar zone, scrollable content zone | Single-column layout for settings sections. |
 | `OnboardingTemplate` | Full-bleed content zone, bottom action zone | Edge-to-edge layout for the onboarding carousel with a bottom "Get Started" area. |
 | `AuthTemplate` | Centered content zone | Vertically and horizontally centered card for login/registration flows. |
+| `UploadTemplate` | App bar zone, optional status bar, centered content zone | Centered single-task layout — an `UploadZone`, an action button, and an optional success/error `StatusBar` — same shape as `AuthTemplate` and for the same reason (one focused task, no tier branching needed). |
+| `HomeHubTemplate` | App bar zone, three-card content zone | Layout for the Home Hub's three primary choices (`HubActionCard`s for Upload, View Studies, and Chat). Stacked column below `mediumMinWidth`, a single row at and above it — exactly 3 fixed cards never need a third posture. |
 
 ### Rules for templates
 
@@ -144,6 +148,8 @@ A page is a **routed destination** that pairs exactly one template with real dat
 | `SettingsPage` | `SettingsTemplate` | User preferences, model configuration, account info. |
 | `OnboardingPage` | `OnboardingTemplate` | Onboarding completion state, first-launch flag. |
 | `LoginPage` | `AuthTemplate` | Authentication state, credential validation. |
+| `UploadPage` | `UploadTemplate` | File-picker selection, upload/analysis status, and the resulting `CaseDetail` — connects to `UploadService`. |
+| `HomeHubPage` | `HomeHubTemplate` | No data of its own — pure navigation chrome. Pushes `UploadPage`, `CaseListPage`, `ChatPage`, or `SettingsPage`. |
 
 ### Rules for pages
 

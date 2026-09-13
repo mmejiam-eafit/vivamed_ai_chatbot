@@ -11,13 +11,15 @@ import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 
-// Neither takes a case/conversation parameter yet -- no navigation means
-// nothing selects one. The later flow-wiring pass is what makes these vary.
-const _conversationId = 'conv-1';
-const _caseId = 'case-1';
-
 class StudyReviewPage extends ConsumerStatefulWidget {
-  const StudyReviewPage({super.key});
+  const StudyReviewPage({super.key, required this.caseId, this.conversationId});
+
+  final String caseId;
+
+  /// When arrived from standalone Chat, that conversation continues. When
+  /// absent (Case List, Similar Cases, a fresh Upload), defaults to
+  /// [caseId] itself -- this study's own thread, per `app_navigation_plan.md`.
+  final String? conversationId;
 
   @override
   ConsumerState<StudyReviewPage> createState() => _StudyReviewPageState();
@@ -25,6 +27,8 @@ class StudyReviewPage extends ConsumerStatefulWidget {
 
 class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
   final _chatController = TextEditingController();
+
+  String get _conversationId => widget.conversationId ?? widget.caseId;
 
   @override
   void dispose() {
@@ -46,7 +50,7 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
     final conversationsAsync = ref.watch(conversationsProvider);
     final userAsync = ref.watch(currentUserProvider);
     final messagesAsync = ref.watch(messagesProvider(_conversationId));
-    final caseDetailAsync = ref.watch(caseDetailProvider(_caseId));
+    final caseDetailAsync = ref.watch(caseDetailProvider(widget.caseId));
 
     final isLoading = conversationsAsync.isLoading ||
         userAsync.isLoading ||
@@ -85,7 +89,7 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
 // ── Previews ──────────────────────────────────────────────────────────────────
 
 @Preview(name: 'wide', size: Size(1024, 768), wrapper: previewWrapperFull)
-Widget previewStudyReviewPageWide() => const StudyReviewPage();
+Widget previewStudyReviewPageWide() => const StudyReviewPage(caseId: 'case-1');
 
 @Preview(name: 'narrow', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewStudyReviewPageNarrow() => const StudyReviewPage();
+Widget previewStudyReviewPageNarrow() => const StudyReviewPage(caseId: 'case-1');

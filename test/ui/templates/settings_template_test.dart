@@ -228,5 +228,35 @@ void main() {
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
     });
+
+    // ── navBar slot ──────────────────────────────────────────────────────
+
+    testWidgets('navBar is passed to Scaffold.bottomNavigationBar',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(),
+            sections: threeSections,
+            navBar: const Text('nav-bar-slot'),
+          ),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNotNull);
+      expect(find.text('nav-bar-slot'), findsOneWidget);
+    });
+
+    testWidgets('navBar is absent when not provided', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(appBar: AppBar(), sections: threeSections),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNull);
+    });
   });
 }

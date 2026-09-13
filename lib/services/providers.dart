@@ -9,6 +9,7 @@ import 'package:radiologist_helper/services/auth_service.dart';
 import 'package:radiologist_helper/services/case_service.dart';
 import 'package:radiologist_helper/services/chat_service.dart';
 import 'package:radiologist_helper/services/heatmap_service.dart';
+import 'package:radiologist_helper/services/upload_service.dart';
 
 // ── Service instances ───────────────────────────────────────────────────────
 // Each service receives its repositories via ref.watch on
@@ -34,6 +35,10 @@ final chatServiceProvider = Provider<ChatService>(
 
 final heatmapServiceProvider = Provider<HeatmapService>(
   (ref) => HeatmapService(ref.watch(heatmapRepositoryProvider)),
+);
+
+final uploadServiceProvider = Provider<UploadService>(
+  (ref) => UploadService(ref.watch(uploadRepositoryProvider)),
 );
 
 // ── Screen-facing reactive providers ────────────────────────────────────────

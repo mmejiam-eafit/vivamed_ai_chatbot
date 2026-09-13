@@ -5,6 +5,7 @@ import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/molecules/section_card.dart';
 import 'package:radiologist_helper/ui/molecules/section_index_tile.dart';
+import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 
 /// One titled block of settings content, rendered in a [SectionCard] —
 /// callers supply only the title and the content underneath it.
@@ -22,6 +23,7 @@ class SettingsTemplate extends StatelessWidget {
     required this.sections,
     this.selectedIndex = 0,
     this.onSectionSelected,
+    this.navBar,
   });
 
   final PreferredSizeWidget appBar;
@@ -31,12 +33,14 @@ class SettingsTemplate extends StatelessWidget {
   /// Ignored below that tier, where every section renders in one column.
   final int selectedIndex;
   final ValueChanged<int>? onSectionSelected;
+  final Widget? navBar;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.surfacePage,
       appBar: appBar,
+      bottomNavigationBar: navBar,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final tier = constraints.maxWidth.layoutTier;
@@ -155,6 +159,7 @@ List<SettingsSection> _previewSections() => const [
 Widget previewSettingsTemplate() => SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
       sections: _previewSections(),
+      navBar: AppNavBar(selectedIndex: 3, onDestinationSelected: (_) {}),
     );
 
 @Preview(name: 'settings — expanded', size: Size(1024, 768), wrapper: previewWrapperFull)

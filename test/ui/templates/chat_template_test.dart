@@ -444,5 +444,85 @@ void main() {
       );
       expect(drawerSizedBox.width, NavigationTokens.sideNavWidth);
     });
+
+    // ── navBar slot ──────────────────────────────────────────────────────
+
+    testWidgets('compact: navBar is passed to Scaffold.bottomNavigationBar',
+        (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            navBar: const Text('nav-bar-slot'),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNotNull);
+      expect(find.text('nav-bar-slot'), findsOneWidget);
+    });
+
+    testWidgets('rail: navBar is passed to Scaffold.bottomNavigationBar',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            navBar: const Text('nav-bar-slot'),
+          ),
+        ),
+      );
+
+      expect(find.text('nav-bar-slot'), findsOneWidget);
+    });
+
+    testWidgets('wide: navBar is passed to Scaffold.bottomNavigationBar',
+        (tester) async {
+      tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            navBar: const Text('nav-bar-slot'),
+          ),
+        ),
+      );
+
+      expect(find.text('nav-bar-slot'), findsOneWidget);
+    });
+
+    testWidgets('navBar is absent when not provided', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(appBar: AppBar(), chatPanel: const SizedBox()),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNull);
+    });
   });
 }

@@ -11,11 +11,13 @@ void main() {
 
   // ── Structure ──────────────────────────────────────────────────────────────
 
-  testWidgets('renders Chat, Studies, and Settings labels', (tester) async {
+  testWidgets('renders Home, Chat, Studies, and Settings labels',
+      (tester) async {
     await tester.pumpWidget(wrap(AppNavBar(
       selectedIndex: 0,
       onDestinationSelected: (_) {},
     )));
+    expect(find.text('Home'), findsOneWidget);
     expect(find.text('Chat'), findsOneWidget);
     expect(find.text('Studies'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
@@ -23,18 +25,27 @@ void main() {
 
   // ── Selected destination ───────────────────────────────────────────────────
 
-  testWidgets('selectedIndex 0 shows the filled chat icon', (tester) async {
+  testWidgets('selectedIndex 0 shows the filled home icon', (tester) async {
     await tester.pumpWidget(wrap(AppNavBar(
       selectedIndex: 0,
+      onDestinationSelected: (_) {},
+    )));
+    expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.byIcon(Icons.home_outlined), findsNothing);
+  });
+
+  testWidgets('selectedIndex 1 shows the filled chat icon', (tester) async {
+    await tester.pumpWidget(wrap(AppNavBar(
+      selectedIndex: 1,
       onDestinationSelected: (_) {},
     )));
     expect(find.byIcon(Icons.chat_bubble), findsOneWidget);
     expect(find.byIcon(Icons.chat_bubble_outline), findsNothing);
   });
 
-  testWidgets('selectedIndex 1 shows the filled folder icon', (tester) async {
+  testWidgets('selectedIndex 2 shows the filled folder icon', (tester) async {
     await tester.pumpWidget(wrap(AppNavBar(
-      selectedIndex: 1,
+      selectedIndex: 2,
       onDestinationSelected: (_) {},
     )));
     expect(find.byIcon(Icons.folder), findsOneWidget);
@@ -43,7 +54,20 @@ void main() {
 
   // ── onDestinationSelected ──────────────────────────────────────────────────
 
-  testWidgets('tapping Studies calls onDestinationSelected with 1', (tester) async {
+  testWidgets('tapping Home calls onDestinationSelected with 0',
+      (tester) async {
+    int? tapped;
+    await tester.pumpWidget(wrap(AppNavBar(
+      selectedIndex: 1,
+      onDestinationSelected: (i) => tapped = i,
+    )));
+    await tester.tap(find.text('Home'));
+    await tester.pump();
+    expect(tapped, 0);
+  });
+
+  testWidgets('tapping Studies calls onDestinationSelected with 2',
+      (tester) async {
     int? tapped;
     await tester.pumpWidget(wrap(AppNavBar(
       selectedIndex: 0,
@@ -51,7 +75,7 @@ void main() {
     )));
     await tester.tap(find.text('Studies'));
     await tester.pump();
-    expect(tapped, 1);
+    expect(tapped, 2);
   });
 
   // ── Background color ───────────────────────────────────────────────────────
@@ -74,7 +98,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: buildAppTheme(Brightness.dark),
       home: Scaffold(
-        body: AppNavBar(selectedIndex: 2, onDestinationSelected: (_) {}),
+        body: AppNavBar(selectedIndex: 3, onDestinationSelected: (_) {}),
       ),
     ));
     final container = tester.widget<Container>(find.byType(Container).first);

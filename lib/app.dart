@@ -41,7 +41,10 @@ class App extends StatelessWidget {
             Routes.login: (_) => const LoginPage(),
             Routes.onboarding: (_) => const OnboardingPage(),
             Routes.chat: (_) => const ChatPage(),
-            Routes.studyReview: (_) => const StudyReviewPage(),
+            // Placeholder caseId -- this named route (and passing real
+            // arguments through it) goes away in the routing-cleanup chunk
+            // of app_navigation_plan.md; nothing reaches it by name today.
+            Routes.studyReview: (_) => const StudyReviewPage(caseId: 'case-1'),
             Routes.caseList: (_) => const CaseListPage(),
             Routes.heatmapViewer: (_) => const HeatmapViewerPage(),
             Routes.settings: (_) => const SettingsPage(),

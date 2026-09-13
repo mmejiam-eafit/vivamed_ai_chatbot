@@ -9,6 +9,9 @@ import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/molecules/theme_mode_selector.dart';
+import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
+import 'package:radiologist_helper/ui/pages/case_list_page.dart';
+import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -21,6 +24,24 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   int _selectedIndex = 0;
 
+  Widget _navBar(BuildContext context) => AppNavBar(
+        selectedIndex: 3,
+        onDestinationSelected: (i) {
+          switch (i) {
+            case 0:
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            case 1:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const ChatPage()),
+              );
+            case 2:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const CaseListPage()),
+              );
+          }
+        },
+      );
+
   @override
   Widget build(BuildContext context) {
     final themeController = ThemeControllerScope.of(context);
@@ -29,6 +50,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       appBar: AppBar(title: const Text('Settings')),
       selectedIndex: _selectedIndex,
       onSectionSelected: (i) => setState(() => _selectedIndex = i),
+      navBar: _navBar(context),
       sections: [
         SettingsSection(
           title: 'Account',

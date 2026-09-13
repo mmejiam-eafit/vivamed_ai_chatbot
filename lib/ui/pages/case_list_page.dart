@@ -8,8 +8,11 @@ import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
+import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
+import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
 List<StudyMetadataField> _cardFields(CaseSummary c) => [
@@ -27,6 +30,24 @@ class CaseListPage extends ConsumerWidget {
 
   static final _appBar = AppBar(title: const Text('Cases'));
 
+  Widget _navBar(BuildContext context) => AppNavBar(
+        selectedIndex: 2,
+        onDestinationSelected: (i) {
+          switch (i) {
+            case 0:
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            case 1:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const ChatPage()),
+              );
+            case 3:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+          }
+        },
+      );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.watch(casesProvider).when(
@@ -42,14 +63,17 @@ class CaseListPage extends ConsumerWidget {
             ],
             worklistTable: CaseWorklistTable(cases: cases),
             emptyState: const AppText('No cases available.'),
+            navBar: _navBar(context),
           ),
           loading: () => Scaffold(
             appBar: _appBar,
             body: const Center(child: AppLoadingIndicator()),
+            bottomNavigationBar: _navBar(context),
           ),
           error: (error, stackTrace) => Scaffold(
             appBar: _appBar,
             body: Center(child: Text('Could not load cases: $error')),
+            bottomNavigationBar: _navBar(context),
           ),
         );
   }

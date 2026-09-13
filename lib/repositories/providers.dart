@@ -4,6 +4,7 @@ import 'package:radiologist_helper/repositories/case_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
 import 'package:radiologist_helper/repositories/findings_repository.dart';
 import 'package:radiologist_helper/repositories/heatmap_repository.dart';
+import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/repositories/user_repository.dart';
 
 // The one place Mock repositories are named -- swapping to a real backend
@@ -26,3 +27,6 @@ final conversationRepositoryProvider =
 
 final heatmapRepositoryProvider =
     Provider<HeatmapRepository>((ref) => MockHeatmapRepository());
+
+final uploadRepositoryProvider =
+    Provider<UploadRepository>((ref) => MockUploadRepository());

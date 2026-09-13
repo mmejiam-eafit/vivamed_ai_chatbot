@@ -263,3 +263,9 @@ Closes **13, 16, 17, 22, 25** (done); still to finish **18, 19, 20**. **6** was 
 - **The theme toggle** (Settings Appearance section) is in step 5, but dark mode is usable from step 1 for anyone flipping `themeMode` manually — useful for reviewing each step's work in both modes.
 - **Verification per step:** `flutter analyze`, `flutter test`, and a rendered screenshot in both brightnesses. A step is not done while any of the three is outstanding.
 - **Close the register as you go.** Delete each row here and its matching `design_tokens.md` §12 entry in the same commit as the fix, so the two never drift.
+
+---
+
+## Beyond this register: navigation
+
+This register is scoped to design-token/layout conformance only — it has never tracked functional completeness (real navigation, real data wiring), which `README.md` documents as a separate, later phase. That phase is now underway: the repository/service/DI data layer is built (every page reads real, if mocked, data), and the next step — designed but **not yet implemented** — is real screen-to-screen navigation. See **[`app_navigation_plan.md`](app_navigation_plan.md)** for that design: a hub-centric flow (not the design canvas's old Chat-as-landing-screen proposal), an upload flow, similar-studies linking, and `AppNavBar`'s new role. Implementation is intentionally deferred until that plan is broken into smaller, separately-sequenced pieces.

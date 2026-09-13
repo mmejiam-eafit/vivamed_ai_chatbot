@@ -3,10 +3,11 @@ import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
-/// The app's bottom navigation — Chat / Studies / Settings. Built on Flutter's
-/// own `NavigationBar`/`NavigationDestination` rather than a hand-rolled row of
-/// `NavItem`s: three destinations with a filled/outline icon swap per selection
-/// is exactly what `NavigationDestination.icon`/`.selectedIcon` already do.
+/// The app's bottom navigation — Home / Chat / Studies / Settings. Built on
+/// Flutter's own `NavigationBar`/`NavigationDestination` rather than a
+/// hand-rolled row of `NavItem`s: four destinations with a filled/outline icon
+/// swap per selection is exactly what `NavigationDestination.icon`/
+/// `.selectedIcon` already do.
 class AppNavBar extends StatelessWidget {
   const AppNavBar({
     super.key,
@@ -48,6 +49,11 @@ class AppNavBar extends StatelessWidget {
           ),
           destinations: [
             NavigationDestination(
+              icon: Icon(Icons.home_outlined, color: unselectedColor),
+              selectedIcon: Icon(Icons.home, color: selectedColor),
+              label: 'Home',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.chat_bubble_outline, color: unselectedColor),
               selectedIcon: Icon(Icons.chat_bubble, color: selectedColor),
               label: 'Chat',
@@ -71,20 +77,26 @@ class AppNavBar extends StatelessWidget {
 
 // ── Previews ──────────────────────────────────────────────────────────────────
 
+@Preview(name: 'home selected', size: Size(390, 72), wrapper: previewWrapper)
+Widget previewAppNavBarHome() => AppNavBar(
+      selectedIndex: 0,
+      onDestinationSelected: (_) {},
+    );
+
 @Preview(name: 'chat selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarChat() => AppNavBar(
-      selectedIndex: 0,
+      selectedIndex: 1,
       onDestinationSelected: (_) {},
     );
 
 @Preview(name: 'studies selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarStudies() => AppNavBar(
-      selectedIndex: 1,
+      selectedIndex: 2,
       onDestinationSelected: (_) {},
     );
 
 @Preview(name: 'settings selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarSettings() => AppNavBar(
-      selectedIndex: 2,
+      selectedIndex: 3,
       onDestinationSelected: (_) {},
     );

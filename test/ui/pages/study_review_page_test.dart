@@ -14,21 +14,21 @@ void main() {
 
   group('StudyReviewPage', () {
     testWidgets('renders StudyReviewTemplate', (tester) async {
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(StudyReviewTemplate), findsOneWidget);
     });
 
     testWidgets('renders Study Review in app bar', (tester) async {
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.text('Study Review'), findsOneWidget);
     });
 
     testWidgets('renders FindingsPanel slot', (tester) async {
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(FindingsPanel), findsOneWidget);
@@ -43,7 +43,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(ChatPanel), findsOneWidget);
@@ -59,7 +59,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(TabBar), findsOneWidget);
@@ -73,7 +73,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -92,7 +92,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(TabBar), findsOneWidget);
@@ -110,7 +110,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(wrap(const StudyReviewPage()));
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(TabBar), findsNothing);
