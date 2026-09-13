@@ -23,9 +23,10 @@ String _formatConfidence(double confidence) =>
 /// (verified against the Flutter SDK source, not assumed from the widget's
 /// reputation for fixed-height, horizontally-scrolling rows).
 class CaseWorklistTable extends StatefulWidget {
-  const CaseWorklistTable({super.key, required this.cases});
+  const CaseWorklistTable({super.key, required this.cases, this.onCaseTap});
 
   final List<CaseSummary> cases;
+  final ValueChanged<CaseSummary>? onCaseTap;
 
   @override
   State<CaseWorklistTable> createState() => _CaseWorklistTableState();
@@ -119,6 +120,9 @@ class _CaseWorklistTableState extends State<CaseWorklistTable> {
           rows: [
             for (final item in sorted)
               DataRow(
+                onSelectChanged: widget.onCaseTap == null
+                    ? null
+                    : (_) => widget.onCaseTap!(item),
                 cells: [
                   DataCell(cellText(item.patient)),
                   DataCell(cellText(item.modality)),

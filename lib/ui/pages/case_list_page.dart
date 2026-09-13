@@ -13,6 +13,7 @@ import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
+import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
 List<StudyMetadataField> _cardFields(CaseSummary c) => [
@@ -48,6 +49,12 @@ class CaseListPage extends ConsumerWidget {
         },
       );
 
+  void _openCase(BuildContext context, CaseSummary c) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => StudyReviewPage(caseId: c.id)),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.watch(casesProvider).when(
@@ -59,9 +66,13 @@ class CaseListPage extends ConsumerWidget {
                   title: c.title,
                   fields: _cardFields(c),
                   thumbnailUrl: mockThumbnailUrlFor(c.id),
+                  onTap: () => _openCase(context, c),
                 ),
             ],
-            worklistTable: CaseWorklistTable(cases: cases),
+            worklistTable: CaseWorklistTable(
+              cases: cases,
+              onCaseTap: (c) => _openCase(context, c),
+            ),
             emptyState: const AppText('No cases available.'),
             navBar: _navBar(context),
           ),

@@ -12,10 +12,12 @@ class ChatMessageList extends StatefulWidget {
     super.key,
     required this.messages,
     this.isTyping = false,
+    this.onCaseReferenceTap,
   });
 
   final List<ChatMessageItem> messages;
   final bool isTyping;
+  final ValueChanged<String>? onCaseReferenceTap;
 
   @override
   State<ChatMessageList> createState() => _ChatMessageListState();
@@ -74,6 +76,8 @@ class _ChatMessageListState extends State<ChatMessageList> {
           avatarImageUrl: msg.avatarImageUrl,
           avatarInitials: msg.avatarInitials,
           timestamp: msg.timestamp,
+          caseReferences: msg.caseReferences,
+          onCaseReferenceTap: widget.onCaseReferenceTap,
         );
       },
     );

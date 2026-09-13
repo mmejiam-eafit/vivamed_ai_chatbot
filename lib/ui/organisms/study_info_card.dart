@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/image_thumbnail.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
@@ -26,6 +27,8 @@ class StudyInfoCard extends StatelessWidget {
     this.thumbnailUrl,
     this.thumbnailBadge,
     this.onThumbnailTap,
+    this.onTap,
+    this.focusNode,
   });
 
   final String title;
@@ -34,58 +37,83 @@ class StudyInfoCard extends StatelessWidget {
   final String? thumbnailBadge;
   final VoidCallback? onThumbnailTap;
 
+  /// The whole card, distinct from [onThumbnailTap] -- opens the study.
+  final VoidCallback? onTap;
+  final FocusNode? focusNode;
+
+  Widget _content(AppColorsData colors) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        // SingleChildScrollView prevents RenderFlex overflow when the card
+        // is placed in a parent that constrains height below the content's
+        // natural size.
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: AppText(
+                      title,
+                      style: AppTypography.headingSm,
+                      color: colors.textPrimary,
+                    ),
+                  ),
+                  if (thumbnailUrl != null) ...[
+                    const SizedBox(width: AppSpacing.lg),
+                    ImageThumbnail(
+                      url: thumbnailUrl!,
+                      badgeLabel: thumbnailBadge,
+                      onTap: onThumbnailTap,
+                    ),
+                  ],
+                ],
+              ),
+              if (fields.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                ...fields.map(
+                  (f) => Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: MetadataField(
+                      label: f.label,
+                      value: f.value,
+                      valueKind: f.valueKind,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+    final card = Container(
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: AppRadius.borderCard,
         border: Border.all(color: colors.border),
         boxShadow: AppElevation.card,
       ),
-      // SingleChildScrollView prevents RenderFlex overflow when the card is
-      // placed in a parent that constrains height below the content's natural size.
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: AppText(
-                    title,
-                    style: AppTypography.headingSm,
-                    color: colors.textPrimary,
-                  ),
-                ),
-                if (thumbnailUrl != null) ...[
-                  const SizedBox(width: AppSpacing.lg),
-                  ImageThumbnail(
-                    url: thumbnailUrl!,
-                    badgeLabel: thumbnailBadge,
-                    onTap: onThumbnailTap,
-                  ),
-                ],
-              ],
-            ),
-            if (fields.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.md),
-              ...fields.map(
-                (f) => Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.xs),
-                  child: MetadataField(
-                    label: f.label,
-                    value: f.value,
-                    valueKind: f.valueKind,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+      child: _content(colors),
+    );
+
+    if (onTap == null) return card;
+
+    return FocusRing(
+      borderRadius: BorderRadius.circular(
+        AppRadius.card + AppInteraction.focusRingOffset,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        focusNode: focusNode,
+        hoverColor:
+            colors.textPrimary.withValues(alpha: AppInteraction.hoverOverlayOpacity),
+        borderRadius: AppRadius.borderCard,
+        child: card,
       ),
     );
   }

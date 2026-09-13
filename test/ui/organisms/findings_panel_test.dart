@@ -13,9 +13,9 @@ void main() {
       );
 
   const sampleFindings = [
-    FindingItem(name: 'Right lower lobe consolidation', severity: SeverityLevel.moderate),
-    FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
-    FindingItem(name: 'Cardiac silhouette — normal', severity: SeverityLevel.normal),
+    FindingItem(id: 'test-finding', name: 'Right lower lobe consolidation', severity: SeverityLevel.moderate),
+    FindingItem(id: 'test-finding', name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+    FindingItem(id: 'test-finding', name: 'Cardiac silhouette — normal', severity: SeverityLevel.normal),
   ];
 
   // ── Content rendering ──────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ void main() {
 
   testWidgets('tapping a row toggles its expanded icon', (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(
-      findings: [FindingItem(name: 'Pneumonia', severity: SeverityLevel.moderate)],
+      findings: [FindingItem(id: 'test-finding', name: 'Pneumonia', severity: SeverityLevel.moderate)],
     )));
 
     // Initially all rows show expand_more
@@ -68,7 +68,7 @@ void main() {
 
   testWidgets('tapping an expanded row collapses it', (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(
-      findings: [FindingItem(name: 'Pneumonia', severity: SeverityLevel.moderate)],
+      findings: [FindingItem(id: 'test-finding', name: 'Pneumonia', severity: SeverityLevel.moderate)],
     )));
 
     // Expand
@@ -80,6 +80,68 @@ void main() {
     await tester.tap(find.byType(FindingRow));
     await tester.pump();
     expect(find.byIcon(Icons.expand_more), findsOneWidget);
+  });
+
+  // ── onFindingTap / View Heatmap (Study Review → Heatmap Viewer) ──────────
+
+  testWidgets('View Heatmap is absent while collapsed', (tester) async {
+    await tester.pumpWidget(wrap(FindingsPanel(
+      findings: const [
+        FindingItem(id: 'f1', name: 'Pneumonia', severity: SeverityLevel.moderate),
+      ],
+      onFindingTap: (_) {},
+    )));
+
+    expect(find.text('View Heatmap'), findsNothing);
+  });
+
+  testWidgets('View Heatmap appears once expanded, when onFindingTap is set',
+      (tester) async {
+    await tester.pumpWidget(wrap(FindingsPanel(
+      findings: const [
+        FindingItem(id: 'f1', name: 'Pneumonia', severity: SeverityLevel.moderate),
+      ],
+      onFindingTap: (_) {},
+    )));
+
+    await tester.tap(find.byType(FindingRow));
+    await tester.pump();
+
+    expect(find.text('View Heatmap'), findsOneWidget);
+  });
+
+  testWidgets('expanding without onFindingTap shows no View Heatmap action',
+      (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(
+      findings: [
+        FindingItem(id: 'f1', name: 'Pneumonia', severity: SeverityLevel.moderate),
+      ],
+    )));
+
+    await tester.tap(find.byType(FindingRow));
+    await tester.pump();
+
+    expect(find.text('View Heatmap'), findsNothing);
+  });
+
+  testWidgets('tapping View Heatmap calls onFindingTap with that finding\'s id',
+      (tester) async {
+    String? tapped;
+    await tester.pumpWidget(wrap(FindingsPanel(
+      findings: const [
+        FindingItem(id: 'f1', name: 'Pneumonia', severity: SeverityLevel.moderate),
+        FindingItem(id: 'f2', name: 'Effusion', severity: SeverityLevel.mild),
+      ],
+      onFindingTap: (id) => tapped = id,
+    )));
+
+    // Expand the second row and use its action.
+    await tester.tap(find.text('Effusion'));
+    await tester.pump();
+    await tester.tap(find.text('View Heatmap'));
+    await tester.pump();
+
+    expect(tapped, 'f2');
   });
 
   // ── Overflow prevention ────────────────────────────────────────────────────
@@ -95,12 +157,12 @@ void main() {
       height: 200, // deliberately shorter than 6 findings need (~380px)
       child: FindingsPanel(
         findings: [
-          FindingItem(name: 'Finding 1', severity: SeverityLevel.critical),
-          FindingItem(name: 'Finding 2', severity: SeverityLevel.moderate),
-          FindingItem(name: 'Finding 3', severity: SeverityLevel.mild),
-          FindingItem(name: 'Finding 4', severity: SeverityLevel.normal),
-          FindingItem(name: 'Finding 5', severity: SeverityLevel.critical),
-          FindingItem(name: 'Finding 6', severity: SeverityLevel.moderate),
+          FindingItem(id: 'test-finding', name: 'Finding 1', severity: SeverityLevel.critical),
+          FindingItem(id: 'test-finding', name: 'Finding 2', severity: SeverityLevel.moderate),
+          FindingItem(id: 'test-finding', name: 'Finding 3', severity: SeverityLevel.mild),
+          FindingItem(id: 'test-finding', name: 'Finding 4', severity: SeverityLevel.normal),
+          FindingItem(id: 'test-finding', name: 'Finding 5', severity: SeverityLevel.critical),
+          FindingItem(id: 'test-finding', name: 'Finding 6', severity: SeverityLevel.moderate),
         ],
       ),
     )));
@@ -130,9 +192,9 @@ void main() {
 
   testWidgets('two criticals aggregate into one alarm', (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(findings: [
-      FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
-      FindingItem(name: 'Aortic dissection', severity: SeverityLevel.critical),
-      FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+      FindingItem(id: 'test-finding', name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'Aortic dissection', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
     ])));
 
     expect(find.text('2 CRITICAL FINDINGS'), findsOneWidget);
@@ -144,8 +206,8 @@ void main() {
   testWidgets('a lone critical keeps its own chip, with no aggregate',
       (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(findings: [
-      FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
-      FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+      FindingItem(id: 'test-finding', name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
     ])));
 
     expect(find.textContaining('FINDING'), findsNothing);
@@ -156,9 +218,9 @@ void main() {
   testWidgets('the aggregate speaks for the highest level present',
       (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(findings: [
-      FindingItem(name: 'Pleural effusion', severity: SeverityLevel.moderate),
-      FindingItem(name: 'Atelectasis', severity: SeverityLevel.moderate),
-      FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'Pleural effusion', severity: SeverityLevel.moderate),
+      FindingItem(id: 'test-finding', name: 'Atelectasis', severity: SeverityLevel.moderate),
+      FindingItem(id: 'test-finding', name: 'Tension pneumothorax', severity: SeverityLevel.critical),
     ])));
 
     // One critical outranks two moderates: it is the lone top-level finding,
@@ -169,8 +231,8 @@ void main() {
 
   testWidgets('no alarm at all when nothing exceeds mild', (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(findings: [
-      FindingItem(name: 'Cardiac silhouette — normal', severity: SeverityLevel.normal),
-      FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+      FindingItem(id: 'test-finding', name: 'Cardiac silhouette — normal', severity: SeverityLevel.normal),
+      FindingItem(id: 'test-finding', name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
     ])));
 
     expect(alarmCount(tester), 0);
@@ -183,9 +245,9 @@ void main() {
 
   testWidgets('three criticals never render three alarms', (tester) async {
     await tester.pumpWidget(wrap(const FindingsPanel(findings: [
-      FindingItem(name: 'A', severity: SeverityLevel.critical),
-      FindingItem(name: 'B', severity: SeverityLevel.critical),
-      FindingItem(name: 'C', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'A', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'B', severity: SeverityLevel.critical),
+      FindingItem(id: 'test-finding', name: 'C', severity: SeverityLevel.critical),
     ])));
 
     expect(find.text('3 CRITICAL FINDINGS'), findsOneWidget);

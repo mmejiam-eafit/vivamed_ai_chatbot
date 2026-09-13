@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
@@ -15,6 +16,7 @@ class FindingRow extends StatelessWidget {
     this.isExpanded = false,
     this.isAlarm = true,
     this.focusNode,
+    this.onViewHeatmap,
   });
 
   final String name;
@@ -22,6 +24,10 @@ class FindingRow extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isExpanded;
   final FocusNode? focusNode;
+
+  /// Revealed as a "View Heatmap" action only while [isExpanded] -- keeps
+  /// the collapsed, dense scanning view unchanged.
+  final VoidCallback? onViewHeatmap;
 
   /// Whether this row may carry the viewport's one Layer-5 alarm (DL §5.2).
   /// The list owner decides: when several findings share the top severity it
@@ -86,32 +92,47 @@ class FindingRow extends StatelessWidget {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: AppText(
-                  name,
-                  style: AppTypography.bodyMd,
-                  // Collapsed: clamp to fit the list. Expanded: the full name
-                  // must be reachable (DL §4.6) — this is the row's only
-                  // carrier of it, so it wraps instead of staying cut off.
-                  overflow: isExpanded ? null : TextOverflow.ellipsis,
-                  maxLines: isExpanded ? null : 1,
+              Row(
+                children: [
+                  Expanded(
+                    child: AppText(
+                      name,
+                      style: AppTypography.bodyMd,
+                      // Collapsed: clamp to fit the list. Expanded: the full
+                      // name must be reachable (DL §4.6) — this is the row's
+                      // only carrier of it, so it wraps instead of staying
+                      // cut off.
+                      overflow: isExpanded ? null : TextOverflow.ellipsis,
+                      maxLines: isExpanded ? null : 1,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  _SeverityMark(
+                    severity: severity,
+                    showsAlarm: _showsAlarm,
+                    severityColors: severityColors,
+                    quietLabelColor: colors.textSecondary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  AppIcon(
+                    isExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: colors.icon,
+                    size: 20.0,
+                  ),
+                ],
+              ),
+              if (isExpanded && onViewHeatmap != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: AppButton(
+                    label: 'View Heatmap',
+                    variant: AppButtonVariant.ghost,
+                    onPressed: onViewHeatmap,
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _SeverityMark(
-                severity: severity,
-                showsAlarm: _showsAlarm,
-                severityColors: severityColors,
-                quietLabelColor: colors.textSecondary,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              AppIcon(
-                isExpanded ? Icons.expand_less : Icons.expand_more,
-                color: colors.icon,
-                size: 20.0,
-              ),
             ],
           ),
         ),

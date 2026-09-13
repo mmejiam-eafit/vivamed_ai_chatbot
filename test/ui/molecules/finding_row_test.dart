@@ -74,6 +74,43 @@ void main() {
     expect(called, isTrue);
   });
 
+  // ── onViewHeatmap (revealed only when expanded) ───────────────────────────
+
+  testWidgets('onViewHeatmap action is hidden while collapsed', (tester) async {
+    await tester.pumpWidget(wrap(FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.moderate,
+      onViewHeatmap: () {},
+    )));
+    expect(find.text('View Heatmap'), findsNothing);
+  });
+
+  testWidgets('onViewHeatmap action is hidden when not provided, even expanded',
+      (tester) async {
+    await tester.pumpWidget(wrap(const FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.moderate,
+      isExpanded: true,
+    )));
+    expect(find.text('View Heatmap'), findsNothing);
+  });
+
+  testWidgets('onViewHeatmap action shows and fires once expanded',
+      (tester) async {
+    var called = false;
+    await tester.pumpWidget(wrap(FindingRow(
+      name: 'Finding',
+      severity: SeverityLevel.moderate,
+      isExpanded: true,
+      onViewHeatmap: () => called = true,
+    )));
+
+    expect(find.text('View Heatmap'), findsOneWidget);
+    await tester.tap(find.text('View Heatmap'));
+    await tester.pump();
+    expect(called, isTrue);
+  });
+
   // ── SeverityDot ────────────────────────────────────────────────────────────
 
   testWidgets('contains a SeverityDot', (tester) async {

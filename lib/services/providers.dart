@@ -9,6 +9,7 @@ import 'package:radiologist_helper/services/auth_service.dart';
 import 'package:radiologist_helper/services/case_service.dart';
 import 'package:radiologist_helper/services/chat_service.dart';
 import 'package:radiologist_helper/services/heatmap_service.dart';
+import 'package:radiologist_helper/services/onboarding_service.dart';
 import 'package:radiologist_helper/services/upload_service.dart';
 
 // ── Service instances ───────────────────────────────────────────────────────
@@ -41,6 +42,10 @@ final uploadServiceProvider = Provider<UploadService>(
   (ref) => UploadService(ref.watch(uploadRepositoryProvider)),
 );
 
+final onboardingServiceProvider = Provider<OnboardingService>(
+  (ref) => OnboardingService(ref.watch(onboardingRepositoryProvider)),
+);
+
 // ── Screen-facing reactive providers ────────────────────────────────────────
 // What pages actually read -- AsyncValue gives loading/data/error for free.
 
@@ -55,6 +60,10 @@ final casesProvider = FutureProvider<List<CaseSummary>>(
 final caseDetailProvider = FutureProvider.family<
     ({CaseDetail detail, List<FindingItem> findings}), String>(
   (ref, caseId) => ref.watch(caseServiceProvider).getCaseDetail(caseId),
+);
+
+final similarCasesProvider = FutureProvider.family<List<CaseSummary>, String>(
+  (ref, caseId) => ref.watch(caseServiceProvider).getSimilarCases(caseId),
 );
 
 final conversationsProvider = FutureProvider<List<ConversationItem>>(

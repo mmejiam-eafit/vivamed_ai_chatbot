@@ -66,4 +66,27 @@ void main() {
     ));
     expect(align.alignment, Alignment.centerLeft);
   });
+
+  // ── Case references (threads onCaseReferenceTap through) ─────────────────
+
+  testWidgets('tapping a referenced case calls onCaseReferenceTap', (tester) async {
+    String? tapped;
+    await tester.pumpWidget(wrap(ChatMessageList(
+      messages: const [
+        ChatMessageItem(
+          message: 'I found a similar case.',
+          isUser: false,
+          caseReferences: [
+            CaseReference(caseId: 'case-2', title: 'Abdominal CT'),
+          ],
+        ),
+      ],
+      onCaseReferenceTap: (id) => tapped = id,
+    )));
+
+    await tester.tap(find.text('Abdominal CT'));
+    await tester.pump();
+
+    expect(tapped, 'case-2');
+  });
 }

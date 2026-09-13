@@ -97,4 +97,14 @@ At wide viewports this already satisfies "see both at once" — Study Review's e
 
 ## Status
 
-Designed, not yet implemented. Implementation is intentionally deferred until this is broken down into smaller, separately-sequenced pieces (see `implementation_plan.md`'s next-steps note).
+Implemented, in sequenced chunks:
+
+1. `HubActionCard`/`UploadZone` molecules.
+2. The Upload flow (`UploadRepository`/`UploadService`, `UploadTemplate`, `UploadPage`).
+3. The Home Hub page/template.
+4. `AppNavBar`'s 4th "Home" destination, mounted on Chat/Case List/Settings.
+5. Platform enablement (Linux/web), the first-run flag, and `Routes` shrinking to `login`/`onboarding`/`home`.
+6. The remaining unwired links: Case List → Study Review (not originally named in this doc, found by auditing the code directly), Finding → Heatmap Viewer, Study Review → Similar Cases, and Chat's case-reference chips.
+7. `ChatPage`'s last hardcoded pieces — conversation switching as real local state, and dropping the stray case-bound `FindingsPanel` standalone Chat no longer needs.
+
+Every navigation path this document describes is wired and tested (`flutter test`, plus `integration_test/app_flow_test.dart` driving the real compiled app end-to-end).

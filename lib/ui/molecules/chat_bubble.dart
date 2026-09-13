@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/ui/atoms/app_avatar.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/case_reference_chip.dart';
 
 class ChatBubble extends StatelessWidget {
   const ChatBubble({
@@ -13,6 +15,8 @@ class ChatBubble extends StatelessWidget {
     this.avatarImageUrl,
     this.avatarInitials,
     this.timestamp,
+    this.caseReferences,
+    this.onCaseReferenceTap,
   });
 
   final String message;
@@ -20,6 +24,8 @@ class ChatBubble extends StatelessWidget {
   final String? avatarImageUrl;
   final String? avatarInitials;
   final String? timestamp;
+  final List<CaseReference>? caseReferences;
+  final ValueChanged<String>? onCaseReferenceTap;
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +110,23 @@ class ChatBubble extends StatelessWidget {
                   timestamp!,
                   style: AppTypography.caption,
                   color: ChatTokens.timestamp(context),
+                ),
+              ],
+              if (caseReferences != null && caseReferences!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxWidth),
+                  child: Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      for (final ref in caseReferences!)
+                        CaseReferenceChip(
+                          title: ref.title,
+                          onTap: () => onCaseReferenceTap?.call(ref.caseId),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ],

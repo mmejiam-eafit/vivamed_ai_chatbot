@@ -12,28 +12,28 @@ void main() {
 
   group('HeatmapViewerPage', () {
     testWidgets('renders HeatmapViewerTemplate', (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(HeatmapViewerTemplate), findsOneWidget);
     });
 
     testWidgets('renders Heatmap in app bar', (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       expect(find.text('Heatmap'), findsOneWidget);
     });
 
     testWidgets('renders Slider opacity control', (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(Slider), findsOneWidget);
     });
 
     testWidgets('slider initial value is 0.5', (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       final slider = tester.widget<Slider>(find.byType(Slider));
@@ -42,7 +42,7 @@ void main() {
 
     testWidgets('renders a heatmap overlay once mock data resolves',
         (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       final template = tester.widget<HeatmapViewerTemplate>(
@@ -53,7 +53,7 @@ void main() {
 
     testWidgets('Scaffold has bottomNavigationBar for opacity control',
         (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -61,7 +61,7 @@ void main() {
     });
 
     testWidgets('slider interaction updates opacity state', (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       final slider = tester.widget<Slider>(find.byType(Slider));
@@ -77,7 +77,7 @@ void main() {
 
     testWidgets('only one HeatmapViewerTemplate is instantiated',
         (tester) async {
-      await tester.pumpWidget(wrap(const HeatmapViewerPage()));
+      await tester.pumpWidget(wrap(const HeatmapViewerPage(findingId: 'finding-1')));
       await tester.pumpAndSettle();
 
       expect(find.byType(HeatmapViewerTemplate), findsOneWidget);

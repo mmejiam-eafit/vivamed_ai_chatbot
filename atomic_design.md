@@ -69,6 +69,7 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 | `ImageThumbnail` | `AppImage`, `AppBadge` (optional) | An X-ray thumbnail with an optional badge overlay (e.g., "3 findings"). |
 | `HubActionCard` | `AppIcon`, `AppText` (title), `AppText` (description) | One of the Home Hub's big primary choices (upload a study, view studies, chat) — icon, title, description, the whole card tappable. |
 | `UploadZone` | `AppIcon`/`AppLoadingIndicator`, `AppText` | The Upload screen's one interactive area — a tappable zone carrying its idle/uploading/analyzing states. |
+| `CaseReferenceChip` | `AppIcon`, `AppText` | A small tappable reference to a case, shown below a chat reply that names one — opens Study Review for it. |
 
 ### Rules for molecules
 
@@ -150,6 +151,7 @@ A page is a **routed destination** that pairs exactly one template with real dat
 | `LoginPage` | `AuthTemplate` | Authentication state, credential validation. |
 | `UploadPage` | `UploadTemplate` | File-picker selection, upload/analysis status, and the resulting `CaseDetail` — connects to `UploadService`. |
 | `HomeHubPage` | `HomeHubTemplate` | No data of its own — pure navigation chrome. Pushes `UploadPage`, `CaseListPage`, `ChatPage`, or `SettingsPage`. |
+| `SimilarCasesPage` | `CaseListTemplate` | Cases similar to a given one — connects to `CaseService.getSimilarCases`. Reached from Study Review's "View Similar Studies" action. |
 
 ### Rules for pages
 

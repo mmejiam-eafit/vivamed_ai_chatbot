@@ -71,33 +71,63 @@ String mockCaseImageUrlFor(String caseId) =>
 /// worklist afterward -- a stand-in for a real backend persisting it.
 void addMockCase(CaseSummary newCase) => mockCases.add(newCase);
 
+// Sequential across every case, not per-case, so each finding has a globally
+// unique id -- the first 3 pick up heatmap_mocks.dart's existing distinct
+// colors, the rest fall back to its default.
 final _mockFindings = <String, List<FindingItem>>{
   'case-1': const [
     FindingItem(
+      id: 'finding-1',
       name: 'Right lower lobe consolidation',
       severity: SeverityLevel.moderate,
     ),
     FindingItem(
+      id: 'finding-2',
       name: 'Cardiac silhouette — within normal limits',
       severity: SeverityLevel.normal,
     ),
   ],
   'case-2': const [
-    FindingItem(name: 'No acute abdominal findings', severity: SeverityLevel.normal),
+    FindingItem(
+      id: 'finding-3',
+      name: 'No acute abdominal findings',
+      severity: SeverityLevel.normal,
+    ),
   ],
   'case-3': const [
-    FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
-    FindingItem(name: 'Right upper lobe nodule, 8mm', severity: SeverityLevel.mild),
+    FindingItem(
+      id: 'finding-4',
+      name: 'Tension pneumothorax',
+      severity: SeverityLevel.critical,
+    ),
+    FindingItem(
+      id: 'finding-5',
+      name: 'Right upper lobe nodule, 8mm',
+      severity: SeverityLevel.mild,
+    ),
   ],
   'case-4': const [
-    FindingItem(name: 'Mild cerebral atrophy', severity: SeverityLevel.mild),
+    FindingItem(
+      id: 'finding-6',
+      name: 'Mild cerebral atrophy',
+      severity: SeverityLevel.mild,
+    ),
   ],
   'case-5': const [
-    FindingItem(name: 'No ligamentous injury', severity: SeverityLevel.normal),
+    FindingItem(
+      id: 'finding-7',
+      name: 'No ligamentous injury',
+      severity: SeverityLevel.normal,
+    ),
   ],
   'case-6': const [
-    FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
     FindingItem(
+      id: 'finding-8',
+      name: 'Mild cardiomegaly',
+      severity: SeverityLevel.mild,
+    ),
+    FindingItem(
+      id: 'finding-9',
       name: 'Resolved consolidation since prior study',
       severity: SeverityLevel.normal,
     ),

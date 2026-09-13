@@ -7,6 +7,11 @@ abstract class CaseRepository {
   /// Case + image only -- findings are a separate endpoint/repository
   /// ([FindingsRepository]), not merged in here.
   Future<CaseDetail> getCaseDetail(String caseId);
+
+  /// A plausible real endpoint (`GET /cases/{id}/similar`), not a
+  /// transformation of already-fetched data -- belongs here, not in
+  /// `CaseService`.
+  Future<List<CaseSummary>> getSimilarCases(String caseId);
 }
 
 class MockCaseRepository implements CaseRepository {
@@ -24,5 +29,11 @@ class MockCaseRepository implements CaseRepository {
       caseSummary: caseSummary,
       imageUrl: mockCaseImageUrlFor(caseId),
     );
+  }
+
+  @override
+  Future<List<CaseSummary>> getSimilarCases(String caseId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    return mockCases.where((c) => c.id != caseId).take(3).toList();
   }
 }

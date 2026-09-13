@@ -4,6 +4,7 @@ import 'package:radiologist_helper/repositories/case_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
 import 'package:radiologist_helper/repositories/findings_repository.dart';
 import 'package:radiologist_helper/repositories/heatmap_repository.dart';
+import 'package:radiologist_helper/repositories/onboarding_repository.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/repositories/user_repository.dart';
 
@@ -30,3 +31,7 @@ final heatmapRepositoryProvider =
 
 final uploadRepositoryProvider =
     Provider<UploadRepository>((ref) => MockUploadRepository());
+
+final onboardingRepositoryProvider = Provider<OnboardingRepository>(
+  (ref) => SharedPreferencesOnboardingRepository(),
+);

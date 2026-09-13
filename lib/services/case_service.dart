@@ -21,4 +21,7 @@ class CaseService {
     final findings = await _findingsRepository.getFindings(caseId);
     return (detail: detail, findings: findings);
   }
+
+  Future<List<CaseSummary>> getSimilarCases(String caseId) =>
+      _caseRepository.getSimilarCases(caseId);
 }

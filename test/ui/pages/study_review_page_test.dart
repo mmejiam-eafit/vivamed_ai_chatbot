@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
+import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 
@@ -32,6 +34,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(FindingsPanel), findsOneWidget);
+    });
+
+    testWidgets(
+        'expanding a finding and tapping View Heatmap opens Heatmap Viewer',
+        (tester) async {
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Right lower lobe consolidation'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('View Heatmap'));
+      await tester.pumpAndSettle();
+
+      final page = tester.widget<HeatmapViewerPage>(
+        find.byType(HeatmapViewerPage),
+      );
+      expect(page.findingId, 'finding-1');
+    });
+
+    testWidgets('tapping View Similar Studies opens Similar Cases',
+        (tester) async {
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('View Similar Studies'));
+      await tester.pumpAndSettle();
+
+      final page =
+          tester.widget<SimilarCasesPage>(find.byType(SimilarCasesPage));
+      expect(page.caseId, 'case-1');
     });
 
     testWidgets('renders ChatPanel slot', (tester) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/app.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_logo.dart';
@@ -30,13 +31,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _signIn() async {
     setState(() => _isSigningIn = true);
-    // Nothing to navigate to yet -- exercising the call is the point of this
-    // pass; wiring where sign-in goes next is the later flow pass.
     await ref.read(authServiceProvider).signIn(
           email: _emailController.text,
           password: _passwordController.text,
         );
-    if (mounted) setState(() => _isSigningIn = false);
+    if (!mounted) return;
+    final hasCompletedOnboarding =
+        await ref.read(onboardingServiceProvider).hasCompletedOnboarding();
+    if (!mounted) return;
+    setState(() => _isSigningIn = false);
+    Navigator.of(context).pushReplacementNamed(
+      hasCompletedOnboarding ? Routes.home : Routes.onboarding,
+    );
   }
 
   @override

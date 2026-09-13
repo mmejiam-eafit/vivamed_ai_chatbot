@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/ui/atoms/app_avatar.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/case_reference_chip.dart';
 import 'package:radiologist_helper/ui/molecules/chat_bubble.dart';
 
 void _suppressNetworkImageErrors() {
@@ -177,6 +179,43 @@ void main() {
   testWidgets('no avatar when neither imageUrl nor initials provided', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: true)));
     expect(find.byType(AppAvatar), findsNothing);
+  });
+
+  // ── Case references (Chat → Study Review) ─────────────────────────────
+
+  testWidgets('renders no chips when caseReferences is null', (tester) async {
+    await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: false)));
+    expect(find.byType(CaseReferenceChip), findsNothing);
+  });
+
+  testWidgets('renders one chip per case reference', (tester) async {
+    await tester.pumpWidget(wrap(const ChatBubble(
+      message: 'I found 2 similar cases.',
+      isUser: false,
+      caseReferences: [
+        CaseReference(caseId: 'case-2', title: 'Abdominal CT'),
+        CaseReference(caseId: 'case-3', title: 'Chest CT — Lung Nodule'),
+      ],
+    )));
+    expect(find.byType(CaseReferenceChip), findsNWidgets(2));
+    expect(find.text('Abdominal CT'), findsOneWidget);
+    expect(find.text('Chest CT — Lung Nodule'), findsOneWidget);
+  });
+
+  testWidgets('tapping a chip calls onCaseReferenceTap with its caseId',
+      (tester) async {
+    String? tapped;
+    await tester.pumpWidget(wrap(ChatBubble(
+      message: 'I found a similar case.',
+      isUser: false,
+      caseReferences: const [
+        CaseReference(caseId: 'case-2', title: 'Abdominal CT'),
+      ],
+      onCaseReferenceTap: (id) => tapped = id,
+    )));
+    await tester.tap(find.text('Abdominal CT'));
+    await tester.pump();
+    expect(tapped, 'case-2');
   });
 
   // ── Dark theme ─────────────────────────────────────────────────────────────

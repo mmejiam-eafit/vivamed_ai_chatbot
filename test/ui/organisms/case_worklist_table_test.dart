@@ -159,6 +159,27 @@ void main() {
     expect(text.style?.fontFamily, AppTypography.numeric.fontFamily);
   });
 
+  // ── onCaseTap (Case List → Study Review) ───────────────────────────────
+
+  testWidgets('tapping a row calls onCaseTap with that case', (tester) async {
+    CaseSummary? tapped;
+    await tester.pumpWidget(wrap(CaseWorklistTable(
+      cases: cases,
+      onCaseTap: (c) => tapped = c,
+    )));
+    await tester.tap(find.text('Aaron Cross'));
+    await tester.pump();
+    expect(tapped?.id, 'case-a');
+  });
+
+  testWidgets('rows are not selectable when onCaseTap is not provided',
+      (tester) async {
+    await tester.pumpWidget(wrap(CaseWorklistTable(cases: cases)));
+    for (final row in table(tester).rows) {
+      expect(row.onSelectChanged, isNull);
+    }
+  });
+
   // ── Dark theme ──────────────────────────────────────────────────────────
 
   testWidgets('resolves against the dark theme', (tester) async {

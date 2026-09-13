@@ -51,6 +51,14 @@ final _mockMessages = <String, List<ChatMessageItem>>{
       message: 'No effusion is seen on this study.',
       isUser: false,
     ),
+    const ChatMessageItem(
+      message: 'I found 2 similar cases you might want to review.',
+      isUser: false,
+      caseReferences: [
+        CaseReference(caseId: 'case-2', title: 'Abdominal CT'),
+        CaseReference(caseId: 'case-3', title: 'Chest CT — Lung Nodule'),
+      ],
+    ),
   ],
   'conv-2': [
     const ChatMessageItem(

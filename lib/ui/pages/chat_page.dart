@@ -8,15 +8,10 @@ import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/chat_message_list.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
-import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
+import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
-
-// Neither takes a case/conversation parameter yet -- no navigation means
-// nothing selects one. The later flow-wiring pass is what makes these vary.
-const _conversationId = 'conv-1';
-const _caseId = 'case-1';
 
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({super.key});
@@ -28,18 +23,22 @@ class ChatPage extends ConsumerStatefulWidget {
 class _ChatPageState extends ConsumerState<ChatPage> {
   final _chatController = TextEditingController();
 
+  /// Null until the radiologist picks one in the drawer -- then the default
+  /// (the first conversation) is what's shown.
+  String? _selectedConversationId;
+
   @override
   void dispose() {
     _chatController.dispose();
     super.dispose();
   }
 
-  Future<void> _sendMessage() async {
+  Future<void> _sendMessage(String conversationId) async {
     final text = _chatController.text;
     if (text.isEmpty) return;
     _chatController.clear();
-    await ref.read(chatServiceProvider).sendMessage(_conversationId, text);
-    ref.invalidate(messagesProvider(_conversationId));
+    await ref.read(chatServiceProvider).sendMessage(conversationId, text);
+    ref.invalidate(messagesProvider(conversationId));
   }
 
   Widget _navBar(BuildContext context) => AppNavBar(
@@ -65,14 +64,22 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final appBar = AppBar(title: const Text('Chat'));
     final conversationsAsync = ref.watch(conversationsProvider);
     final userAsync = ref.watch(currentUserProvider);
-    final messagesAsync = ref.watch(messagesProvider(_conversationId));
-    final caseDetailAsync = ref.watch(caseDetailProvider(_caseId));
 
-    final isLoading = conversationsAsync.isLoading ||
-        userAsync.isLoading ||
-        messagesAsync.isLoading ||
-        caseDetailAsync.isLoading;
-    if (isLoading) {
+    // The default conversation can't be picked until the list has loaded,
+    // so this gates on it before messagesProvider is even read.
+    if (conversationsAsync.isLoading || userAsync.isLoading) {
+      return Scaffold(
+        appBar: appBar,
+        body: const Center(child: AppLoadingIndicator()),
+        bottomNavigationBar: _navBar(context),
+      );
+    }
+
+    final conversations = conversationsAsync.value ?? const [];
+    final conversationId = _selectedConversationId ?? conversations.first.id;
+    final messagesAsync = ref.watch(messagesProvider(conversationId));
+
+    if (messagesAsync.isLoading) {
       return Scaffold(
         appBar: appBar,
         body: const Center(child: AppLoadingIndicator()),
@@ -83,17 +90,29 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return ChatTemplate(
       appBar: appBar,
       chatPanel: ChatPanel(
-        messageList: ChatMessageList(messages: messagesAsync.value ?? const []),
+        messageList: ChatMessageList(
+          messages: messagesAsync.value ?? const [],
+          onCaseReferenceTap: (caseId) => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => StudyReviewPage(
+                caseId: caseId,
+                conversationId: conversationId,
+              ),
+            ),
+          ),
+        ),
         controller: _chatController,
-        onSubmit: _sendMessage,
+        onSubmit: () => _sendMessage(conversationId),
       ),
       drawer: ConversationDrawer(
-        conversations: conversationsAsync.value ?? const [],
+        conversations: conversations,
+        selectedId: conversationId,
+        onSelect: (id) => setState(() => _selectedConversationId = id),
         userName: userAsync.value?.name,
         userInitials: userAsync.value?.initials,
-      ),
-      findingsPanel: FindingsPanel(
-        findings: caseDetailAsync.value?.findings ?? const [],
+        onSettings: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const SettingsPage()),
+        ),
       ),
       navBar: _navBar(context),
     );

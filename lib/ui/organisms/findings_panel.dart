@@ -13,10 +13,15 @@ class FindingsPanel extends StatefulWidget {
     super.key,
     required this.findings,
     this.title = 'Findings',
+    this.onFindingTap,
   });
 
   final List<FindingItem> findings;
   final String title;
+
+  /// Fires with the tapped finding's id when its revealed "View Heatmap"
+  /// action is used (only available once the row is expanded).
+  final ValueChanged<String>? onFindingTap;
 
   /// Severity levels that may sound an alarm at all, most urgent first.
   /// `normal` and `mild` are absent by design — see `FindingRow.isAlarm`.
@@ -152,6 +157,9 @@ class _FindingsPanelState extends State<FindingsPanel> {
                       _expanded.add(i);
                     }
                   }),
+                  onViewHeatmap: widget.onFindingTap == null
+                      ? null
+                      : () => widget.onFindingTap!(item.id),
                 );
               }),
           ],
@@ -164,9 +172,18 @@ class _FindingsPanelState extends State<FindingsPanel> {
 // ── Previews ──────────────────────────────────────────────────────────────────
 
 const _previewFindings = [
-  FindingItem(name: 'Right lower lobe consolidation', severity: SeverityLevel.moderate),
-  FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
   FindingItem(
+    id: 'preview-1',
+    name: 'Right lower lobe consolidation',
+    severity: SeverityLevel.moderate,
+  ),
+  FindingItem(
+    id: 'preview-2',
+    name: 'Tension pneumothorax',
+    severity: SeverityLevel.critical,
+  ),
+  FindingItem(
+    id: 'preview-3',
     name: 'Cardiac silhouette — within normal limits',
     severity: SeverityLevel.normal,
   ),
@@ -180,7 +197,13 @@ Widget previewFindingsPanelEmpty() => const FindingsPanel(findings: []);
 
 @Preview(name: 'single critical', size: Size(360, 120), wrapper: previewWrapper)
 Widget previewFindingsPanelSingle() => const FindingsPanel(
-      findings: [FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical)],
+      findings: [
+        FindingItem(
+          id: 'preview-1',
+          name: 'Tension pneumothorax',
+          severity: SeverityLevel.critical,
+        ),
+      ],
     );
 
 /// The aggregation path: several findings at the top severity collapse to one
@@ -189,9 +212,25 @@ Widget previewFindingsPanelSingle() => const FindingsPanel(
 @Preview(name: 'aggregated alarm', size: Size(360, 260), wrapper: previewWrapper)
 Widget previewFindingsPanelAggregated() => const FindingsPanel(
       findings: [
-        FindingItem(name: 'Tension pneumothorax', severity: SeverityLevel.critical),
-        FindingItem(name: 'Aortic dissection', severity: SeverityLevel.critical),
-        FindingItem(name: 'Right lower lobe consolidation', severity: SeverityLevel.moderate),
-        FindingItem(name: 'Mild cardiomegaly', severity: SeverityLevel.mild),
+        FindingItem(
+          id: 'preview-1',
+          name: 'Tension pneumothorax',
+          severity: SeverityLevel.critical,
+        ),
+        FindingItem(
+          id: 'preview-2',
+          name: 'Aortic dissection',
+          severity: SeverityLevel.critical,
+        ),
+        FindingItem(
+          id: 'preview-3',
+          name: 'Right lower lobe consolidation',
+          severity: SeverityLevel.moderate,
+        ),
+        FindingItem(
+          id: 'preview-4',
+          name: 'Mild cardiomegaly',
+          severity: SeverityLevel.mild,
+        ),
       ],
     );

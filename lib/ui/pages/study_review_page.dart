@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/services/providers.dart';
+import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
+import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/organisms/chat_message_list.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
+import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 
 class StudyReviewPage extends ConsumerStatefulWidget {
@@ -69,8 +73,28 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
         url: caseDetailAsync.value?.detail.imageUrl ?? '',
         fit: BoxFit.cover,
       ),
-      findingsPanel: FindingsPanel(
-        findings: caseDetailAsync.value?.findings ?? const [],
+      findingsPanel: Column(
+        children: [
+          Expanded(
+            child: FindingsPanel(
+              findings: caseDetailAsync.value?.findings ?? const [],
+              onFindingTap: (findingId) => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => HeatmapViewerPage(findingId: findingId),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'View Similar Studies',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => SimilarCasesPage(caseId: widget.caseId),
+              ),
+            ),
+          ),
+        ],
       ),
       chatPanel: ChatPanel(
         messageList: ChatMessageList(messages: messagesAsync.value ?? const []),

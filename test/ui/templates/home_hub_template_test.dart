@@ -78,5 +78,19 @@ void main() {
 
       expect(find.byType(Expanded), findsNWidgets(3));
     });
+
+    // ── Dark theme ─────────────────────────────────────────────────────────
+
+    testWidgets('resolves against the dark theme', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(Brightness.dark),
+          home: buildTemplate(),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, AppColorsData.dark.surfacePage);
+    });
   });
 }

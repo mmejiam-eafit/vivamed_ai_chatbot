@@ -6,10 +6,10 @@ import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
-import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
+import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -74,22 +74,6 @@ void main() {
       expect(find.byType(ChatPanel), findsOneWidget);
     });
 
-    testWidgets('renders FindingsPanel slot', (tester) async {
-      // Pumped wide: at the default test size (800x600, medium tier),
-      // findingsPanel is endDrawer content and isn't mounted until opened --
-      // wide is where it renders inline and unconditionally.
-      tester.view.physicalSize =
-          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(wrap(const ChatPage()));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(FindingsPanel), findsOneWidget);
-    });
-
     // ── Responsive breakpoint: threePaneMinWidth - 1 (narrow) ────────────────
 
     testWidgets('narrow below threePaneMinWidth: drawer assigned to Scaffold.drawer',
@@ -107,22 +91,6 @@ void main() {
       expect(scaffold.drawer, isNotNull);
     });
 
-    testWidgets('compact: findings rendered as bottom sheet', (tester) async {
-      // Only compact (< mediumMinWidth) uses the bottom sheet now -- medium
-      // and the rest of the pre-three-pane band use the collapsed rail's
-      // endDrawer instead (gap 17).
-      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(wrap(const ChatPage()));
-      await tester.pumpAndSettle();
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-      expect(scaffold.bottomSheet, isNotNull);
-    });
-
     // ── Responsive breakpoint: threePaneMinWidth (wide — at split) ──────────
 
     testWidgets('wide at threePaneMinWidth: Scaffold.drawer is null', (tester) async {
@@ -137,20 +105,6 @@ void main() {
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.drawer, isNull);
-    });
-
-    testWidgets('wide at threePaneMinWidth: findings inline — no bottom sheet', (tester) async {
-      tester.view.physicalSize =
-          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(wrap(const ChatPage()));
-      await tester.pumpAndSettle();
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-      expect(scaffold.bottomSheet, isNull);
     });
 
     // ── Responsive breakpoint: threePaneMinWidth + 1 (wide — above split) ───
@@ -170,6 +124,29 @@ void main() {
       expect(find.byType(Row), findsWidgets);
     });
 
+    testWidgets(
+        'tapping a case reference chip opens Study Review with the same conversation',
+        (tester) async {
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
+
+      // From the mock conv-1 message referencing case-2 ("Abdominal CT") --
+      // it's the newest message, so the lazy message list needs scrolling
+      // to it first.
+      await tester.scrollUntilVisible(
+        find.text('Abdominal CT'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Abdominal CT'));
+      await tester.pumpAndSettle();
+
+      final page =
+          tester.widget<StudyReviewPage>(find.byType(StudyReviewPage));
+      expect(page.caseId, 'case-2');
+      expect(page.conversationId, 'conv-1');
+    });
+
     testWidgets('renders ConversationDrawer slot', (tester) async {
       tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -180,6 +157,72 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ConversationDrawer), findsOneWidget);
+    });
+
+    // ── Conversation switching (real local state, not a route) ──────────────
+
+    testWidgets('the default conversation (first in the list) is selected',
+        (tester) async {
+      tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
+
+      final drawer =
+          tester.widget<ConversationDrawer>(find.byType(ConversationDrawer));
+      expect(drawer.selectedId, 'conv-1');
+    });
+
+    testWidgets('tapping a different conversation in the drawer switches it',
+        (tester) async {
+      tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap(const ChatPage()));
+      await tester.pumpAndSettle();
+
+      // conv-2's title, from the mock conversation list.
+      await tester.tap(find.text('Abdominal CT — Patient 2'));
+      await tester.pumpAndSettle();
+
+      final drawer =
+          tester.widget<ConversationDrawer>(find.byType(ConversationDrawer));
+      expect(drawer.selectedId, 'conv-2');
+    });
+
+    testWidgets('tapping Settings in the drawer opens SettingsPage',
+        (tester) async {
+      tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // SettingsPage reads ThemeControllerScope.of(context) -- wrapWithNav,
+      // not wrap, same as this file's other tests that land on it.
+      await tester.pumpWidget(await wrapWithNav(const ChatPage()));
+      await tester.pumpAndSettle();
+
+      // Not a bare find.text('Settings') -- the nav bar has its own
+      // "Settings" destination label on screen at the same time.
+      await tester.tap(find.descendant(
+        of: find.byType(ConversationDrawer),
+        matching: find.text('Settings'),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsPage), findsOneWidget);
+
+      // Pushed, not replaced -- popping returns to ChatPage. (Can't check
+      // this by looking for ChatPage while SettingsPage is on top: Flutter's
+      // Navigator stops building fully-covered routes once settled, so it
+      // wouldn't be found either way.)
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(ChatPage), findsOneWidget);
     });
 
     // ── Nav bar (own index 1) ────────────────────────────────────────────

@@ -8,6 +8,7 @@ import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
+import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,6 +60,38 @@ void main() {
 
       expect(find.text('Chest X-Ray'), findsOneWidget);
       expect(find.text('Abdominal CT'), findsOneWidget);
+    });
+
+    testWidgets('tapping a case card opens Study Review for that case',
+        (tester) async {
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Chest X-Ray'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StudyReviewPage), findsOneWidget);
+    });
+
+    testWidgets('tapping a worklist row opens Study Review for that case',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      // The worklist table's columns are patient/modality/date/confidence/
+      // severity -- no title column, so tap by patient name.
+      await tester.tap(find.text('Anonymous 1'));
+      await tester.pumpAndSettle();
+
+      final page =
+          tester.widget<StudyReviewPage>(find.byType(StudyReviewPage));
+      expect(page.caseId, 'case-1');
     });
 
     // ── Responsive breakpoint: mediumMinWidth - 1 (narrow) ───────────────────

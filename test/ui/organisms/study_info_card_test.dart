@@ -153,6 +153,28 @@ void main() {
     );
   });
 
+  // ── onTap (Case List → Study Review) ──────────────────────────────────────
+
+  testWidgets('invokes onTap when the card is tapped', (tester) async {
+    var tapped = false;
+    await tester.pumpWidget(wrap(StudyInfoCard(
+      title: 'Study',
+      fields: const [],
+      onTap: () => tapped = true,
+    )));
+    await tester.tap(find.byType(InkWell));
+    await tester.pump();
+    expect(tapped, isTrue);
+  });
+
+  testWidgets('has no tap target when onTap is not provided', (tester) async {
+    await tester.pumpWidget(wrap(const StudyInfoCard(
+      title: 'Study',
+      fields: [],
+    )));
+    expect(find.byType(InkWell), findsNothing);
+  });
+
   // ── Dark theme (gap 18) ────────────────────────────────────────────────────
 
   testWidgets('resolves against the dark theme', (tester) async {

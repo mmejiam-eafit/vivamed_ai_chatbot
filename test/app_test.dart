@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/app.dart';
 import 'package:radiologist_helper/theme_controller.dart';
+import 'package:radiologist_helper/ui/atoms/app_button.dart';
+import 'package:radiologist_helper/ui/pages/home_hub_page.dart';
+import 'package:radiologist_helper/ui/pages/onboarding_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -36,6 +40,62 @@ void main() {
         tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
         ThemeMode.light,
       );
+    });
+
+    // ── Post-sign-in navigation ──────────────────────────────────────────
+
+    testWidgets('first sign-in (onboarding not completed) goes to Onboarding',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final controller = await ThemeController.load();
+      await tester.pumpWidget(
+        ProviderScope(child: App(themeController: controller)),
+      );
+
+      await tester.tap(find.byType(AppButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(OnboardingPage), findsOneWidget);
+    });
+
+    testWidgets('returning sign-in (onboarding completed) goes to Home Hub',
+        (tester) async {
+      SharedPreferences.setMockInitialValues(
+        {'has_completed_onboarding': true},
+      );
+      final controller = await ThemeController.load();
+      await tester.pumpWidget(
+        ProviderScope(child: App(themeController: controller)),
+      );
+
+      await tester.tap(find.byType(AppButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HomeHubPage), findsOneWidget);
+    });
+
+    testWidgets('completing onboarding goes to Home Hub', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final controller = await ThemeController.load();
+      await tester.pumpWidget(
+        ProviderScope(child: App(themeController: controller)),
+      );
+
+      await tester.tap(find.byType(AppButton)); // Sign In -> Onboarding
+      await tester.pumpAndSettle();
+      expect(find.byType(OnboardingPage), findsOneWidget);
+
+      // Walk the carousel to its last slide (label flips to "Get Started"),
+      // regardless of how many slides mockOnboardingSlides has.
+      while (tester.widget<AppButton>(find.byType(AppButton)).label !=
+          'Get Started') {
+        await tester.tap(find.byType(AppButton));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.byType(AppButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(HomeHubPage), findsOneWidget);
     });
   });
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:radiologist_helper/data/mocks/heatmap_mocks.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
@@ -9,7 +8,9 @@ import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/templates/heatmap_viewer_template.dart';
 
 class HeatmapViewerPage extends ConsumerStatefulWidget {
-  const HeatmapViewerPage({super.key});
+  const HeatmapViewerPage({super.key, required this.findingId});
+
+  final String findingId;
 
   @override
   ConsumerState<HeatmapViewerPage> createState() => _HeatmapViewerPageState();
@@ -21,7 +22,7 @@ class _HeatmapViewerPageState extends ConsumerState<HeatmapViewerPage> {
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(title: const Text('Heatmap'));
-    final heatmapAsync = ref.watch(heatmapProvider(mockDefaultFindingId));
+    final heatmapAsync = ref.watch(heatmapProvider(widget.findingId));
     final heatmapData = heatmapAsync.value;
 
     if (heatmapData == null) {
@@ -49,4 +50,5 @@ class _HeatmapViewerPageState extends ConsumerState<HeatmapViewerPage> {
 // ── Previews ──────────────────────────────────────────────────────────────────
 
 @Preview(name: 'heatmap viewer', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewHeatmapViewerPage() => const HeatmapViewerPage();
+Widget previewHeatmapViewerPage() =>
+    const HeatmapViewerPage(findingId: 'finding-1');
