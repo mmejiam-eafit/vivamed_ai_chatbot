@@ -26,27 +26,34 @@ class ThemeModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final option in _options)
-          ListTile(
-            title: AppText(
-              option.label,
-              style: AppTypography.bodyMd,
-              color: selected == option.mode
-                  ? colors.interactivePrimary
-                  : colors.textPrimary,
+    // This lives inside SectionCard's own decorated (opaque) Container --
+    // without a Material ancestor of its own, ListTile's hover/ink effects
+    // would paint on SectionCard's background instead and never be seen.
+    // `transparency` adds nothing visually, just an ink-drawing surface.
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final option in _options)
+            ListTile(
+              title: AppText(
+                option.label,
+                style: AppTypography.bodyMd,
+                color: selected == option.mode
+                    ? colors.interactivePrimary
+                    : colors.textPrimary,
+              ),
+              trailing: selected == option.mode
+                  ? AppIcon(Icons.check, color: colors.interactivePrimary, size: 20.0)
+                  : null,
+              hoverColor: colors.textPrimary.withValues(
+                alpha: AppInteraction.hoverOverlayOpacity,
+              ),
+              onTap: () => onChanged(option.mode),
             ),
-            trailing: selected == option.mode
-                ? AppIcon(Icons.check, color: colors.interactivePrimary, size: 20.0)
-                : null,
-            hoverColor: colors.textPrimary.withValues(
-              alpha: AppInteraction.hoverOverlayOpacity,
-            ),
-            onTap: () => onChanged(option.mode),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
