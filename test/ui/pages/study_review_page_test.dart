@@ -1,18 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
+import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Widget wrap(Widget child) => ProviderScope(
         child: MaterialApp(theme: buildAppTheme(), home: child),
       );
+
+  // SettingsPage reads ThemeControllerScope.of(context) -- needed only for
+  // the drawer-Settings test below (see home_hub_page_test.dart, where this
+  // wrap-vs-wrapWithNav split was first needed: the scope must wrap
+  // MaterialApp itself, not just `home`, since it has to cover routes
+  // pushed later too).
+  Future<Widget> wrapWithNav(Widget child) async {
+    SharedPreferences.setMockInitialValues({});
+    final controller = await ThemeController.load();
+    return ProviderScope(
+      child: ThemeControllerScope(
+        controller: controller,
+        child: MaterialApp(theme: buildAppTheme(), home: child),
+      ),
+    );
+  }
 
   group('StudyReviewPage', () {
     testWidgets('renders StudyReviewTemplate', (tester) async {
@@ -130,6 +150,28 @@ void main() {
       expect(find.byType(TabBar), findsOneWidget);
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
       expect(scaffold.drawer, isNotNull);
+    });
+
+    testWidgets('tapping Settings in the drawer opens SettingsPage',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        await wrapWithNav(const StudyReviewPage(caseId: 'case-1')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.descendant(
+        of: find.byType(ConversationDrawer),
+        matching: find.text('Settings'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsPage), findsOneWidget);
     });
 
     // ── Responsive breakpoint: threePaneMinWidth (three-zone) ────────────────

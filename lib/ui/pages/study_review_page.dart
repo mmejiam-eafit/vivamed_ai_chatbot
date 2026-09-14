@@ -12,6 +12,7 @@ import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 
@@ -105,6 +106,9 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
         conversations: conversationsAsync.value ?? const [],
         userName: userAsync.value?.name,
         userInitials: userAsync.value?.initials,
+        onSettings: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const SettingsPage()),
+        ),
       ),
     );
   }
