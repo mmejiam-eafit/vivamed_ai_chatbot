@@ -28,6 +28,8 @@ Chat/Case List/Settings ──AppNavBar: the other two──> pushReplacement to
 
 Chat ──tap a case referenced in a reply──> Study Review (that case, SAME conversation continues)
 
+Chat/Study Review ──drawer: gear icon──> Settings (ConversationDrawer's own entry point, distinct from the Hub's gear icon and AppNavBar's Settings destination above)
+
 Study Review ──select a finding──> Heatmap Viewer
 Study Review ──view similar studies──> Similar Cases ──tap a case──> Study Review (that case, recurses)
 ```
@@ -105,6 +107,7 @@ Implemented, in sequenced chunks:
 4. `AppNavBar`'s 4th "Home" destination, mounted on Chat/Case List/Settings.
 5. Platform enablement (Linux/web), the first-run flag, and `Routes` shrinking to `login`/`onboarding`/`home`.
 6. The remaining unwired links: Case List → Study Review (not originally named in this doc, found by auditing the code directly), Finding → Heatmap Viewer, Study Review → Similar Cases, and Chat's case-reference chips.
-7. `ChatPage`'s last hardcoded pieces — conversation switching as real local state, and dropping the stray case-bound `FindingsPanel` standalone Chat no longer needs.
+7. `ChatPage`'s last hardcoded pieces — conversation switching as real local state, dropping the stray case-bound `FindingsPanel` standalone Chat no longer needs, and (not originally named in this doc either) wiring `ConversationDrawer`'s own `onSettings` for the first time — previously present on the drawer but never passed by the page, so the button rendered but did nothing.
+8. The same `ConversationDrawer.onSettings` gap, found unwired on `StudyReviewPage` too (reported directly as a bug, not caught by this doc — the graph above never named this edge in the first place): fixed the same way as Chunk 7.
 
 Every navigation path this document describes is wired and tested (`flutter test`, plus `integration_test/app_flow_test.dart` driving the real compiled app end-to-end).
