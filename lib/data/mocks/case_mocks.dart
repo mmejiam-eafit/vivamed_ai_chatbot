@@ -61,11 +61,27 @@ final mockCases = <CaseSummary>[
 
 /// Thumbnail (list views) and full-size (case detail) images, both seeded by
 /// case id so the same case always resolves to the same picture.
+///
+/// The 3 chest-imaging cases (case-1, case-3, case-6) use a real chest X-ray
+/// from the NIH ChestX-ray14 dataset ("ChestXray-NIHCC", a public,
+/// de-identified NIH Clinical Center research release) instead of a stock
+/// photo -- picked to match that case's finding: case-1's
+/// images/case-1.png is images_001/00000112_002.png (labeled Consolidation),
+/// case-3's is images_001/00000090_009.png (Pneumothorax), case-6's is
+/// images_001/00000008_000.png (Cardiomegaly). The other 3 mock cases are a
+/// different body part entirely (abdomen/brain/knee) and keep the placeholder
+/// -- AppImage renders either kind of string automatically.
+const _realCaseImages = {
+  'case-1': 'lib/data/mocks/images/case-1.png',
+  'case-3': 'lib/data/mocks/images/case-3.png',
+  'case-6': 'lib/data/mocks/images/case-6.png',
+};
+
 String mockThumbnailUrlFor(String caseId) =>
-    'https://picsum.photos/seed/$caseId/160/160';
+    _realCaseImages[caseId] ?? 'https://picsum.photos/seed/$caseId/160/160';
 
 String mockCaseImageUrlFor(String caseId) =>
-    'https://picsum.photos/seed/$caseId/800/800';
+    _realCaseImages[caseId] ?? 'https://picsum.photos/seed/$caseId/800/800';
 
 /// Appends a newly "uploaded" case so it also shows up back in the Studies
 /// worklist afterward -- a stand-in for a real backend persisting it.

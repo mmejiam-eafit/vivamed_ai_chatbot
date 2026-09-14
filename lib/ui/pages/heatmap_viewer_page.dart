@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
+import 'package:radiologist_helper/ui/atoms/lung_heatmap_overlay.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/templates/heatmap_viewer_template.dart';
 
@@ -37,7 +38,10 @@ class _HeatmapViewerPageState extends ConsumerState<HeatmapViewerPage> {
       baseImage: AppImage(url: heatmapData.baseImageUrl, fit: BoxFit.cover),
       heatmapOverlay: Opacity(
         opacity: _opacity,
-        child: ColoredBox(color: heatmapData.overlayColor),
+        child: LungHeatmapOverlay(
+          color: heatmapData.overlayColor,
+          focusAlignment: heatmapData.focusAlignment,
+        ),
       ),
       opacityControl: Slider(
         value: _opacity,

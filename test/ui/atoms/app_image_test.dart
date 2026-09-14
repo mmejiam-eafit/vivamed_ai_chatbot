@@ -54,4 +54,18 @@ void main() {
     final image = tester.widget<Image>(find.byType(Image));
     expect(image.fit, BoxFit.contain);
   });
+
+  testWidgets('http(s) url renders via NetworkImage', (tester) async {
+    await tester.pumpWidget(
+        wrap(const AppImage(url: 'https://example.com/img.png')));
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(image.image, isA<NetworkImage>());
+  });
+
+  testWidgets('non-url string renders via AssetImage', (tester) async {
+    await tester.pumpWidget(
+        wrap(const AppImage(url: 'lib/data/mocks/images/case-1.png')));
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(image.image, isA<AssetImage>());
+  });
 }

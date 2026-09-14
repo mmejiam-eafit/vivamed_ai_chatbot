@@ -39,6 +39,7 @@ Atoms are the smallest visual building blocks. Each atom maps to exactly one Mat
 | `AppTabBar` | `DefaultTabController` + `TabBar` + `TabBarView` | Labeled tab strip with its paired content views. Used by `StudyReviewTemplate`'s narrower tiers to switch between Findings and Chat. |
 | `SeverityDot` | `Container` (circle) | A small colored dot indicating finding severity level. |
 | `AppLogo` | `SvgPicture` (`flutter_svg`) | The RadAsk brand mark (bubble icon, optionally with wordmark). Loads a static SVG with brand colors baked in — mode-invariant, never `context.colors`. |
+| `LungHeatmapOverlay` | `CustomPaint` | Paints the Heatmap Viewer's "AI attention" overlay as two lung-shaped regions with a per-finding focal point, instead of a flat colored rectangle. |
 
 ### Rules for atoms
 

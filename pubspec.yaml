@@ -61,3 +61,6 @@ flutter:
   assets:
     - assets/brand/logo-mark.svg
     - assets/brand/logo-full.svg
+    - lib/data/mocks/images/case-1.png
+    - lib/data/mocks/images/case-3.png
+    - lib/data/mocks/images/case-6.png
