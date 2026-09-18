@@ -19,6 +19,8 @@ class NavItem extends StatelessWidget {
     this.onTap,
     this.layout = NavItemLayout.vertical,
     this.focusNode,
+    this.selectedColor,
+    this.unselectedColor,
   });
 
   final IconData icon;
@@ -28,11 +30,19 @@ class NavItem extends StatelessWidget {
   final NavItemLayout layout;
   final FocusNode? focusNode;
 
+  /// Overrides the resolved color for the selected/unselected state, for a
+  /// caller whose background isn't `AppNavBar`'s own (e.g. `ConversationDrawer`,
+  /// whose brand-navy surface needs the on-brand token pair instead of
+  /// `NavigationTokens.bottomNav*`). Leave both null for the original
+  /// `AppNavBar`-tuned behavior.
+  final Color? selectedColor;
+  final Color? unselectedColor;
+
   @override
   Widget build(BuildContext context) {
     final color = isSelected
-        ? NavigationTokens.bottomNavSelected(context)
-        : NavigationTokens.bottomNavUnselected(context);
+        ? (selectedColor ?? NavigationTokens.bottomNavSelected(context))
+        : (unselectedColor ?? NavigationTokens.bottomNavUnselected(context));
 
     final iconWidget = AppIcon(icon, color: color, size: 24.0);
     final labelWidget = AppText(label, style: AppTypography.labelSm, color: color);

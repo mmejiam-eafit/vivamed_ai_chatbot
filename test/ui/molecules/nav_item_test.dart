@@ -66,6 +66,51 @@ void main() {
     expect(text.style?.color, AppColorsData.light.iconAccent);
   });
 
+  // ── Color overrides ────────────────────────────────────────────────────────
+
+  testWidgets('unselectedColor overrides the bottomNavUnselected default',
+      (tester) async {
+    const override = Color(0xFF123456);
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      unselectedColor: override,
+    )));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
+    expect(icon.color, override);
+    expect(icon.color, isNot(AppColorsData.light.textMuted));
+    final text = tester.widget<Text>(find.text('Home'));
+    expect(text.style?.color, override);
+    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+    expect(
+      inkWell.hoverColor,
+      override.withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('selectedColor overrides the bottomNavSelected default',
+      (tester) async {
+    const override = Color(0xFF654321);
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      isSelected: true,
+      selectedColor: override,
+    )));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
+    expect(icon.color, override);
+    expect(icon.color, isNot(AppColorsData.light.iconAccent));
+    final text = tester.widget<Text>(find.text('Home'));
+    expect(text.style?.color, override);
+  });
+
+  testWidgets('with no override, behavior is unchanged from bottomNav* defaults',
+      (tester) async {
+    await tester.pumpWidget(wrap(const NavItem(icon: Icons.home, label: 'Home')));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
+    expect(icon.color, AppColorsData.light.textMuted);
+  });
+
   // ── Hover (gap 23) ─────────────────────────────────────────────────────────
 
   testWidgets('unselected: hover tints textMuted at hoverOverlayOpacity',
