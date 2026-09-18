@@ -43,7 +43,7 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 
 Raw hex values live in `_Palette`, which is library-private. **Never reference `_Palette` in widget code** — always go through the semantic layer.
 
-Classes marked mode-dependent take their dark values from §10.4, which is **official** — ratified, computed, verified, not a proposal, and wired into the `ThemeExtension` mechanism (`AppColorsData`, `SeverityData`) that every atom now reads via `context.colors`/`context.severity`. The `static const` forms stay as `@Deprecated` aliases for call sites that haven't migrated — most of the codebase above the atom layer, still (§12, gap 1).
+Classes marked mode-dependent take their dark values from §10.4, which is **official** — ratified, computed, verified, not a proposal, and wired into the `ThemeExtension` mechanism (`AppColorsData`, `SeverityData`) that every widget above the atom layer now reads via `context.colors`/`context.severity`, atoms included. The `static const` forms stay as `@Deprecated` aliases, kept only for backward compatibility — `AppLogo` (brand assets, deliberately mode-invariant) is the one widget with a live reason to touch them.
 
 ---
 
@@ -219,7 +219,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 
 Every value clears its target with hue held (checked in HLS: every hue shift under 0.4°, saturation held within 0.005 — only lightness moved) and its container unchanged. Full derivation, including why Info status needed its own value distinct from both Mild severity and `textLinkHover`'s fix above (three colors in the same hue family, each needing real separation from its neighbors, not just its own passing ratio) lives in **DL §8.7**, D-014.
 
-**These are the current, shipped values** — `_Palette` no longer holds the failing originals. What's still open is composition, not color: organisms, molecules, and templates mostly read the light-only static aliases directly rather than `context.severity`/`context.colors`, which happen to resolve to these same corrected values in light mode — so the fix already reaches every current light-mode call site. It does not yet reach dark mode, because those same call sites never resolve `context.severity`/`context.colors` at all (§12, the composition-layer gap).
+**These are the current, shipped values** — `_Palette` no longer holds the failing originals. Composition is done too: organisms, molecules, and templates read `context.severity`/`context.colors` directly, so these values are live in both light and dark mode at every real call site, not just resolved at the token layer.
 
 ### 2.9 Forbidden
 
@@ -422,7 +422,7 @@ Motion signals state change and never decorates (**DL §7.2**).
 
 ## 9. Responsive
 
-> **Status: specified, not yet implemented.** `AppLayout` currently exposes a single `templateSplitWidth` of 768 plus five unused breakpoints. This section defines the replacement.
+> **Status: implemented.** `AppLayout` carries the `compact`/`medium`/`expanded`/`ultrawide` tier system (an `AppLayoutTier` enum plus a `layoutTier` resolver) and most of §9.3's pane minimums, and all 9 templates branch on them via `LayoutBuilder`. Five tokens remain unwired: the legacy `templateSplitWidth` (768, kept only until every template's old flat-width branch is gone), `primaryColumnMin`, `panelMinWidth`, and the `sideNavWidth`/`sideNavRailWidth` aliases (templates read `NavigationTokens.sideNavWidth`/`sideNavCollapsedWidth` directly instead).
 
 ### 9.1 Two independent mechanisms
 
@@ -484,13 +484,13 @@ Settings gains an **Appearance** section at every tier for the theme control (§
 
 ### 9.6 Where responsive logic lives
 
-**Templates only.** Branch on `LayoutBuilder` constraints, never on `MediaQuery.of(context).size` — window size is not the size of the box your widget occupies. See §12 for the current violation.
+**Templates only.** Branch on `LayoutBuilder` constraints, never on `MediaQuery.of(context).size` — window size is not the size of the box your widget occupies.
 
 ---
 
 ## 10. Theming
 
-> **Status: palette official, mechanism built, composition pending.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal — and implemented: `AppColorsData`/`SeverityData` exist, `buildAppTheme(Brightness)` builds either theme correctly, and `app.dart` sets `darkTheme`/`themeMode: ThemeMode.dark`. What's outstanding is that only atoms read it — organisms, molecules, and templates mostly still read the light-only static alias directly, so dark mode is real in the token layer and invisible everywhere a user would actually see it (§12, gap 1).
+> **Status: official and live.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal — and implemented: `AppColorsData`/`SeverityData` exist, `buildAppTheme(Brightness)` builds either theme correctly, and `app.dart` sets `darkTheme`/`themeMode: ThemeMode.dark`. Composition reached every layer — atoms through templates read `context.colors`/`context.severity` — and Settings' Appearance section gives users a real Dark/Light/System toggle, so dark mode is reachable from every real screen. The only exceptions are deliberate: `AppLogo` (mode-invariant brand assets) and the `DiagnosticImageTokens` canvas ground (§2.10, mode-exempt by rule).
 
 ### 10.1 The split
 
@@ -547,7 +547,7 @@ Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 
 #### The values
 
-**Official.** Not a draft, not a proposal under review — ratified per **DL D-012, D-013**. Normative: the Dart implements these — `AppColorsData.dark`/`SeverityData.dark` hold every value below exactly, verified field by field — and where anything disagrees, the Dart is wrong. The one thing not yet true is that anything above the atom layer *reads* them (§12 gap 1) — that is a composition gap, not a reason to treat any value below as provisional.
+**Official.** Not a draft, not a proposal under review — ratified per **DL D-012, D-013**. Normative: the Dart implements these — `AppColorsData.dark`/`SeverityData.dark` hold every value below exactly, verified field by field — and where anything disagrees, the Dart is wrong. Every layer above atoms reads them too, through `context.colors`/`context.severity` — composition is done, not just the values.
 
 **Elevation ladder** — the four steps, and what "depth is lightness" means in practice:
 
@@ -646,7 +646,6 @@ Live defects and unimplemented specifications. Delete entries as they close.
 
 | # | Gap | Where |
 |---|---|---|
-| 2 | **Responsive tiers unimplemented.** §9 is specification only. One breakpoint at 768; five dead tokens. | `AppLayout`, all templates |
-| 3 | **The 168px chat column.** At 768 with nav and panel present, the primary column collapses. Fixed by §9.3. | `chat_template.dart`, `study_review_template.dart` |
-| 5 | **Heatmap overlay built from status colors.** Violates **DL §3.7** — needs the dedicated perceptual ramp. `DiagnosticImageTokens` now exists (§2.10) but carries only the canvas ground; the ramp is deliberately unbuilt. Sharper than originally logged: the overlay is backend-generated, so choosing a ramp also means specifying to the backend what it sends (per-pixel intensity vs. pre-rendered RGBA) and how alpha/transparency works — a cross-system data-contract decision, not a color pick alone. The offending gradient is preview-only code. | `heatmap_viewer_template.dart` previews |
-| 13 | **Text scaling unverified.** §3.7 is specification only. No layout has been tested at 200%, and fixed-height rows may exist. | all levels |
+| 2 | **Five `AppLayout` tokens still dead.** The tier system (`AppLayoutTier`) and most of §9.3's pane minimums are implemented and drive `LayoutBuilder` branching in all 9 templates. `templateSplitWidth`, `primaryColumnMin`, `panelMinWidth`, and the `sideNavWidth`/`sideNavRailWidth` aliases have no consumer. | `AppLayout` |
+| 5 | **Heatmap overlay has no dedicated perceptual ramp.** Violates **DL §3.7**. `DiagnosticImageTokens` (§2.10) carries only the canvas ground; the ramp is deliberately unbuilt. The overlay is backend-generated, so choosing a ramp also means specifying to the backend what it sends (per-pixel intensity vs. pre-rendered RGBA) and how alpha/transparency works — a cross-system data-contract decision, not a color pick alone. The gradient is production code, fed raw `Colors.*` per finding, not status or severity tokens. | `lung_heatmap_overlay.dart`, reached via `heatmap_viewer_page.dart` |
+| 13 | **Text scaling only partially verified at 200%.** §3.7 is specification only beyond this. Three files (`case_list_template.dart`, `onboarding_carousel.dart`, `case_worklist_table.dart`) have a pinned 200%-scale test; the rest of `lib/ui/templates/` and `lib/ui/organisms/` do not. | most templates and organisms |

@@ -37,7 +37,7 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 | `iconOnBrand` | `#F4F4F4` | Icon on brand surfaces |
 | `iconAccent` | `#1D546C` | Accented icon |
 | `iconDisabled` | `#A0A0A0` | Disabled icon |
-| `border` | `#C4C4C4` | Default border — **fails 3:1** (§12 gap 7); decorative only |
+| `border` | `#7D7D7D` | Default border — 4.12:1 on `surface`, 3.74:1 on `surfacePage`; meaningful borders only |
 | `borderSubdued` | `#DCDCDC` | Decorative separator |
 | `borderFocused` | `#3D95B8` | Focus ring — unaffected by `textLinkHover`'s fix above; this token keeps the value |
 | `borderSelected` | `#1D546C` | Selected state |
@@ -52,12 +52,13 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 
 ## Color — dark (§10.4)
 
-> **Official and wired at the token layer.** Ratified, computed, verified
+> **Official, wired, and live on real screens.** Ratified, computed, verified
 > (DL D-012, D-013) — the `ThemeExtension` mechanism (§10.2) exists,
-> `AppColorsData.dark` holds every one of these values, and every atom
-> reads it via `context.colors`. What's pending is composition: organisms,
-> molecules, and templates mostly still read the light-only static alias
-> directly, so dark mode doesn't reach any actual screen yet (§12, gap 1).
+> `AppColorsData.dark` holds every one of these values, and every widget
+> from atoms through templates reads it via `context.colors`. Settings'
+> Appearance section gives users a real Dark/Light/System toggle. The only
+> exceptions are deliberate: `AppLogo` (mode-invariant brand assets) and the
+> `DiagnosticImageTokens` canvas ground (mode-exempt by rule).
 
 **Elevation ladder** (~4 L\* apart):
 
@@ -117,11 +118,10 @@ board** — dark's was derived from scratch with a floor to hit; light's
 predated that discipline and was never brought up to it, until now. Every
 value above is computed and verified, hue held (checked in HLS, not
 eyeballed), and wired into `_Palette` — `design_tokens.md` §2.8 has the
-full ratio picture. What's still open is composition: most of the widgets
-that render these colors read the light-only static alias directly rather
-than `context.severity`, so the fix reaches every light-mode call site
-today but none in dark mode yet (§12, gap 1). A severity indicator carries
-a label **and** a distinct shape regardless — never hue alone (§2.6).
+full ratio picture. Composition is done too: the widgets that render these
+colors read `context.severity` directly, so the fix reaches every call
+site in both light and dark mode. A severity indicator carries a label
+**and** a distinct shape regardless — never hue alone (§2.6).
 
 ## Brand reference (§2.7)
 
@@ -235,8 +235,10 @@ role, not literal values.
 
 ## Responsive (§9)
 
-> Specified, not yet implemented (§12 gap 2) — `AppLayout` still exposes one
-> 768px breakpoint plus five dead tokens.
+> Implemented — the tier system and most pane minimums drive `LayoutBuilder`
+> branching in all 9 templates (§12 gap 2). Five `AppLayout` tokens are
+> still unwired: `templateSplitWidth`, `primaryColumnMin`, `panelMinWidth`,
+> and the `sideNavWidth`/`sideNavRailWidth` aliases.
 
 | Tier | Range | Posture |
 |---|---|---|
