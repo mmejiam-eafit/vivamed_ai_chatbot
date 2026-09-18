@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/ui/atoms/app_divider.dart';
 import 'package:radiologist_helper/ui/atoms/app_tab_bar.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
@@ -115,6 +116,7 @@ class StudyReviewTemplate extends StatelessWidget {
               ],
             ),
           ),
+          const AppDivider(axis: Axis.vertical),
           SizedBox(width: AppLayout.panelMaxWidth, child: chatPanel),
         ],
       ),

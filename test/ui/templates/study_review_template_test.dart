@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/ui/atoms/app_divider.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 
@@ -265,6 +266,30 @@ void main() {
         );
         expect(find.byType(TabBar), findsNothing);
         expect(find.byType(Row), findsWidgets);
+      });
+
+      testWidgets('shows a vertical divider between findings and chat',
+          (tester) async {
+        tester.view.physicalSize = const Size(1200 * 3, 800 * 3);
+        tester.view.devicePixelRatio = 3.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: StudyReviewTemplate(
+              appBar: AppBar(),
+              imageViewer: const SizedBox(),
+              findingsPanel: const SizedBox(),
+              chatPanel: const SizedBox(),
+            ),
+          ),
+        );
+
+        final divider = tester.widget<AppDivider>(find.byType(AppDivider));
+        expect(divider.axis, Axis.vertical);
+        expect(divider.color, isNull); // resolves to borderSubdued by default
       });
 
       testWidgets(
