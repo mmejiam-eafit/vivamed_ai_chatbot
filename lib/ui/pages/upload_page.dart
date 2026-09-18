@@ -2,7 +2,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
@@ -36,7 +35,6 @@ class _UploadPageState extends ConsumerState<UploadPage> {
   List<String>? _selectedFileNames;
   UploadZoneStatus _status = UploadZoneStatus.idle;
   String? _errorMessage;
-  CaseDetail? _uploadedCase;
 
   bool get _isBusy => _status != UploadZoneStatus.idle;
 
@@ -46,7 +44,6 @@ class _UploadPageState extends ConsumerState<UploadPage> {
     setState(() {
       _selectedFileNames = fileNames;
       _errorMessage = null;
-      _uploadedCase = null;
     });
   }
 
@@ -57,7 +54,6 @@ class _UploadPageState extends ConsumerState<UploadPage> {
     setState(() {
       _status = UploadZoneStatus.uploading;
       _errorMessage = null;
-      _uploadedCase = null;
     });
 
     try {
@@ -69,10 +65,13 @@ class _UploadPageState extends ConsumerState<UploadPage> {
 
       final detail = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
       if (!mounted) return;
-      setState(() {
-        _status = UploadZoneStatus.idle;
-        _uploadedCase = detail;
-      });
+      // Straight to the study once analysis resolves -- no manual "View
+      // Study" tap in between (issues.md).
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => StudyReviewPage(caseId: detail.caseSummary.id),
+        ),
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -80,16 +79,6 @@ class _UploadPageState extends ConsumerState<UploadPage> {
         _errorMessage = 'Upload failed. Please try again.';
       });
     }
-  }
-
-  void _viewStudy() {
-    final detail = _uploadedCase;
-    if (detail == null) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => StudyReviewPage(caseId: detail.caseSummary.id),
-      ),
-    );
   }
 
   @override
@@ -111,21 +100,14 @@ class _UploadPageState extends ConsumerState<UploadPage> {
           isLoading: _isBusy,
           onPressed: hasSelection && !_isBusy ? _upload : null,
         ),
-        statusBar: _uploadedCase != null
+        statusBar: _errorMessage != null
             ? StatusBar(
-                message: 'Study processed successfully',
-                variant: StatusBannerVariant.success,
-                actionLabel: 'View Study',
-                onAction: _viewStudy,
+                message: _errorMessage!,
+                variant: StatusBannerVariant.error,
+                actionLabel: 'Retry',
+                onAction: _upload,
               )
-            : _errorMessage != null
-                ? StatusBar(
-                    message: _errorMessage!,
-                    variant: StatusBannerVariant.error,
-                    actionLabel: 'Retry',
-                    onAction: _upload,
-                  )
-                : null,
+            : null,
       ),
     );
   }

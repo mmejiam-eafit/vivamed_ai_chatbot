@@ -52,7 +52,7 @@ void main() {
   });
 
   testWidgets(
-      'uploading succeeds: shows View Study, tapping it opens Study Review',
+      'uploading succeeds: navigates to Study Review automatically',
       (tester) async {
     await tester.pumpWidget(wrap(UploadPage(pickFiles: threeFiles)));
     await tester.tap(find.byType(InkWell).first);
@@ -65,16 +65,19 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Study processed successfully'), findsOneWidget);
-    expect(find.text('View Study'), findsOneWidget);
-
-    await tester.tap(find.text('View Study'));
-    await tester.pumpAndSettle();
-
+    // No manual step: navigation happens as soon as upload/analysis
+    // resolves, with no intervening "View Study" banner/button to tap.
     expect(find.byType(StudyReviewPage), findsOneWidget);
+    expect(find.byType(UploadPage), findsNothing);
+    expect(find.text('Study processed successfully'), findsNothing);
+    expect(find.text('View Study'), findsNothing);
   });
 
   testWidgets('back navigation is blocked while uploading', (tester) async {
+    // Only the busy-state assertion: a successful upload now navigates away
+    // immediately once settled, so there's no PopScope left on this page to
+    // re-check afterward -- that "unblocked again" case is covered by the
+    // failure path below instead, where the page is still there to ask.
     await tester.pumpWidget(wrap(UploadPage(pickFiles: threeFiles)));
     await tester.tap(find.byType(InkWell).first);
     await tester.pumpAndSettle();
@@ -85,9 +88,9 @@ void main() {
     final popScope = tester.widget<PopScope>(find.byType(PopScope));
     expect(popScope.canPop, isFalse);
 
+    // Drain the pending mock-upload timer/navigation rather than leaving it
+    // pending when the test ends.
     await tester.pumpAndSettle();
-    final popScopeAfter = tester.widget<PopScope>(find.byType(PopScope));
-    expect(popScopeAfter.canPop, isTrue);
   });
 
   testWidgets('a failed upload shows Retry, which re-attempts with the same files',
@@ -108,6 +111,10 @@ void main() {
     expect(find.text('Upload failed. Please try again.'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
     expect(failingRepository.calls, 1);
+    // Busy state clears on failure -- back navigation is unblocked again
+    // (the page stays put on failure, unlike the success path).
+    final popScope = tester.widget<PopScope>(find.byType(PopScope));
+    expect(popScope.canPop, isTrue);
 
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
