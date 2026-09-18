@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/section_index_tile.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 
 void main() {
@@ -173,23 +174,32 @@ void main() {
         );
       }
 
-      testWidgets('shows every title in the index, but only the selected content',
+      testWidgets('shows every title and every section\'s content at once',
           (tester) async {
         await pumpExpanded(tester);
-        // Each title appears twice: once in the index, once as the selected
-        // content pane's own heading (Account is selected by default).
+        // Each title appears twice: once in the index rail, once as its own
+        // SectionCard's heading -- all three sections render together now,
+        // not just the selected one (issues.md: a continuous feel, not
+        // three separate pages).
         expect(find.text('Account'), findsNWidgets(2));
-        expect(find.text('Display'), findsOneWidget);
-        expect(find.text('About'), findsOneWidget);
+        expect(find.text('Display'), findsNWidgets(2));
+        expect(find.text('About'), findsNWidgets(2));
         expect(find.text('account-content'), findsOneWidget);
-        expect(find.text('display-content'), findsNothing);
-        expect(find.text('about-content'), findsNothing);
+        expect(find.text('display-content'), findsOneWidget);
+        expect(find.text('about-content'), findsOneWidget);
       });
 
-      testWidgets('selectedIndex controls which content shows', (tester) async {
+      testWidgets('selectedIndex controls which index tile is highlighted',
+          (tester) async {
         await pumpExpanded(tester, selectedIndex: 1);
+        final tiles =
+            tester.widgetList<SectionIndexTile>(find.byType(SectionIndexTile));
+        expect(tiles.firstWhere((t) => t.title == 'Display').isSelected, isTrue);
+        expect(tiles.firstWhere((t) => t.title == 'Account').isSelected, isFalse);
+        expect(tiles.firstWhere((t) => t.title == 'About').isSelected, isFalse);
+        // Still all present -- selection only changes the highlight now.
+        expect(find.text('account-content'), findsOneWidget);
         expect(find.text('display-content'), findsOneWidget);
-        expect(find.text('account-content'), findsNothing);
       });
 
       testWidgets('index is 200 wide', (tester) async {
@@ -201,10 +211,14 @@ void main() {
       });
 
       testWidgets('tapping an index title calls onSectionSelected', (tester) async {
+        // 'Display' now appears twice (rail + its own SectionCard heading,
+        // since all sections render) -- target the rail tile specifically.
         int? tapped;
         await pumpExpanded(tester, onSectionSelected: (i) => tapped = i);
-        await tester.tap(find.text('Display'));
-        await tester.pump();
+        await tester.tap(find.widgetWithText(SectionIndexTile, 'Display'));
+        // pumpAndSettle, not pump: the tap also kicks off ensureVisible's
+        // (possibly animated) scroll -- let it finish before the test ends.
+        await tester.pumpAndSettle();
         expect(tapped, 1);
       });
 
@@ -212,6 +226,11 @@ void main() {
           (tester) async {
         await pumpExpanded(tester, selectedIndex: 99);
         expect(tester.takeException(), isNull);
+        // Clamps to the last section for highlighting purposes; all three
+        // still render regardless (they always do now).
+        final tiles =
+            tester.widgetList<SectionIndexTile>(find.byType(SectionIndexTile));
+        expect(tiles.firstWhere((t) => t.title == 'About').isSelected, isTrue);
         expect(find.text('about-content'), findsOneWidget);
       });
     });

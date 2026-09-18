@@ -120,7 +120,7 @@ A template is a layout skeleton. It defines **where organisms go on screen** —
 | `CaseListTemplate` | App bar zone, optional status/header zone, case content zone | Layout for case discovery/history views. Uses list on narrow screens and grid on wide screens. |
 | `StudyReviewTemplate` | App bar zone, study info zone (top), findings zone (bottom/side) | Layout for reviewing a completed study outside the chat context. |
 | `HeatmapViewerTemplate` | App bar zone, image canvas zone, bottom control zone | Layout for rendering base study image and optional heatmap overlay with externally owned opacity control. |
-| `SettingsTemplate` | App bar zone, scrollable content zone | Single-column layout for settings sections. |
+| `SettingsTemplate` | App bar zone, scrollable content zone | Single-column list of sections at compact/medium; at expanded/ultrawide, a 200px index rail beside one continuous scroll of every section, where tapping the rail jumps to (not hides) the others. |
 | `OnboardingTemplate` | Full-bleed content zone, bottom action zone | Edge-to-edge layout for the onboarding carousel with a bottom "Get Started" area. |
 | `AuthTemplate` | Centered content zone | Vertically and horizontally centered card for login/registration flows. |
 | `UploadTemplate` | App bar zone, optional status bar, centered content zone | Centered single-task layout — an `UploadZone`, an action button, and an optional success/error `StatusBar` — same shape as `AuthTemplate` and for the same reason (one focused task, no tier branching needed). |

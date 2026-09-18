@@ -76,9 +76,20 @@ class SettingsTemplate extends StatelessWidget {
     );
   }
 
+  // Every section renders together in one continuous scroll -- the index
+  // rail highlights and jumps to a section, it no longer hides the other two
+  // (issues.md: Settings should keep "a continuous feel", not read as three
+  // separate pages). Section titles are literal strings, so a
+  // GlobalObjectKey built from one is stable (equal) across rebuilds without
+  // any extra state -- unlike a fresh GlobalKey(), which would be a new
+  // identity every time this method reruns and would break the very next
+  // tap's ensureVisible call.
   Widget _buildTwoColumn(BuildContext context) {
     if (sections.isEmpty) return const SizedBox.shrink();
     final index = selectedIndex.clamp(0, sections.length - 1);
+    final sectionKeys = [
+      for (final section in sections) GlobalObjectKey(section.title),
+    ];
     return Row(
       children: [
         SizedBox(
@@ -89,9 +100,14 @@ class SettingsTemplate extends StatelessWidget {
             itemBuilder: (context, i) => SectionIndexTile(
               title: sections[i].title,
               isSelected: i == index,
-              onTap: onSectionSelected == null
-                  ? null
-                  : () => onSectionSelected!(i),
+              onTap: () {
+                onSectionSelected?.call(i);
+                Scrollable.ensureVisible(
+                  sectionKeys[i].currentContext!,
+                  duration: AppMotion.transition,
+                  curve: AppMotion.standard,
+                );
+              },
             ),
           ),
         ),
@@ -104,11 +120,15 @@ class SettingsTemplate extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
-              child: SingleChildScrollView(
+              child: ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.xl),
-                child: SectionCard(
-                  title: sections[index].title,
-                  child: sections[index].child,
+                itemCount: sections.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: AppSpacing.xxl),
+                itemBuilder: (context, i) => SectionCard(
+                  key: sectionKeys[i],
+                  title: sections[i].title,
+                  child: sections[i].child,
                 ),
               ),
             ),
