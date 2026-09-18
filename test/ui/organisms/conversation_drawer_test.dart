@@ -49,6 +49,32 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
   });
 
+  // ── Settings entry color ───────────────────────────────────────────────────
+  // The drawer's background is surfaceBrandSecondary (brand-navy), not
+  // AppNavBar's surface -- the Settings entry must match the rest of this
+  // drawer's on-brand tokens, not NavItem's bottomNav* defaults.
+
+  testWidgets('Settings icon uses iconOnBrand, not the bottomNav default',
+      (tester) async {
+    await tester.pumpWidget(wrap(const ConversationDrawer(conversations: [])));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.settings_outlined));
+    expect(icon.color, AppColorsData.light.iconOnBrand);
+    expect(icon.color, isNot(AppColorsData.light.textMuted));
+  });
+
+  testWidgets('Settings icon color resolves against the dark theme too',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: ConversationDrawer(conversations: []),
+      ),
+    ));
+    final icon = tester.widget<Icon>(find.byIcon(Icons.settings_outlined));
+    expect(icon.color, AppColorsData.dark.iconOnBrand);
+    expect(icon.color, isNot(AppColorsData.dark.textMuted));
+  });
+
   // ── Callbacks ──────────────────────────────────────────────────────────────
 
   testWidgets('onSelect fires with the tapped conversation id', (tester) async {

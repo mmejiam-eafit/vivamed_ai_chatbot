@@ -56,6 +56,12 @@ class ConversationDrawer extends StatelessWidget {
                 icon: Icons.settings_outlined,
                 label: 'Settings',
                 onTap: onSettings,
+                // This drawer's background is surfaceBrandSecondary, not
+                // AppNavBar's surface -- match the on-brand color the rest
+                // of this drawer already uses (e.g. the conversation tiles'
+                // unselected icon, above) instead of NavItem's bottomNav*
+                // default, which was tuned for AppNavBar's light background.
+                unselectedColor: context.colors.iconOnBrand,
               ),
             ),
           ],
