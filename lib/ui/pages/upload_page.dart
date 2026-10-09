@@ -12,12 +12,13 @@ import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/upload_template.dart';
 
 Future<List<String>?> _defaultPickFiles() async {
-  final result = await FilePicker.platform.pickFiles(
-    allowMultiple: true,
+  // Several files can be picked by default; a cancelled picker returns an
+  // empty list rather than null.
+  final files = await FilePicker.pickFiles(
     type: FileType.custom,
     allowedExtensions: ['dcm'],
   );
-  return result?.files.map((f) => f.name).toList();
+  return files.isEmpty ? null : files.map((f) => f.name).toList();
 }
 
 class UploadPage extends ConsumerStatefulWidget {
@@ -66,7 +67,7 @@ class _UploadPageState extends ConsumerState<UploadPage> {
       final detail = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
       if (!mounted) return;
       // Straight to the study once analysis resolves -- no manual "View
-      // Study" tap in between (issues.md).
+      // Study" tap in between.
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => StudyReviewPage(caseId: detail.caseSummary.id),
