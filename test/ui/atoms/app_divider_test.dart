@@ -75,4 +75,42 @@ void main() {
     final divider = tester.widget<Divider>(find.byType(Divider));
     expect(divider.endIndent, 8.0);
   });
+
+  // ── width (vertical axis only) ─────────────────────────────────────────────
+  // `width` is the total space a vertical divider takes (line plus padding),
+  // so it is measured on the rendered box, not read back off the widget. Each
+  // divider sits in a Center: the wrapper's tight 200x200 box would otherwise
+  // force it to 200 wide whatever `width` says.
+
+  Future<double> renderedWidth(WidgetTester tester, AppDivider divider) async {
+    await tester.pumpWidget(wrap(Center(child: divider)));
+    return tester.getSize(find.byType(AppDivider)).width;
+  }
+
+  testWidgets('vertical divider takes exactly the width it is given', (
+    tester,
+  ) async {
+    expect(
+      await renderedWidth(
+        tester,
+        const AppDivider(axis: Axis.vertical, width: 1),
+      ),
+      1.0,
+    );
+  });
+
+  testWidgets('vertical divider without a width keeps the 16px default', (
+    tester,
+  ) async {
+    expect(
+      await renderedWidth(tester, const AppDivider(axis: Axis.vertical)),
+      16.0,
+    );
+  });
+
+  testWidgets('width does nothing on a horizontal divider', (tester) async {
+    final without = await renderedWidth(tester, const AppDivider());
+    final withWidth = await renderedWidth(tester, const AppDivider(width: 1));
+    expect(withWidth, without);
+  });
 }
