@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
-import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
-// The canvas is grounded in DiagnosticImageTokens.canvasGround, which is
+// The canvas is grounded in diagnosticCanvasGround, which is
 // mode-exempt: identical in light and dark. Pixel data is evidence, and the
 // perceived contrast of an image depends on its surround, so the surround must
 // not move with a user preference (DL §3.7, D-004). It is deliberately not a
@@ -20,6 +17,7 @@ class HeatmapViewerTemplate extends StatelessWidget {
     required this.baseImage,
     required this.opacityControl,
     this.heatmapOverlay,
+    this.imageAspectRatio,
   });
 
   final PreferredSizeWidget appBar;
@@ -32,6 +30,14 @@ class HeatmapViewerTemplate extends StatelessWidget {
   /// Slider or custom widget; the page owns the opacity state.
   final Widget opacityControl;
 
+  /// Width divided by height of the base image. When given, the image and the
+  /// overlay share one frame at exactly this ratio, centered on the canvas
+  /// ground: the whole study is shown, never cropped, and the overlay sits on
+  /// the same pixels as the image whatever the window's shape (DL D-020, DT
+  /// §9.5). When null both slots fill the canvas, so a `cover`-fit image would
+  /// be cropped to it -- pass the ratio whenever it is known.
+  final double? imageAspectRatio;
+
   /// Built once — the viewer's chrome is dark in both modes, so this never
   /// depends on the ambient theme (design_tokens.md §10.2, DL §6.5).
   static final ThemeData _forcedDark = buildAppTheme(Brightness.dark);
@@ -39,19 +45,28 @@ class HeatmapViewerTemplate extends StatelessWidget {
   /// Width of the persistent control rail at expanded and up (DT §9.5).
   static const double _railWidth = 280.0;
 
-  /// Explicit control-bar height at medium — compact keeps its intrinsic
-  /// height, this tier pins it (DT §9.5).
-  static const double _mediumControlBarHeight = 56.0;
+  /// Explicit control-bar height at compact and medium (DT §9.5), and the
+  /// height of the control's own box in the rail. Pinned rather than left
+  /// intrinsic because a `Slider` fills whatever height it is given:
+  /// `Scaffold.bottomNavigationBar` gives it the whole screen, and the rail's
+  /// full-height column gave it ~800px of hit area around a 24px track. The
+  /// bar pads only sideways, so the control's box is the full bar: padding it
+  /// above and below left a 24px touch area, under `minTouchTarget`.
+  static const double _controlBarHeight = 56.0;
 
   @override
   Widget build(BuildContext context) {
-    final canvas = Stack(
+    final layers = Stack(
       fit: StackFit.expand,
       children: [
         baseImage,
-        if (heatmapOverlay != null) heatmapOverlay!,
+        ?heatmapOverlay,
       ],
     );
+    final ratio = imageAspectRatio;
+    final canvas = ratio == null
+        ? layers
+        : Center(child: AspectRatio(aspectRatio: ratio, child: layers));
 
     return Theme(
       data: _forcedDark,
@@ -63,16 +78,23 @@ class HeatmapViewerTemplate extends StatelessWidget {
 
           if (isRailTier) {
             return Scaffold(
-              backgroundColor: DiagnosticImageTokens.canvasGround,
+              backgroundColor: diagnosticCanvasGround,
               appBar: appBar,
               body: Row(
                 children: [
                   Expanded(child: canvas),
                   Container(
                     width: _railWidth,
-                    color: DiagnosticImageTokens.canvasGround,
+                    color: diagnosticCanvasGround,
                     padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: opacityControl,
+                    // Centered in the rail, as it always rendered: the box is
+                    // pinned, the control's place on screen is not changed.
+                    child: Center(
+                      child: SizedBox(
+                        height: _controlBarHeight,
+                        child: opacityControl,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -80,18 +102,16 @@ class HeatmapViewerTemplate extends StatelessWidget {
           }
 
           final controlBar = Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: opacityControl,
           );
           return Scaffold(
-            backgroundColor: DiagnosticImageTokens.canvasGround,
+            backgroundColor: diagnosticCanvasGround,
             appBar: appBar,
             body: canvas,
             bottomNavigationBar: ColoredBox(
-              color: DiagnosticImageTokens.canvasGround,
-              child: tier == AppLayoutTier.medium
-                  ? SizedBox(height: _mediumControlBarHeight, child: controlBar)
-                  : controlBar,
+              color: diagnosticCanvasGround,
+              child: SizedBox(height: _controlBarHeight, child: controlBar),
             ),
           );
         },
@@ -99,73 +119,3 @@ class HeatmapViewerTemplate extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-// Simulates the dark image-viewer canvas; real usage receives a DICOM widget.
-Widget _previewBaseImage() => const ColoredBox(
-      color: AppColors.surfaceBrandSecondary,
-      child: Center(
-        child: AppText(
-          'Chest X-Ray (PA)',
-          style: AppTypography.labelMd,
-          color: AppColors.textOnBrand,
-        ),
-      ),
-    );
-
-// Simulates a warm-toned heatmap overlay (the actual widget comes from the backend).
-Widget _previewHeatmap(double opacity) => Opacity(
-      opacity: opacity,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.statusError.withValues(alpha: 0.7),
-              AppColors.statusWarning.withValues(alpha: 0.4),
-              AppColors.statusInfo.withValues(alpha: 0.1),
-            ],
-          ),
-        ),
-        child: const SizedBox.expand(),
-      ),
-    );
-
-PreferredSizeWidget _previewAppBar(String title) => AppBar(
-      backgroundColor: AppColors.surfaceBrand,
-      foregroundColor: AppColors.textOnBrand,
-      title: Text(title),
-    );
-
-@Preview(
-    name: 'with heatmap', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewHeatmapViewerWithOverlay() => HeatmapViewerTemplate(
-      appBar: _previewAppBar('Chest XR — Heatmap'),
-      baseImage: _previewBaseImage(),
-      heatmapOverlay: _previewHeatmap(0.6),
-      opacityControl: const SliderTheme(
-        data: SliderThemeData(
-          activeTrackColor: AppColors.interactivePrimary,
-          thumbColor: AppColors.interactivePrimary,
-          inactiveTrackColor: AppColors.borderSubdued,
-        ),
-        child: Slider(value: 0.6, onChanged: null),
-      ),
-    );
-
-@Preview(
-    name: 'without heatmap', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewHeatmapViewerNoOverlay() => HeatmapViewerTemplate(
-      appBar: _previewAppBar('Chest XR'),
-      baseImage: _previewBaseImage(),
-      opacityControl: const SliderTheme(
-        data: SliderThemeData(
-          activeTrackColor: AppColors.interactivePrimary,
-          thumbColor: AppColors.interactivePrimary,
-          inactiveTrackColor: AppColors.borderSubdued,
-        ),
-        child: Slider(value: 0, onChanged: null),
-      ),
-    );

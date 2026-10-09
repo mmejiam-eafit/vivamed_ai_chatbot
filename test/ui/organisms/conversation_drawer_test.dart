@@ -99,6 +99,41 @@ void main() {
     expect(called, isTrue);
   });
 
+  // ── onMenuTap (expanded/ultrawide, replaces the Settings row) ──────────────
+
+  testWidgets('onMenuTap provided: bottom row shows Menu, not Settings',
+      (tester) async {
+    await tester.pumpWidget(wrap(ConversationDrawer(
+      conversations: const [],
+      onMenuTap: () {},
+    )));
+    expect(find.text('Menu'), findsOneWidget);
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+    expect(find.text('Settings'), findsNothing);
+  });
+
+  testWidgets('onMenuTap fires on tap, not onSettings, when both are given',
+      (tester) async {
+    var menuTapped = false;
+    var settingsTapped = false;
+    await tester.pumpWidget(wrap(ConversationDrawer(
+      conversations: const [],
+      onSettings: () => settingsTapped = true,
+      onMenuTap: () => menuTapped = true,
+    )));
+    await tester.tap(find.text('Menu'));
+    await tester.pump();
+    expect(menuTapped, isTrue);
+    expect(settingsTapped, isFalse);
+  });
+
+  testWidgets('with no onMenuTap, the bottom row is still Settings',
+      (tester) async {
+    await tester.pumpWidget(wrap(const ConversationDrawer(conversations: [])));
+    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Menu'), findsNothing);
+  });
+
   // ── Selected state ─────────────────────────────────────────────────────────
 
   testWidgets('selected tile carries a highlighted background', (tester) async {
@@ -150,7 +185,23 @@ void main() {
       of: find.text('Chest CT — Patient A'),
       matching: find.byType(InkWell),
     ));
-    expect(inkWell.hoverColor, NavigationTokens.sideNavHoverColor);
+    expect(inkWell.hoverColor, AppColorsData.light.sideNavHover);
+  });
+
+  testWidgets('conversation tile hover color resolves against the dark theme too',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: ConversationDrawer(conversations: conversations),
+      ),
+    ));
+    final inkWell = tester.widget<InkWell>(find.ancestor(
+      of: find.text('Chest CT — Patient A'),
+      matching: find.byType(InkWell),
+    ));
+    expect(inkWell.hoverColor, AppColorsData.dark.sideNavHover);
+    expect(inkWell.hoverColor, isNot(AppColorsData.light.sideNavHover));
   });
 
   // ── Dark theme ─────────────────────────────────────────────────────────────

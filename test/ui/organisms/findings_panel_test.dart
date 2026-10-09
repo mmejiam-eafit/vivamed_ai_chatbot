@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/finding.dart';
+import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/molecules/finding_row.dart';
@@ -142,6 +143,78 @@ void main() {
     await tester.pump();
 
     expect(tapped, 'f2');
+  });
+
+  // ── Trailing action (Study Review → Similar Cases) ───────────────────────
+  // Both or neither: the panel owns the button's styling entirely, so the
+  // page supplies only a label and a callback (a page must not style content
+  // directly).
+
+  testWidgets('no action button by default', (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(findings: [])));
+    expect(find.byType(AppButton), findsNothing);
+  });
+
+  testWidgets('no action button when only actionLabel is set', (tester) async {
+    await tester.pumpWidget(wrap(const FindingsPanel(
+      findings: [],
+      actionLabel: 'View Similar Studies',
+    )));
+    expect(find.byType(AppButton), findsNothing);
+  });
+
+  testWidgets('no action button when only onActionTap is set', (tester) async {
+    await tester.pumpWidget(wrap(FindingsPanel(
+      findings: const [],
+      onActionTap: () {},
+    )));
+    expect(find.byType(AppButton), findsNothing);
+  });
+
+  testWidgets('shows the action button when both are provided', (tester) async {
+    await tester.pumpWidget(wrap(FindingsPanel(
+      findings: const [],
+      actionLabel: 'View Similar Studies',
+      onActionTap: () {},
+    )));
+    expect(find.text('View Similar Studies'), findsOneWidget);
+  });
+
+  testWidgets('tapping the action button calls onActionTap', (tester) async {
+    var called = false;
+    await tester.pumpWidget(wrap(FindingsPanel(
+      findings: const [],
+      actionLabel: 'View Similar Studies',
+      onActionTap: () => called = true,
+    )));
+    await tester.tap(find.text('View Similar Studies'));
+    await tester.pump();
+    expect(called, isTrue);
+  });
+
+  testWidgets('does not overflow with many findings and an action button in '
+      'tight constrained height', (tester) async {
+    final errors = <FlutterErrorDetails>[];
+    final prev = FlutterError.onError;
+    FlutterError.onError = errors.add;
+
+    await tester.pumpWidget(wrap(SizedBox(
+      width: 360,
+      height: 200,
+      child: FindingsPanel(
+        findings: sampleFindings,
+        actionLabel: 'View Similar Studies',
+        onActionTap: () {},
+      ),
+    )));
+
+    FlutterError.onError = prev;
+    expect(
+      errors.where((e) => e.toString().contains('overflowed')),
+      isEmpty,
+      reason: 'FindingsPanel must scroll rather than overflow, even with '
+          'the action button pinned below it',
+    );
   });
 
   // ── Overflow prevention ────────────────────────────────────────────────────

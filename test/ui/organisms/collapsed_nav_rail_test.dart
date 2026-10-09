@@ -73,7 +73,19 @@ void main() {
       CollapsedNavRail(onMenuTap: () {}, onFindingsTap: () {}),
     ));
     for (final inkWell in tester.widgetList<InkWell>(find.byType(InkWell))) {
-      expect(inkWell.hoverColor, NavigationTokens.sideNavHoverColor);
+      expect(inkWell.hoverColor, AppColorsData.light.sideNavHover);
+    }
+  });
+
+  testWidgets('hover color resolves against the dark theme too',
+      (tester) async {
+    await tester.pumpWidget(wrap(
+      CollapsedNavRail(onMenuTap: () {}, onFindingsTap: () {}),
+      brightness: Brightness.dark,
+    ));
+    for (final inkWell in tester.widgetList<InkWell>(find.byType(InkWell))) {
+      expect(inkWell.hoverColor, AppColorsData.dark.sideNavHover);
+      expect(inkWell.hoverColor, isNot(AppColorsData.light.sideNavHover));
     }
   });
 

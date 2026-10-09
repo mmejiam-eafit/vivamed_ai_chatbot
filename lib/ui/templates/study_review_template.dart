@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/atoms/app_divider.dart';
 import 'package:radiologist_helper/ui/atoms/app_tab_bar.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
 class StudyReviewTemplate extends StatelessWidget {
   const StudyReviewTemplate({
@@ -14,6 +12,8 @@ class StudyReviewTemplate extends StatelessWidget {
     required this.chatPanel,
     this.statusBar,
     this.drawer,
+    this.drawerWide,
+    this.primaryNavDrawer,
   });
 
   final PreferredSizeWidget appBar;
@@ -30,17 +30,27 @@ class StudyReviewTemplate extends StatelessWidget {
   /// Optional full-width StatusBar organism shown above the main content.
   final Widget? statusBar;
 
-  /// ConversationDrawer organism.
-  /// Wide: rendered as a persistent sidebar inside the Row.
+  /// ConversationDrawer organism, compact/medium only.
   /// Narrow: passed to Scaffold.drawer as a slide-over.
+  /// Unused at expanded/ultrawide -- see [drawerWide].
   final Widget? drawer;
+
+  /// ConversationDrawer's expanded/ultrawide variant -- same data as
+  /// [drawer], but its bottom row opens the primary nav menu instead of
+  /// Settings directly (there's no app bar at this tier to host a hamburger
+  /// in anymore). Rendered as a persistent sidebar inside the three-zone Row.
+  final Widget? drawerWide;
+
+  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// ultrawide -- see DT §9.5 desktop/web revisit.
+  final Widget? primaryNavDrawer;
 
   /// Grounds the image slot in the diagnostic canvas rather than the page
   /// surface. Mode-exempt: the surround of pixel data must not move with a
   /// user preference (DL §3.7, D-004). The Scaffold around it stays themed —
   /// that part is chrome, not evidence.
   static Widget _canvas(Widget imageViewer) => ColoredBox(
-        color: DiagnosticImageTokens.canvasGround,
+        color: diagnosticCanvasGround,
         child: imageViewer,
       );
 
@@ -77,11 +87,17 @@ class StudyReviewTemplate extends StatelessWidget {
     );
   }
 
+  // Every Column/Row below that holds a slot stretches its cross axis. The
+  // default (center) hands each child a *loose* constraint there, so a slot
+  // only filled its cell if whatever was passed in happened to fill it too --
+  // a content-less or intrinsically-sized widget collapsed to zero or to its
+  // own size. A template's slot should fill its cell regardless.
   Widget _buildThreeZone(AppColorsData colors, {required bool isUltrawide}) {
     // Ultrawide: viewer and findings sit side by side, and the viewer absorbs
     // the extra width rather than the pair simply growing taller stacked.
     final primaryContent = isUltrawide
         ? Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(flex: 3, child: _canvas(imageViewer)),
               const SizedBox(width: AppSpacing.lg),
@@ -89,6 +105,7 @@ class StudyReviewTemplate extends StatelessWidget {
             ],
           )
         : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(flex: 3, child: _canvas(imageViewer)),
               const SizedBox(height: AppSpacing.lg),
@@ -97,16 +114,19 @@ class StudyReviewTemplate extends StatelessWidget {
           );
     return Scaffold(
       backgroundColor: colors.surfacePage,
-      appBar: appBar,
+      // No app bar at this tier -- the menu trigger lives at the bottom of
+      // drawerWide instead.
+      drawer: primaryNavDrawer,
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (drawer != null)
-            SizedBox(width: NavigationTokens.sideNavWidth, child: drawer),
+          ?drawerWide,
           Expanded(
             flex: 5,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (statusBar != null) statusBar!,
+                ?statusBar,
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
@@ -133,10 +153,12 @@ class StudyReviewTemplate extends StatelessWidget {
       appBar: appBar,
       drawer: drawer,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (statusBar != null) statusBar!,
+          ?statusBar,
           Expanded(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
                   flex: 3,
@@ -167,7 +189,7 @@ class StudyReviewTemplate extends StatelessWidget {
       drawer: drawer,
       body: Column(
         children: [
-          if (statusBar != null) statusBar!,
+          ?statusBar,
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -192,37 +214,3 @@ class StudyReviewTemplate extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-Widget _placeholder(String label, Color color) => Container(
-      color: color,
-      child: Center(
-          child: Text(label, style: const TextStyle(color: Colors.white))),
-    );
-
-@Preview(
-    name: 'wide — with drawer',
-    size: Size(1024, 768),
-    wrapper: previewWrapperFull)
-Widget previewStudyReviewWide() => StudyReviewTemplate(
-      appBar: AppBar(title: const Text('Study Review')),
-      imageViewer: _placeholder('Image Viewer', Colors.blueGrey.shade700),
-      findingsPanel: _placeholder('Findings Panel', Colors.teal.shade700),
-      chatPanel: _placeholder('Chat Panel', Colors.indigo.shade700),
-      statusBar: Container(
-        height: 36,
-        color: Colors.amber.shade100,
-        child: const Center(child: Text('Status bar')),
-      ),
-      drawer: _placeholder('Drawer', Colors.blueGrey.shade900),
-    );
-
-@Preview(
-    name: 'narrow — tabs', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewStudyReviewNarrow() => StudyReviewTemplate(
-      appBar: AppBar(title: const Text('Study Review')),
-      imageViewer: _placeholder('Image Viewer', Colors.blueGrey.shade700),
-      findingsPanel: _placeholder('Findings Panel', Colors.teal.shade700),
-      chatPanel: _placeholder('Chat Panel', Colors.indigo.shade700),
-    );

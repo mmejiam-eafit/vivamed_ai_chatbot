@@ -106,6 +106,10 @@ abstract final class _Palette {
   static const Color darkSurfaceOverlay = Color(0xFF232C38);
   static const Color darkSurfaceBrand = Color(0xFF16273D);
   static const Color darkSurfaceBrandSecondary = Color(0xFF1B3049);
+  // Hue (212.6°) and saturation (0.46) held exactly from darkSurfaceBrandSecondary,
+  // lightness lifted +0.10 -- 1.43:1 against it, matching the light-mode
+  // mediumNavy -> mediumNavy600 step's own ~1.42:1 magnitude (DL D-018).
+  static const Color darkSideNavHover = Color(0xFF29486E);
   static const Color darkTextPrimary = Color(0xFFE4E8ED);
   static const Color darkTextSecondary = Color(0xFFB4BCC6);
   static const Color darkTextTertiary = Color(0xFF939CA8);
@@ -322,6 +326,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     required this.statusErrorSubdued,
     required this.statusInfo,
     required this.statusInfoSubdued,
+    required this.sideNavHover,
   });
 
   final Color surfacePage;
@@ -372,6 +377,11 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
   final Color statusInfo;
   final Color statusInfoSubdued;
 
+  /// Hover fill on an unselected sidebar item, on brand-dark background.
+  /// Read by `CollapsedNavRail` and `ConversationDrawer`'s tile via
+  /// `NavigationTokens.sideNavHoverColor(context)`. Derivation: DL D-018.
+  final Color sideNavHover;
+
   static const AppColorsData light = AppColorsData(
     surfacePage: _Palette.offWhite,
     surface: _Palette.white,
@@ -421,6 +431,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     statusErrorSubdued: _Palette.red50,
     statusInfo: _Palette.tealBlue750,
     statusInfoSubdued: _Palette.tealBlue50,
+    sideNavHover: _Palette.mediumNavy600,
   );
 
   static const AppColorsData dark = AppColorsData(
@@ -483,6 +494,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     // Dark mode deliberately reuses the Mild pair for Info (design_tokens.md §10.4).
     statusInfo: _Palette.darkMild,
     statusInfoSubdued: _Palette.darkMildBg,
+    sideNavHover: _Palette.darkSideNavHover,
   );
 
   @override
@@ -534,6 +546,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     Color? statusErrorSubdued,
     Color? statusInfo,
     Color? statusInfoSubdued,
+    Color? sideNavHover,
   }) {
     return AppColorsData(
       surfacePage: surfacePage ?? this.surfacePage,
@@ -589,6 +602,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
       statusErrorSubdued: statusErrorSubdued ?? this.statusErrorSubdued,
       statusInfo: statusInfo ?? this.statusInfo,
       statusInfoSubdued: statusInfoSubdued ?? this.statusInfoSubdued,
+      sideNavHover: sideNavHover ?? this.sideNavHover,
     );
   }
 
@@ -660,6 +674,7 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
       statusInfo: Color.lerp(statusInfo, other.statusInfo, t)!,
       statusInfoSubdued:
           Color.lerp(statusInfoSubdued, other.statusInfoSubdued, t)!,
+      sideNavHover: Color.lerp(sideNavHover, other.sideNavHover, t)!,
     );
   }
 }
@@ -1078,12 +1093,12 @@ abstract final class NavigationTokens {
 
   /// Hover fill on an unselected sidebar item (on brand-dark background).
   /// Read by `CollapsedNavRail` and `ConversationDrawer`'s tile via
-  /// `InkWell.hoverColor`. Still a flat constant, not mode-derived: it was
-  /// tuned as one step brighter than light theme's `surfaceBrandSecondary`
-  /// (`mediumNavy` -> `mediumNavy600`), but `surfaceBrandSecondary` itself
-  /// moves to `darkSurfaceBrandSecondary` in dark mode, and no dark-tuned
-  /// hover value has been derived against that background yet.
-  static const Color sideNavHoverColor = _Palette.mediumNavy600;
+  /// `InkWell.hoverColor`. Now brightness-aware like every other member of
+  /// this class: `context.colors.sideNavHover` holds the light value (one
+  /// step brighter than `surfaceBrandSecondary`, unchanged) and its own
+  /// derived dark value (DL D-018).
+  static Color sideNavHoverColor(BuildContext context) =>
+      context.colors.sideNavHover;
 
   /// Border radius applied to each sidebar nav item pill.
   static const double sideNavItemBorderRadius = AppRadius.button;
@@ -1291,7 +1306,9 @@ abstract final class AppLayout {
   /// Max width for side panels (findings list, study info card) on desktop.
   static const double panelMaxWidth = 360.0;
 
-  /// Max width of the Case List worklist table at ultrawide (§9.5).
+  /// Max width of the Case List worklist table at every wide width (§9.5,
+  /// D-019). It binds from about 1504px, once this plus the 64px menu rail no
+  /// longer fits.
   static const double worklistMaxWidth = 1440.0;
 }
 
@@ -1417,22 +1434,21 @@ abstract final class TooltipTokens {
 // ============================================================================
 // Pixel data is evidence. The perceived contrast of an image depends on its
 // surround, so the surround must not vary with a user preference (DL §3.7,
-// D-004). These values are mode-exempt and are NOT part of AppColorsData —
-// there is deliberately no `context.colors` path to them.
+// D-004). Mode-exempt and NOT part of AppColorsData — there is deliberately
+// no `context.colors` path to it. A single value, so it's a flat top-level
+// constant rather than a wrapper class with one member.
 
-abstract final class DiagnosticImageTokens {
-  /// The ground behind and around diagnostic pixel data — the viewer canvas,
-  /// and any slot a DICOM image is dropped into.
-  ///
-  /// Identical in light and dark by design. Specified in design_tokens.md
-  /// §10.4 and §2.10; not a new color. Deliberately not the chrome navy —
-  /// the boundary between interface and evidence has to stay sharp.
-  static const Color canvasGround = _Palette.diagnosticCanvas;
+/// The ground behind and around diagnostic pixel data — the viewer canvas,
+/// and any slot a DICOM image is dropped into.
+///
+/// Identical in light and dark by design. Specified in design_tokens.md
+/// §10.4 and §2.10; not a new color. Deliberately not the chrome navy — the
+/// boundary between interface and evidence has to stay sharp.
+const Color diagnosticCanvasGround = _Palette.diagnosticCanvas;
 
-  // The perceptual overlay/heatmap ramp DL §3.7 requires is NOT built yet —
-  // design_tokens.md §12 gap 5. Do not approximate it with status or
-  // severity colors; that is the violation the gap records.
-}
+// The perceptual overlay/heatmap ramp DL §3.7 requires is NOT built yet —
+// design_tokens.md §12 gap 5. Do not approximate it with status or severity
+// colors; that is the violation the gap records.
 
 // ============================================================================
 // ThemeData builder

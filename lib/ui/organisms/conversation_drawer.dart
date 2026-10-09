@@ -19,6 +19,8 @@ class ConversationDrawer extends StatelessWidget {
     this.userImageUrl,
     this.userName,
     this.onSettings,
+    this.onMenuTap,
+    this.isWide = false,
   });
 
   final List<ConversationItem> conversations;
@@ -29,15 +31,32 @@ class ConversationDrawer extends StatelessWidget {
   final String? userName;
   final VoidCallback? onSettings;
 
+  /// When provided, the bottom row opens the primary nav menu instead of
+  /// going straight to Settings -- the expanded/ultrawide variant of this
+  /// drawer, where the app bar (and its hamburger) is gone and this row is
+  /// the menu's new home. Takes priority over [onSettings] when both are
+  /// given, though in practice a caller passes exactly one.
+  final VoidCallback? onMenuTap;
+
+  /// True when this instance is rendered as a persistent sidebar
+  /// (`drawerWide`, expanded/ultrawide) rather than a slide-over
+  /// (`Scaffold.drawer`, compact/medium) -- picks `NavigationTokens
+  /// .sideNavWidth` (240) over the slide-over's own `.drawerWidth` (280).
+  /// The organism owns this choice since only organisms (not templates) may
+  /// reference `NavigationTokens` -- the caller passes a plain bool, not a
+  /// token.
+  final bool isWide;
+
   @override
   Widget build(BuildContext context) {
+    final showMenu = onMenuTap != null;
     // Drawer, not a bare Container: this is Flutter's own purpose-built
     // container for a Scaffold.drawer slot — it carries the standard
     // elevation/shape and a semantic drawer label for screen readers that a
     // plain Container never gets, for the same width/background this always
     // had.
     return Drawer(
-      width: NavigationTokens.drawerWidth,
+      width: isWide ? NavigationTokens.sideNavWidth : NavigationTokens.drawerWidth,
       backgroundColor: NavigationTokens.drawerBackground(context),
       child: SafeArea(
         child: Column(
@@ -53,14 +72,18 @@ class ConversationDrawer extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               child: NavItem(
-                icon: Icons.settings_outlined,
-                label: 'Settings',
-                onTap: onSettings,
+                icon: showMenu ? Icons.menu : Icons.settings_outlined,
+                label: showMenu ? 'Menu' : 'Settings',
+                onTap: showMenu ? onMenuTap : onSettings,
                 // This drawer's background is surfaceBrandSecondary, not
                 // AppNavBar's surface -- match the on-brand color the rest
                 // of this drawer already uses (e.g. the conversation tiles'
-                // unselected icon, above) instead of NavItem's bottomNav*
-                // default, which was tuned for AppNavBar's light background.
+                // unselected icon, above) instead of NavItem's old
+                // bottomNav*-only default, which was tuned for AppNavBar's
+                // light background. This row is never actually selected
+                // today, but sideNavSelected (not bottomNavSelected) is the
+                // semantically correct pair for a side-nav drawer either way.
+                selectedColor: NavigationTokens.sideNavSelected(context),
                 unselectedColor: context.colors.iconOnBrand,
               ),
             ),
@@ -133,7 +156,7 @@ class _ConversationTile extends StatelessWidget {
     final colors = context.colors;
     return InkWell(
       onTap: onTap,
-      hoverColor: NavigationTokens.sideNavHoverColor,
+      hoverColor: NavigationTokens.sideNavHoverColor(context),
       child: Container(
         color: isSelected ? colors.surfaceBrandSecondarySubdued : null,
         padding: const EdgeInsets.symmetric(
