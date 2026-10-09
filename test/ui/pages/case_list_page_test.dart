@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/theme_controller.dart';
+import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
@@ -40,6 +41,26 @@ void main() {
       expect(find.byType(CaseListTemplate), findsOneWidget);
     });
 
+    testWidgets(
+        'while cases are still loading, renders the template (not a bypass '
+        'Scaffold) -- app bar stays absent at the wide tier', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pump();
+
+      expect(find.byType(CaseListTemplate), findsOneWidget);
+      expect(find.byType(AppLoadingIndicator), findsOneWidget);
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+      expect(scaffold.appBar, isNull);
+
+      await tester.pumpAndSettle();
+    });
+
     testWidgets('renders Cases in app bar', (tester) async {
       await tester.pumpWidget(wrap(const CaseListPage()));
       await tester.pumpAndSettle();
@@ -76,7 +97,7 @@ void main() {
     testWidgets('tapping a worklist row opens Study Review for that case',
         (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -144,12 +165,12 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
-    // ── Responsive breakpoint: expandedMinWidth (worklist table) ────────────
+    // ── Responsive breakpoint: threePaneMinWidth (worklist table) ───────────
 
     testWidgets('expanded: renders CaseWorklistTable slot, no grid or list',
         (tester) async {
       tester.view.physicalSize =
-          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -213,6 +234,68 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SettingsPage), findsOneWidget);
+      expect(find.byType(CaseListPage), findsNothing);
+    });
+
+    // ── Primary nav drawer (expanded/ultrawide) ──────────────────────────
+
+    void setWideSize(WidgetTester tester) {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
+    testWidgets('drawer: tapping Home pops back to the root', (tester) async {
+      setWideSize(tester);
+      await tester.pumpWidget(await wrapWithNav(
+        Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CaseListPage()),
+                ),
+                child: const Text('go to cases'),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('go to cases'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CaseListPage), findsOneWidget);
+
+      // No app bar/hamburger at this tier anymore -- MenuRail's own "Menu"
+      // trigger opens it instead.
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+        of: find.byType(Drawer),
+        matching: find.text('Home'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CaseListPage), findsNothing);
+    });
+
+    testWidgets('drawer: tapping Chat replaces with ChatPage', (tester) async {
+      setWideSize(tester);
+      await tester.pumpWidget(await wrapWithNav(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+        of: find.byType(Drawer),
+        matching: find.text('Chat'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ChatPage), findsOneWidget);
       expect(find.byType(CaseListPage), findsNothing);
     });
   });

@@ -10,6 +10,8 @@ import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
+import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
+import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
@@ -31,22 +33,38 @@ class CaseListPage extends ConsumerWidget {
 
   static final _appBar = AppBar(title: const Text('Cases'));
 
+  void _onPrimaryDestinationSelected(BuildContext context, int i) {
+    switch (i) {
+      case 0:
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      case 1:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ChatPage()),
+        );
+      case 3:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SettingsPage()),
+        );
+    }
+  }
+
   Widget _navBar(BuildContext context) => AppNavBar(
         selectedIndex: 2,
-        onDestinationSelected: (i) {
-          switch (i) {
-            case 0:
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            case 1:
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const ChatPage()),
-              );
-            case 3:
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
-              );
-          }
-        },
+        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+      );
+
+  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+        selectedIndex: 2,
+        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+      );
+
+  /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
+  /// ends up inside once CaseListTemplate places it, not this page's own
+  /// context, which sits above it.
+  Widget _menuRail(BuildContext context) => Builder(
+        builder: (context) => MenuRail(
+          onMenuTap: () => Scaffold.of(context).openDrawer(),
+        ),
       );
 
   void _openCase(BuildContext context, CaseSummary c) {
@@ -75,16 +93,26 @@ class CaseListPage extends ConsumerWidget {
             ),
             emptyState: const AppText('No cases available.'),
             navBar: _navBar(context),
+            primaryNavDrawer: _primaryNavDrawer(context),
+            menuRail: _menuRail(context),
           ),
-          loading: () => Scaffold(
+          loading: () => CaseListTemplate(
             appBar: _appBar,
-            body: const Center(child: AppLoadingIndicator()),
-            bottomNavigationBar: _navBar(context),
+            caseSlots: const [],
+            worklistTable: const SizedBox.shrink(),
+            emptyState: const AppLoadingIndicator(),
+            navBar: _navBar(context),
+            primaryNavDrawer: _primaryNavDrawer(context),
+            menuRail: _menuRail(context),
           ),
-          error: (error, stackTrace) => Scaffold(
+          error: (error, stackTrace) => CaseListTemplate(
             appBar: _appBar,
-            body: Center(child: Text('Could not load cases: $error')),
-            bottomNavigationBar: _navBar(context),
+            caseSlots: const [],
+            worklistTable: const SizedBox.shrink(),
+            emptyState: AppText('Could not load cases: $error'),
+            navBar: _navBar(context),
+            primaryNavDrawer: _primaryNavDrawer(context),
+            menuRail: _menuRail(context),
           ),
         );
   }

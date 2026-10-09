@@ -31,7 +31,7 @@ class UploadTemplate extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            if (statusBar != null) statusBar!,
+            ?statusBar,
             Expanded(
               child: Center(
                 child: SingleChildScrollView(

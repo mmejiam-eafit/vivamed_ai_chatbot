@@ -180,5 +180,68 @@ void main() {
       expect(find.byType(CaseListPage), findsOneWidget);
       expect(find.byType(SettingsPage), findsNothing);
     });
+
+    // ── Primary nav drawer (expanded/ultrawide) ──────────────────────────
+
+    void setWideSize(WidgetTester tester) {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
+    testWidgets('drawer: tapping Home pops back to the root', (tester) async {
+      setWideSize(tester);
+      await tester.pumpWidget(await wrapForNav(
+        Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                ),
+                child: const Text('go to settings'),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('go to settings'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsPage), findsOneWidget);
+
+      // No app bar/hamburger at this tier anymore -- MenuRail's own "Menu"
+      // trigger opens it instead.
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+        of: find.byType(Drawer),
+        matching: find.text('Home'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsPage), findsNothing);
+    });
+
+    testWidgets('drawer: tapping Studies replaces with CaseListPage',
+        (tester) async {
+      setWideSize(tester);
+      await tester.pumpWidget(await wrapForNav(const SettingsPage()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Menu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+        of: find.byType(Drawer),
+        matching: find.text('Studies'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CaseListPage), findsOneWidget);
+      expect(find.byType(SettingsPage), findsNothing);
+    });
   });
 }

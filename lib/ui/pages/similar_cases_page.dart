@@ -6,11 +6,16 @@ import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
-import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
+import 'package:radiologist_helper/ui/molecules/similar_cases_count_header.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
+import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
+import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
+import 'package:radiologist_helper/ui/pages/case_list_page.dart';
+import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
@@ -37,18 +42,48 @@ class SimilarCasesPage extends ConsumerWidget {
     );
   }
 
+  // Not one of the 4 primary destinations itself (a drill-down page, like
+  // Study Review), so every case navigates away -- none omitted as a no-op.
+  void _onPrimaryDestinationSelected(BuildContext context, int i) {
+    switch (i) {
+      case 0:
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      case 1:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ChatPage()),
+        );
+      case 2:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const CaseListPage()),
+        );
+      case 3:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SettingsPage()),
+        );
+    }
+  }
+
+  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+        selectedIndex: null,
+        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+      );
+
+  /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
+  /// ends up inside once CaseListTemplate places it, not this page's own
+  /// context, which sits above it.
+  Widget _menuRail(BuildContext context) => Builder(
+        builder: (context) => MenuRail(
+          onMenuTap: () => Scaffold.of(context).openDrawer(),
+        ),
+      );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appBar = AppBar(title: const Text('Similar Cases'));
     return ref.watch(similarCasesProvider(caseId)).when(
           data: (cases) => CaseListTemplate(
             appBar: appBar,
-            header: AppText(
-              '${cases.length} similar '
-              '${cases.length == 1 ? 'case' : 'cases'} found',
-              style: AppTypography.headingSm,
-              color: context.colors.textPrimary,
-            ),
+            header: SimilarCasesCountHeader(count: cases.length),
             caseSlots: [
               for (final c in cases)
                 StudyInfoCard(
@@ -63,14 +98,24 @@ class SimilarCasesPage extends ConsumerWidget {
               onCaseTap: (c) => _openCase(context, c),
             ),
             emptyState: const AppText('No similar cases found.'),
+            primaryNavDrawer: _primaryNavDrawer(context),
+            menuRail: _menuRail(context),
           ),
-          loading: () => Scaffold(
+          loading: () => CaseListTemplate(
             appBar: appBar,
-            body: const Center(child: AppLoadingIndicator()),
+            caseSlots: const [],
+            worklistTable: const SizedBox.shrink(),
+            emptyState: const AppLoadingIndicator(),
+            primaryNavDrawer: _primaryNavDrawer(context),
+            menuRail: _menuRail(context),
           ),
-          error: (error, stackTrace) => Scaffold(
+          error: (error, stackTrace) => CaseListTemplate(
             appBar: appBar,
-            body: Center(child: Text('Could not load similar cases: $error')),
+            caseSlots: const [],
+            worklistTable: const SizedBox.shrink(),
+            emptyState: AppText('Could not load similar cases: $error'),
+            primaryNavDrawer: _primaryNavDrawer(context),
+            menuRail: _menuRail(context),
           ),
         );
   }
@@ -78,5 +123,6 @@ class SimilarCasesPage extends ConsumerWidget {
 
 // ── Previews ──────────────────────────────────────────────────────────────────
 
-@Preview(name: 'similar cases', size: Size(900, 700), wrapper: previewWrapperFull)
+@Preview(
+    name: 'similar cases', size: Size(900, 700), wrapper: previewWrapperFull)
 Widget previewSimilarCasesPage() => const SimilarCasesPage(caseId: 'case-1');

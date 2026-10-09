@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/collapsed_nav_rail.dart';
+import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/draggable_findings_sheet.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 
@@ -290,7 +291,7 @@ void main() {
       expect(find.byType(Row), findsWidgets);
     });
 
-    testWidgets('wide: drawer is inline and Scaffold.drawer is null',
+    testWidgets('wide: drawerWide is inline, drawer is ignored, no app bar',
         (tester) async {
       tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -301,16 +302,22 @@ void main() {
         MaterialApp(
           theme: buildAppTheme(),
           home: ChatTemplate(
-            appBar: AppBar(),
+            appBar: AppBar(title: const Text('Chat')),
             chatPanel: const SizedBox(),
-            drawer: const Text('drawer-inline'),
+            drawer: const Text('drawer-narrow-only'),
+            drawerWide: const Text('drawer-inline-wide'),
           ),
         ),
       );
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      // Scaffold.drawer is the primary nav drawer slot (unset here, so
+      // null) -- the conversation drawer renders inline regardless of it.
       expect(scaffold.drawer, isNull);
-      expect(find.text('drawer-inline'), findsOneWidget);
+      expect(find.text('drawer-inline-wide'), findsOneWidget);
+      expect(find.text('drawer-narrow-only'), findsNothing);
+      expect(scaffold.appBar, isNull);
+      expect(find.text('Chat'), findsNothing);
     });
 
     // ── Tier boundaries ─────────────────────────────────────────────────────
@@ -418,31 +425,35 @@ void main() {
           theme: buildAppTheme(),
           home: ChatTemplate(
             appBar: AppBar(),
-            chatPanel: const SizedBox(),
+            // Keyed so the padding assertion below can find its own specific
+            // ancestor Padding -- ConversationDrawer's SafeArea now also
+            // renders a Padding earlier in the tree (zero, from the test's
+            // default MediaQuery), which "the first Padding under the
+            // template" would otherwise match instead.
+            chatPanel: const SizedBox(key: Key('chat-panel-placeholder')),
             findingsPanel: const SizedBox(),
-            drawer: const SizedBox(),
+            // A real ConversationDrawer, not a placeholder: the width
+            // contract below is now the organism's own (isWide), not
+            // something the template wraps it in.
+            drawerWide:
+                const ConversationDrawer(conversations: [], isWide: true),
           ),
         ),
       );
 
       final padded = tester.widget<Padding>(
         find
-            .descendant(
-                of: find.byType(ChatTemplate), matching: find.byType(Padding))
+            .ancestor(
+                of: find.byKey(const Key('chat-panel-placeholder')),
+                matching: find.byType(Padding))
             .first,
       );
       final insets = padded.padding as EdgeInsets;
       expect(insets.left, AppSpacing.lg);
       expect(insets.top, AppSpacing.lg);
 
-      final drawerSizedBox = tester.widget<SizedBox>(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is SizedBox &&
-              widget.width == NavigationTokens.sideNavWidth,
-        ),
-      );
-      expect(drawerSizedBox.width, NavigationTokens.sideNavWidth);
+      final drawer = tester.widget<Drawer>(find.byType(Drawer));
+      expect(drawer.width, NavigationTokens.sideNavWidth);
     });
 
     // ── navBar slot ──────────────────────────────────────────────────────
@@ -492,8 +503,9 @@ void main() {
       expect(find.text('nav-bar-slot'), findsOneWidget);
     });
 
-    testWidgets('wide: navBar is passed to Scaffold.bottomNavigationBar',
-        (tester) async {
+    testWidgets(
+        'wide: navBar is NOT shown even when provided -- primaryNavDrawer '
+        'replaces it', (tester) async {
       tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -510,7 +522,60 @@ void main() {
         ),
       );
 
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNull);
+      expect(find.text('nav-bar-slot'), findsNothing);
+    });
+
+    testWidgets('wide: primaryNavDrawer is wired as Scaffold.drawer',
+        (tester) async {
+      tester.view.physicalSize = const Size(1200 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            primaryNavDrawer: const Text('primary-nav-drawer-slot'),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.drawer, isNotNull);
+      // No app bar at this tier to show a DrawerButton in anymore -- the
+      // menu trigger lives at the bottom of drawerWide/menuRail instead.
+      expect(scaffold.appBar, isNull);
+    });
+
+    testWidgets('compact/rail: primaryNavDrawer is ignored, navBar still shows',
+        (tester) async {
+      // Below the wide tier, primaryNavDrawer isn't wired to anything --
+      // navBar keeps rendering exactly as before this change.
+      tester.view.physicalSize =
+          const Size(AppLayout.mediumMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: ChatTemplate(
+            appBar: AppBar(),
+            chatPanel: const SizedBox(),
+            navBar: const Text('nav-bar-slot'),
+            primaryNavDrawer: const Text('primary-nav-drawer-slot'),
+          ),
+        ),
+      );
+
       expect(find.text('nav-bar-slot'), findsOneWidget);
+      expect(find.text('primary-nav-drawer-slot'), findsNothing);
     });
 
     testWidgets('navBar is absent when not provided', (tester) async {
@@ -523,6 +588,82 @@ void main() {
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.bottomNavigationBar, isNull);
+    });
+
+    // ── Slots fill their cell ─────────────────────────────────────────────────
+    //
+    // A bare ColoredBox has no size of its own: it takes the smallest size its
+    // constraints allow. That makes it show exactly what the template hands a
+    // slot -- unlike Text or a ListView, which size themselves and so hid a
+    // loose cross-axis constraint that collapsed it to zero.
+    group('slots fill their cell, whatever they hold', () {
+      const chatKey = Key('chat-slot');
+      const findingsKey = Key('findings-slot');
+
+      Future<void> pumpAt(WidgetTester tester, double width) async {
+        tester.view.physicalSize = Size(width, 900);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: ChatTemplate(
+              appBar: AppBar(),
+              chatPanel: const ColoredBox(key: chatKey, color: Colors.red),
+              findingsPanel:
+                  const ColoredBox(key: findingsKey, color: Colors.blue),
+            ),
+          ),
+        );
+      }
+
+      Size sizeOf(WidgetTester tester, Key key) =>
+          tester.getSize(find.byKey(key));
+
+      testWidgets('wide: chat fills the column beside the findings panel',
+          (tester) async {
+        await pumpAt(tester, 1280);
+
+        // Row: chat column (the rest) | findings (panelMaxWidth). No app bar
+        // here, so the body is the full 900px; the chat column pads by lg.
+        expect(
+          sizeOf(tester, chatKey),
+          const Size(1280 - AppLayout.panelMaxWidth - 2 * AppSpacing.lg,
+              900 - 2 * AppSpacing.lg),
+        );
+        expect(sizeOf(tester, findingsKey),
+            const Size(AppLayout.panelMaxWidth, 900));
+      });
+
+      testWidgets('medium: chat fills the space beside the collapsed rail',
+          (tester) async {
+        await pumpAt(tester, 800);
+
+        // App bar on top (kToolbarHeight), the 64px rail on the left, lg
+        // padding around the chat column. Findings are an end drawer here, so
+        // not on screen until opened.
+        expect(
+          sizeOf(tester, chatKey),
+          const Size(
+              800 - NavigationTokens.sideNavCollapsedWidth - 2 * AppSpacing.lg,
+              900 - kToolbarHeight - 2 * AppSpacing.lg),
+        );
+        expect(find.byKey(findingsKey), findsNothing);
+      });
+
+      testWidgets(
+          'compact: chat fills the body, findings fill the sheet\'s width',
+          (tester) async {
+        await pumpAt(tester, 390);
+
+        expect(sizeOf(tester, chatKey), const Size(390, 900 - kToolbarHeight));
+        // The findings sheet is as wide as the screen; its height follows the
+        // drag position, so only that it has some is asserted.
+        final findings = sizeOf(tester, findingsKey);
+        expect(findings.width, 390);
+        expect(findings.height, greaterThan(0));
+      });
     });
   });
 }

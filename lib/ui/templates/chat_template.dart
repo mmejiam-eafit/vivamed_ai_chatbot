@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/core/preview_utils.dart';
-import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/collapsed_nav_rail.dart';
 import 'package:radiologist_helper/ui/organisms/draggable_findings_sheet.dart';
 
@@ -14,15 +11,32 @@ class ChatTemplate extends StatelessWidget {
     this.findingsPanel,
     this.statusBar,
     this.drawer,
+    this.drawerWide,
     this.navBar,
+    this.primaryNavDrawer,
   });
 
   final PreferredSizeWidget appBar;
   final Widget chatPanel;
   final Widget? findingsPanel;
   final Widget? statusBar;
+
+  /// Conversation history at compact/medium (Scaffold.drawer overlay/rail
+  /// trigger) -- unused at expanded/ultrawide, which reads [drawerWide]
+  /// instead.
   final Widget? drawer;
+
+  /// Conversation history's expanded/ultrawide variant -- same data as
+  /// [drawer], but its bottom row opens the primary nav menu instead of
+  /// Settings directly (there's no app bar at this tier to host a hamburger
+  /// in anymore). Rendered inline in the wide Row, same as [drawer] was.
+  final Widget? drawerWide;
+
   final Widget? navBar;
+
+  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// ultrawide, replacing navBar there -- see DT §9.5 desktop/web revisit.
+  final Widget? primaryNavDrawer;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +61,15 @@ class ChatTemplate extends StatelessWidget {
     );
   }
 
+  // Every Column/Row below that holds a slot stretches its cross axis. The
+  // default (center) hands each child a *loose* constraint there, so a slot
+  // only filled its cell if whatever was passed in happened to fill it too --
+  // a content-less or intrinsically-sized widget collapsed to zero or to its
+  // own size. A template's slot should fill its cell regardless.
   Widget _chatColumn() => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (statusBar != null) statusBar!,
+          ?statusBar,
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
@@ -62,12 +82,13 @@ class ChatTemplate extends StatelessWidget {
   Widget _buildWide(AppColorsData colors) {
     return Scaffold(
       backgroundColor: colors.surfacePage,
-      appBar: appBar,
-      bottomNavigationBar: navBar,
+      // No app bar at this tier -- the menu trigger lives at the bottom of
+      // drawerWide (or inside the drawer itself) instead.
+      drawer: primaryNavDrawer,
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (drawer != null)
-            SizedBox(width: NavigationTokens.sideNavWidth, child: drawer),
+          ?drawerWide,
           Expanded(child: _chatColumn()),
           if (findingsPanel != null)
             SizedBox(width: AppLayout.panelMaxWidth, child: findingsPanel!),
@@ -83,8 +104,9 @@ class ChatTemplate extends StatelessWidget {
       drawer: drawer,
       bottomNavigationBar: navBar,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (statusBar != null) statusBar!,
+          ?statusBar,
           Expanded(child: chatPanel),
         ],
       ),
@@ -113,6 +135,7 @@ class ChatTemplate extends StatelessWidget {
       // building it -- required for openDrawer()/openEndDrawer() to find it.
       body: Builder(
         builder: (context) => Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CollapsedNavRail(
               onMenuTap: () => Scaffold.of(context).openDrawer(),
@@ -127,33 +150,3 @@ class ChatTemplate extends StatelessWidget {
     );
   }
 }
-
-// ── Previews ──────────────────────────────────────────────────────────────────
-
-Widget _placeholder(String label, Color color) => ColoredBox(
-      color: color,
-      child: Center(
-        child: Text(label, style: const TextStyle(color: Colors.white)),
-      ),
-    );
-
-AppNavBar _previewNavBar() =>
-    AppNavBar(selectedIndex: 1, onDestinationSelected: (_) {});
-
-@Preview(name: 'wide', size: Size(1024, 768), wrapper: previewWrapperFull)
-Widget previewChatTemplateWide() => ChatTemplate(
-      appBar: AppBar(title: const Text('Chat')),
-      chatPanel: _placeholder('Chat Panel', Colors.indigo.shade700),
-      findingsPanel: _placeholder('Findings Panel', Colors.teal.shade700),
-      statusBar: _placeholder('Status Bar', Colors.blueGrey.shade900),
-      drawer: _placeholder('Drawer', Colors.blueGrey.shade700),
-      navBar: _previewNavBar(),
-    );
-
-@Preview(name: 'narrow', size: Size(390, 844), wrapper: previewWrapperFull)
-Widget previewChatTemplateNarrow() => ChatTemplate(
-      appBar: AppBar(title: const Text('Chat')),
-      chatPanel: _placeholder('Chat Panel', Colors.indigo.shade700),
-      findingsPanel: _placeholder('Findings Panel', Colors.teal.shade700),
-      navBar: _previewNavBar(),
-    );

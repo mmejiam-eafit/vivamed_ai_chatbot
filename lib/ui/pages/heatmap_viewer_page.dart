@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
+import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/atoms/lung_heatmap_overlay.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/templates/heatmap_viewer_template.dart';
@@ -24,28 +25,33 @@ class _HeatmapViewerPageState extends ConsumerState<HeatmapViewerPage> {
   Widget build(BuildContext context) {
     final appBar = AppBar(title: const Text('Heatmap'));
     final heatmapAsync = ref.watch(heatmapProvider(widget.findingId));
-    final heatmapData = heatmapAsync.value;
 
-    if (heatmapData == null) {
-      return Scaffold(
+    return heatmapAsync.when(
+      loading: () => Scaffold(
         appBar: appBar,
         body: const Center(child: AppLoadingIndicator()),
-      );
-    }
-
-    return HeatmapViewerTemplate(
-      appBar: appBar,
-      baseImage: AppImage(url: heatmapData.baseImageUrl, fit: BoxFit.cover),
-      heatmapOverlay: Opacity(
-        opacity: _opacity,
-        child: LungHeatmapOverlay(
-          color: heatmapData.overlayColor,
-          focusAlignment: heatmapData.focusAlignment,
-        ),
       ),
-      opacityControl: Slider(
-        value: _opacity,
-        onChanged: (value) => setState(() => _opacity = value),
+      error: (error, stackTrace) => Scaffold(
+        appBar: appBar,
+        body: Center(child: AppText('Could not load heatmap: $error')),
+      ),
+      data: (heatmapData) => HeatmapViewerTemplate(
+        appBar: appBar,
+        // contain, inside a frame the template sizes to the image's own
+        // ratio: the whole study is shown, never cropped (DL D-020).
+        baseImage: AppImage(url: heatmapData.baseImageUrl, fit: BoxFit.contain),
+        imageAspectRatio: heatmapData.imageAspectRatio,
+        heatmapOverlay: Opacity(
+          opacity: _opacity,
+          child: LungHeatmapOverlay(
+            color: heatmapData.overlayColor,
+            focusAlignment: heatmapData.focusAlignment,
+          ),
+        ),
+        opacityControl: Slider(
+          value: _opacity,
+          onChanged: (value) => setState(() => _opacity = value),
+        ),
       ),
     );
   }

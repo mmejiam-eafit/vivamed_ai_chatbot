@@ -10,6 +10,8 @@ import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/molecules/theme_mode_selector.dart';
 import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
+import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
+import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
@@ -24,22 +26,38 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   int _selectedIndex = 0;
 
+  void _onPrimaryDestinationSelected(BuildContext context, int i) {
+    switch (i) {
+      case 0:
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      case 1:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ChatPage()),
+        );
+      case 2:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const CaseListPage()),
+        );
+    }
+  }
+
   Widget _navBar(BuildContext context) => AppNavBar(
         selectedIndex: 3,
-        onDestinationSelected: (i) {
-          switch (i) {
-            case 0:
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            case 1:
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const ChatPage()),
-              );
-            case 2:
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const CaseListPage()),
-              );
-          }
-        },
+        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+      );
+
+  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+        selectedIndex: 3,
+        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+      );
+
+  /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
+  /// ends up inside once SettingsTemplate places it, not this page's own
+  /// context, which sits above it.
+  Widget _menuRail(BuildContext context) => Builder(
+        builder: (context) => MenuRail(
+          onMenuTap: () => Scaffold.of(context).openDrawer(),
+        ),
       );
 
   @override
@@ -51,6 +69,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       selectedIndex: _selectedIndex,
       onSectionSelected: (i) => setState(() => _selectedIndex = i),
       navBar: _navBar(context),
+      primaryNavDrawer: _primaryNavDrawer(context),
+      menuRail: _menuRail(context),
       sections: [
         SettingsSection(
           title: 'Account',

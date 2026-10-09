@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/ui/atoms/app_divider.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
@@ -24,6 +25,8 @@ class SettingsTemplate extends StatelessWidget {
     this.selectedIndex = 0,
     this.onSectionSelected,
     this.navBar,
+    this.primaryNavDrawer,
+    this.menuRail,
   });
 
   final PreferredSizeWidget appBar;
@@ -35,22 +38,36 @@ class SettingsTemplate extends StatelessWidget {
   final ValueChanged<int>? onSectionSelected;
   final Widget? navBar;
 
+  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// ultrawide, replacing navBar there -- see DT §9.5 desktop/web revisit.
+  final Widget? primaryNavDrawer;
+
+  /// Narrow persistent menu trigger at expanded/ultrawide -- this template
+  /// has no conversation-history drawer to repurpose (unlike Chat/Study
+  /// Review), so a dedicated MenuRail carries the trigger instead. No app
+  /// bar at this tier to host a hamburger in anymore.
+  final Widget? menuRail;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.colors.surfacePage,
-      appBar: appBar,
-      bottomNavigationBar: navBar,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final tier = constraints.maxWidth.layoutTier;
-          if (tier == AppLayoutTier.expanded ||
-              tier == AppLayoutTier.ultrawide) {
-            return _buildTwoColumn(context);
-          }
-          return _buildSingleColumn(isCompact: tier == AppLayoutTier.compact);
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tier = constraints.maxWidth.layoutTier;
+        // Shared no-chrome boundary with every other nav-shell template --
+        // matches Chat/Study Review's three-pane fit requirement rather than
+        // AppLayoutTier.expanded, so the app bar disappears at the same
+        // width everywhere (DT §9.5).
+        final isWide = constraints.maxWidth >= AppLayout.threePaneMinWidth;
+        return Scaffold(
+          backgroundColor: context.colors.surfacePage,
+          appBar: isWide ? null : appBar,
+          bottomNavigationBar: isWide ? null : navBar,
+          drawer: isWide ? primaryNavDrawer : null,
+          body: isWide
+              ? _buildTwoColumn(context)
+              : _buildSingleColumn(isCompact: tier == AppLayoutTier.compact),
+        );
+      },
     );
   }
 
@@ -61,7 +78,7 @@ class SettingsTemplate extends StatelessWidget {
         vertical: AppSpacing.xl,
       ),
       itemCount: sections.length,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xxl),
+      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xxl),
       itemBuilder: (_, i) =>
           SectionCard(title: sections[i].title, child: sections[i].child),
     );
@@ -78,8 +95,8 @@ class SettingsTemplate extends StatelessWidget {
 
   // Every section renders together in one continuous scroll -- the index
   // rail highlights and jumps to a section, it no longer hides the other two
-  // (issues.md: Settings should keep "a continuous feel", not read as three
-  // separate pages). Section titles are literal strings, so a
+  // (Settings should keep a continuous feel, not read as three separate
+  // pages). Section titles are literal strings, so a
   // GlobalObjectKey built from one is stable (equal) across rebuilds without
   // any extra state -- unlike a fresh GlobalKey(), which would be a new
   // identity every time this method reruns and would break the very next
@@ -92,6 +109,7 @@ class SettingsTemplate extends StatelessWidget {
     ];
     return Row(
       children: [
+        ?menuRail,
         SizedBox(
           width: 200,
           child: ListView.builder(
@@ -111,11 +129,7 @@ class SettingsTemplate extends StatelessWidget {
             ),
           ),
         ),
-        VerticalDivider(
-          width: 1,
-          thickness: 1,
-          color: context.colors.borderSubdued,
-        ),
+        const AppDivider(axis: Axis.vertical, width: 1),
         Expanded(
           child: Center(
             child: ConstrainedBox(
@@ -123,7 +137,7 @@ class SettingsTemplate extends StatelessWidget {
               child: ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 itemCount: sections.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(height: AppSpacing.xxl),
                 itemBuilder: (context, i) => SectionCard(
                   key: sectionKeys[i],
@@ -182,7 +196,7 @@ Widget previewSettingsTemplate() => SettingsTemplate(
       navBar: AppNavBar(selectedIndex: 3, onDestinationSelected: (_) {}),
     );
 
-@Preview(name: 'settings — expanded', size: Size(1024, 768), wrapper: previewWrapperFull)
+@Preview(name: 'settings — expanded', size: Size(1120, 768), wrapper: previewWrapperFull)
 Widget previewSettingsTemplateExpanded() => SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
       sections: _previewSections(),

@@ -149,14 +149,14 @@ void main() {
 
     // ── Expanded and up: index + content (DT §9.5) ───────────────────────────
 
-    group('expanded and up (>= expandedMinWidth)', () {
+    group('expanded and up (>= threePaneMinWidth)', () {
       Future<void> pumpExpanded(
         WidgetTester tester, {
         int selectedIndex = 0,
         ValueChanged<int>? onSectionSelected,
       }) async {
         tester.view.physicalSize =
-            const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+            const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
         tester.view.devicePixelRatio = 3.0;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
@@ -179,8 +179,8 @@ void main() {
         await pumpExpanded(tester);
         // Each title appears twice: once in the index rail, once as its own
         // SectionCard's heading -- all three sections render together now,
-        // not just the selected one (issues.md: a continuous feel, not
-        // three separate pages).
+        // not just the selected one (Settings should keep a continuous feel,
+        // not three separate pages).
         expect(find.text('Account'), findsNWidgets(2));
         expect(find.text('Display'), findsNWidgets(2));
         expect(find.text('About'), findsNWidgets(2));
@@ -235,6 +235,26 @@ void main() {
       });
     });
 
+    testWidgets(
+        'expandedMinWidth (below threePaneMinWidth): still single-column, '
+        'each title once -- the exact gap this boundary alignment closes',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(appBar: AppBar(), sections: threeSections),
+        ),
+      );
+      expect(find.text('Account'), findsOneWidget);
+      expect(find.byType(SectionIndexTile), findsNothing);
+    });
+
     // ── Dark theme ─────────────────────────────────────────────────────────
 
     testWidgets('resolves against the dark theme', (tester) async {
@@ -276,6 +296,145 @@ void main() {
       );
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       expect(scaffold.bottomNavigationBar, isNull);
+    });
+
+    // ── primaryNavDrawer: expanded/ultrawide only (desktop/web revisit) ────
+
+    testWidgets(
+        'threePaneMinWidth: navBar is NOT shown even when provided -- '
+        'primaryNavDrawer replaces it', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(),
+            sections: threeSections,
+            navBar: const Text('nav-bar-slot'),
+          ),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNull);
+      expect(find.text('nav-bar-slot'), findsNothing);
+    });
+
+    testWidgets(
+        'threePaneMinWidth: primaryNavDrawer is wired as Scaffold.drawer, '
+        'no app bar', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(title: const Text('Settings')),
+            sections: threeSections,
+            primaryNavDrawer: const Text('primary-nav-drawer-slot'),
+          ),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.drawer, isNotNull);
+      // No app bar at this tier to show a DrawerButton in anymore -- the
+      // menu trigger lives at the bottom of menuRail instead.
+      expect(scaffold.appBar, isNull);
+      expect(find.text('Settings'), findsNothing);
+    });
+
+    testWidgets('threePaneMinWidth: menuRail renders, absent below it',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(),
+            sections: threeSections,
+            menuRail: const Text('menu-rail-slot'),
+          ),
+        ),
+      );
+      expect(find.text('menu-rail-slot'), findsOneWidget);
+    });
+
+    testWidgets(
+        'expandedMinWidth (below threePaneMinWidth): still shows app bar '
+        'and navBar, not primaryNavDrawer/menuRail -- the exact gap this '
+        'boundary alignment closes', (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(title: const Text('Settings')),
+            sections: threeSections,
+            navBar: const Text('nav-bar-slot'),
+            primaryNavDrawer: const Text('primary-nav-drawer-slot'),
+            menuRail: const Text('menu-rail-slot'),
+          ),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.appBar, isNotNull);
+      expect(scaffold.bottomNavigationBar, isNotNull);
+      expect(scaffold.drawer, isNull);
+      expect(find.text('menu-rail-slot'), findsNothing);
+    });
+
+    testWidgets('compact/medium: menuRail is ignored', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(),
+            sections: threeSections,
+            menuRail: const Text('menu-rail-slot'),
+          ),
+        ),
+      );
+      expect(find.text('menu-rail-slot'), findsNothing);
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.appBar, isNotNull);
+    });
+
+    testWidgets(
+        'compact/medium: primaryNavDrawer is ignored, navBar still shows',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: SettingsTemplate(
+            appBar: AppBar(),
+            sections: threeSections,
+            navBar: const Text('nav-bar-slot'),
+            primaryNavDrawer: const Text('primary-nav-drawer-slot'),
+          ),
+        ),
+      );
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.bottomNavigationBar, isNotNull);
+      expect(scaffold.drawer, isNull);
+      expect(find.text('primary-nav-drawer-slot'), findsNothing);
     });
   });
 }
