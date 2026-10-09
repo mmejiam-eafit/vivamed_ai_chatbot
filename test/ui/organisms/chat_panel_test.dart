@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/chat_input.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 
 void main() {
@@ -90,5 +91,26 @@ void main() {
     ));
     final divider = tester.widget<Divider>(find.byType(Divider));
     expect(divider.color, AppColorsData.dark.borderSubdued);
+  });
+
+  // ── Layout ─────────────────────────────────────────────────────────────────
+
+  testWidgets('messageList fills the panel\'s width whatever it holds',
+      (tester) async {
+    // A bare ColoredBox takes the smallest size its constraints allow, so it
+    // shows what the panel hands the slot (Text and ListView size themselves).
+    await tester.pumpWidget(wrap(ChatPanel(
+      messageList: const ColoredBox(key: Key('list'), color: Colors.red),
+      controller: TextEditingController(),
+      onSubmit: () {},
+    )));
+
+    final panel = tester.getSize(find.byType(ChatPanel));
+    final input = tester.getSize(find.byType(ChatInput));
+    // The divider is 1px; the list takes everything above it and the input.
+    expect(
+      tester.getSize(find.byKey(const Key('list'))),
+      Size(panel.width, panel.height - 1 - input.height),
+    );
   });
 }

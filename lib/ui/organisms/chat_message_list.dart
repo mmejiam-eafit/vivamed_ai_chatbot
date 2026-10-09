@@ -61,7 +61,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
       controller: _scrollController,
       padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: itemCount,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
       itemBuilder: (context, index) {
         if (widget.isTyping && index == widget.messages.length) {
           return const Align(

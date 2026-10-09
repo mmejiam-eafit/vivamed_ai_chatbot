@@ -50,6 +50,8 @@ class DraggableFindingsSheet extends StatelessWidget {
           ),
         ),
         child: Column(
+          // Stretch so `child` fills the sheet's width whatever it holds.
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SingleChildScrollView(
               controller: scrollController,

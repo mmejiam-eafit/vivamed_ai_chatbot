@@ -25,6 +25,9 @@ class ChatPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      // Stretch so the messageList slot fills the panel's width whatever it
+      // holds (see ChatTemplate for why the default centering is wrong here).
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(child: messageList),
         Divider(height: 1, thickness: 1, color: context.colors.borderSubdued),

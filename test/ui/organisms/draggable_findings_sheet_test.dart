@@ -37,10 +37,12 @@ void main() {
   });
 
   Size visibleSheetSize(WidgetTester tester) => tester.getSize(
-        find.descendant(
-          of: find.byType(DraggableScrollableSheet),
-          matching: find.byType(Container),
-        ).first,
+        find
+            .descendant(
+              of: find.byType(DraggableScrollableSheet),
+              matching: find.byType(Container),
+            )
+            .first,
       );
 
   testWidgets('dragging the handle resizes the sheet', (tester) async {
@@ -57,7 +59,8 @@ void main() {
     // what actually resizes a DraggableScrollableSheet -- confirmed against
     // the Flutter SDK source: resizing goes through a real, attached
     // ScrollPosition's overscroll, not a size a widget can be told directly.
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -200));
+    await tester.drag(
+        find.byType(SingleChildScrollView), const Offset(0, -200));
     await tester.pumpAndSettle();
 
     final after = visibleSheetSize(tester).height;
@@ -84,11 +87,29 @@ void main() {
       const Text('findings-content'),
       brightness: Brightness.dark,
     ));
-    final container = tester.widget<Container>(find.descendant(
-      of: find.byType(DraggableScrollableSheet),
-      matching: find.byType(Container),
-    ).first);
+    final container = tester.widget<Container>(find
+        .descendant(
+          of: find.byType(DraggableScrollableSheet),
+          matching: find.byType(Container),
+        )
+        .first);
     final decoration = container.decoration! as BoxDecoration;
     expect(decoration.color, AppColorsData.dark.surface);
+  });
+
+  testWidgets('child fills the sheet\'s width whatever it holds',
+      (tester) async {
+    // A bare ColoredBox takes the smallest size its constraints allow, so it
+    // shows what the sheet hands its child (Text sizes itself).
+    await tester.pumpWidget(
+      wrap(const ColoredBox(key: Key('child'), color: Colors.red)),
+    );
+
+    // The sheet's own width (Material 3 caps a bottom sheet at 640 on a wide
+    // screen), not the screen's.
+    final sheet = tester.getSize(find.byType(DraggableScrollableSheet));
+    final child = tester.getSize(find.byKey(const Key('child')));
+    expect(child.width, sheet.width);
+    expect(child.height, greaterThan(0));
   });
 }
