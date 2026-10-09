@@ -25,6 +25,7 @@ build/
 .DS_Store
 
 # Android
+android/
 android/local.properties
 android/.gradle/
 android/key.properties
@@ -39,8 +40,10 @@ macos/.symlinks/
 web/build/
 
 # Windows / Linux desktop
+windows/
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugin_registrant.h
+linux/
 linux/flutter/generated_plugin_registrant.cc
 linux/flutter/generated_plugin_registrant.h
 
