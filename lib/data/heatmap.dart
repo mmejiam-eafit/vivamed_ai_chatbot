@@ -8,10 +8,17 @@ class HeatmapData {
   const HeatmapData({
     required this.baseImageUrl,
     required this.overlayColor,
+    required this.imageAspectRatio,
     this.focusAlignment = Alignment.center,
   });
 
   final String baseImageUrl;
+
+  /// Width divided by height of the base image. The viewer shows the whole
+  /// image at this ratio and lays the overlay out against the same frame, so
+  /// neither is cropped to fit the screen (DL D-020). A DICOM image always has
+  /// rows and columns, so a backend can supply this with the image.
+  final double imageAspectRatio;
   final Color overlayColor;
 
   /// Where within the lung silhouette the overlay's intensity peaks (see

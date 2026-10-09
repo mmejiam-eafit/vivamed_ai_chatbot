@@ -3,6 +3,9 @@ import 'package:radiologist_helper/data/heatmap.dart';
 
 const mockDefaultFindingId = 'finding-1';
 
+// Every base image here is square (1024x1024 films, an 800x800 placeholder), so
+// every ratio is 1.0.
+//
 // Opaque -- the page applies its own Opacity(opacity: sliderValue, ...)
 // wrapper on top (HeatmapViewerTemplate's documented contract), so baking an
 // alpha in here too would make the two controls fight each other.
@@ -17,38 +20,45 @@ final _mockHeatmaps = <String, HeatmapData>{
   // case-1 (images/case-1.png) -- Right lower lobe / cardiac silhouette.
   'finding-1': const HeatmapData(
     baseImageUrl: 'lib/data/mocks/images/case-1.png',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.red,
     focusAlignment: Alignment(-0.5, 0.55), // right lower lobe -> image-left, low
   ),
   'finding-2': const HeatmapData(
     baseImageUrl: 'lib/data/mocks/images/case-1.png',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.orange,
     focusAlignment: Alignment(-0.1, 0.15), // cardiac silhouette -> mediastinum
   ),
   // case-2 -- abdominal, not chest; keeps the placeholder + centered default.
   'finding-3': const HeatmapData(
     baseImageUrl: 'https://picsum.photos/seed/finding-3/800/800',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.yellow,
   ),
   // case-3 (images/case-3.png) -- Tension pneumothorax / right upper lobe nodule.
   'finding-4': const HeatmapData(
     baseImageUrl: 'lib/data/mocks/images/case-3.png',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.red,
     // No side named for this one -- centered/bilateral reads as plausible.
   ),
   'finding-5': const HeatmapData(
     baseImageUrl: 'lib/data/mocks/images/case-3.png',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.orange,
     focusAlignment: Alignment(-0.5, -0.5), // right upper lobe -> image-left, high
   ),
   // case-6 (images/case-6.png) -- Mild cardiomegaly / resolved consolidation.
   'finding-8': const HeatmapData(
     baseImageUrl: 'lib/data/mocks/images/case-6.png',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.orange,
     focusAlignment: Alignment(-0.1, 0.1), // cardiomegaly -> mediastinum
   ),
   'finding-9': const HeatmapData(
     baseImageUrl: 'lib/data/mocks/images/case-6.png',
+    imageAspectRatio: 1.0,
     overlayColor: Colors.yellow,
     focusAlignment: Alignment(-0.5, 0.55), // prior consolidation site, same as finding-1
   ),
