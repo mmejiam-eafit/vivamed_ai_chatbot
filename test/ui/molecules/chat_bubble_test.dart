@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/ui/atoms/app_avatar.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/molecules/case_reference_chip.dart';
 import 'package:radiologist_helper/ui/molecules/chat_bubble.dart';
 
 void _suppressNetworkImageErrors() {
@@ -185,7 +184,7 @@ void main() {
 
   testWidgets('renders no chips when caseReferences is null', (tester) async {
     await tester.pumpWidget(wrap(const ChatBubble(message: 'Hi', isUser: false)));
-    expect(find.byType(CaseReferenceChip), findsNothing);
+    expect(find.byIcon(Icons.folder_outlined), findsNothing);
   });
 
   testWidgets('renders one chip per case reference', (tester) async {
@@ -197,7 +196,7 @@ void main() {
         CaseReference(caseId: 'case-3', title: 'Chest CT — Lung Nodule'),
       ],
     )));
-    expect(find.byType(CaseReferenceChip), findsNWidgets(2));
+    expect(find.byIcon(Icons.folder_outlined), findsNWidgets(2));
     expect(find.text('Abdominal CT'), findsOneWidget);
     expect(find.text('Chest CT — Lung Nodule'), findsOneWidget);
   });
@@ -216,6 +215,43 @@ void main() {
     await tester.tap(find.text('Abdominal CT'));
     await tester.pump();
     expect(tapped, 'case-2');
+  });
+
+  testWidgets('chip hovers with textPrimary at hoverOverlayOpacity',
+      (tester) async {
+    await tester.pumpWidget(wrap(const ChatBubble(
+      message: 'I found a similar case.',
+      isUser: false,
+      caseReferences: [
+        CaseReference(caseId: 'case-2', title: 'Abdominal CT'),
+      ],
+    )));
+    final inkWell = tester.widget<InkWell>(find.ancestor(
+      of: find.text('Abdominal CT'),
+      matching: find.byType(InkWell),
+    ));
+    expect(
+      inkWell.hoverColor,
+      AppColorsData.light.textPrimary
+          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+    );
+  });
+
+  testWidgets('chip text resolves against the dark theme too', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildAppTheme(Brightness.dark),
+      home: const Scaffold(
+        body: ChatBubble(
+          message: 'I found a similar case.',
+          isUser: false,
+          caseReferences: [
+            CaseReference(caseId: 'case-2', title: 'Abdominal CT'),
+          ],
+        ),
+      ),
+    ));
+    final title = tester.widget<Text>(find.text('Abdominal CT'));
+    expect(title.style?.color, AppColorsData.dark.textOnAccent);
   });
 
   // ── Dark theme ─────────────────────────────────────────────────────────────

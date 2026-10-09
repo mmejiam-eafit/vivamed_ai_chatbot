@@ -10,147 +10,77 @@ void main() {
         home: Scaffold(body: child),
       );
 
+  // Every real caller (ConversationDrawer, MenuRail, PrimaryNavDrawer) passes
+  // its own background-tuned colors -- NavItem has no default left to fall
+  // back to, so tests that aren't about color specifically just need some
+  // distinguishable pair.
+  const selected = Color(0xFF654321);
+  const unselected = Color(0xFF123456);
+
   // ── Structure ──────────────────────────────────────────────────────────────
 
   testWidgets('icon is shown', (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(icon: Icons.home, label: 'Home')));
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      selectedColor: selected,
+      unselectedColor: unselected,
+    )));
     expect(find.byIcon(Icons.home), findsOneWidget);
   });
 
   testWidgets('label is shown', (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(icon: Icons.home, label: 'Home')));
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      selectedColor: selected,
+      unselectedColor: unselected,
+    )));
     expect(find.text('Home'), findsOneWidget);
   });
 
-  // ── Icon color ─────────────────────────────────────────────────────────────
+  // ── Color ──────────────────────────────────────────────────────────────────
+  // No more shared default to override -- selectedColor/unselectedColor are
+  // the only way a color is ever applied, so these are the whole contract.
 
-  testWidgets('unselected: icon uses bottomNavUnselected color', (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(
-      icon: Icons.home,
-      label: 'Home',
-      isSelected: false,
-    )));
-    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, AppColorsData.light.textMuted);
-  });
-
-  testWidgets('selected: icon uses bottomNavSelected color', (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(
-      icon: Icons.home,
-      label: 'Home',
-      isSelected: true,
-    )));
-    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, AppColorsData.light.iconAccent);
-  });
-
-  // ── Label color ────────────────────────────────────────────────────────────
-
-  testWidgets('unselected: label uses bottomNavUnselected color', (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(
-      icon: Icons.home,
-      label: 'Home',
-      isSelected: false,
-    )));
-    final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, AppColorsData.light.textMuted);
-  });
-
-  testWidgets('selected: label uses bottomNavSelected color', (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(
-      icon: Icons.home,
-      label: 'Home',
-      isSelected: true,
-    )));
-    final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, AppColorsData.light.iconAccent);
-  });
-
-  // ── Color overrides ────────────────────────────────────────────────────────
-
-  testWidgets('unselectedColor overrides the bottomNavUnselected default',
+  testWidgets('unselectedColor sets the icon, label, and hover color',
       (tester) async {
-    const override = Color(0xFF123456);
     await tester.pumpWidget(wrap(const NavItem(
       icon: Icons.home,
       label: 'Home',
-      unselectedColor: override,
+      selectedColor: selected,
+      unselectedColor: unselected,
     )));
     final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, override);
-    expect(icon.color, isNot(AppColorsData.light.textMuted));
+    expect(icon.color, unselected);
     final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, override);
+    expect(text.style?.color, unselected);
     final inkWell = tester.widget<InkWell>(find.byType(InkWell));
     expect(
       inkWell.hoverColor,
-      override.withValues(alpha: AppInteraction.hoverOverlayOpacity),
+      unselected.withValues(alpha: AppInteraction.hoverOverlayOpacity),
     );
   });
 
-  testWidgets('selectedColor overrides the bottomNavSelected default',
+  testWidgets(
+      'selectedColor sets the icon, label, and hover color when isSelected',
       (tester) async {
-    const override = Color(0xFF654321);
     await tester.pumpWidget(wrap(const NavItem(
       icon: Icons.home,
       label: 'Home',
       isSelected: true,
-      selectedColor: override,
+      selectedColor: selected,
+      unselectedColor: unselected,
     )));
     final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, override);
-    expect(icon.color, isNot(AppColorsData.light.iconAccent));
+    expect(icon.color, selected);
+    expect(icon.color, isNot(unselected));
     final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, override);
-  });
-
-  testWidgets('with no override, behavior is unchanged from bottomNav* defaults',
-      (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(icon: Icons.home, label: 'Home')));
-    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, AppColorsData.light.textMuted);
-  });
-
-  // ── Hover (gap 23) ─────────────────────────────────────────────────────────
-
-  testWidgets('unselected: hover tints textMuted at hoverOverlayOpacity',
-      (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(icon: Icons.home, label: 'Home')));
+    expect(text.style?.color, selected);
     final inkWell = tester.widget<InkWell>(find.byType(InkWell));
     expect(
       inkWell.hoverColor,
-      AppColorsData.light.textMuted
-          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
-    );
-  });
-
-  testWidgets('selected: hover tints iconAccent at hoverOverlayOpacity',
-      (tester) async {
-    await tester.pumpWidget(wrap(const NavItem(
-      icon: Icons.home,
-      label: 'Home',
-      isSelected: true,
-    )));
-    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
-    expect(
-      inkWell.hoverColor,
-      AppColorsData.light.iconAccent
-          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
-    );
-  });
-
-  testWidgets('hover color resolves against the dark theme', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: buildAppTheme(Brightness.dark),
-      home: const Scaffold(
-        body: NavItem(icon: Icons.home, label: 'Home'),
-      ),
-    ));
-    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
-    expect(
-      inkWell.hoverColor,
-      AppColorsData.dark.textMuted
-          .withValues(alpha: AppInteraction.hoverOverlayOpacity),
+      selected.withValues(alpha: AppInteraction.hoverOverlayOpacity),
     );
   });
 
@@ -159,22 +89,25 @@ void main() {
   // ── Touch target (DL §8.5, gap 14) ────────────────────────────────────────
 
   testWidgets('vertical layout meets the 44px floor', (tester) async {
-    await tester.pumpWidget(wrap(
-      const NavItem(icon: Icons.home, label: 'Home'),
-    ));
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      selectedColor: selected,
+      unselectedColor: unselected,
+    )));
     final size = tester.getSize(find.byType(FocusRing));
     expect(size.width, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
     expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
   });
 
   testWidgets('horizontal layout meets the 44px floor', (tester) async {
-    await tester.pumpWidget(wrap(
-      const NavItem(
-        icon: Icons.home,
-        label: 'Home',
-        layout: NavItemLayout.horizontal,
-      ),
-    ));
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.home,
+      label: 'Home',
+      layout: NavItemLayout.horizontal,
+      selectedColor: selected,
+      unselectedColor: unselected,
+    )));
     final size = tester.getSize(find.byType(FocusRing));
     expect(size.width, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
     expect(size.height, greaterThanOrEqualTo(AppInteraction.minTouchTarget));
@@ -185,6 +118,8 @@ void main() {
     await tester.pumpWidget(wrap(NavItem(
       icon: Icons.home,
       label: 'Home',
+      selectedColor: selected,
+      unselectedColor: unselected,
       onTap: () => called = true,
     )));
     await tester.tap(find.byType(InkWell).first);
@@ -196,7 +131,13 @@ void main() {
 
   testWidgets('focus ring is transparent when not focused', (tester) async {
     await tester.pumpWidget(wrap(
-      NavItem(icon: Icons.home, label: 'Home', onTap: () {}),
+      NavItem(
+        icon: Icons.home,
+        label: 'Home',
+        selectedColor: selected,
+        unselectedColor: unselected,
+        onTap: () {},
+      ),
     ));
     final ringContainer = tester.widget<Container>(find.ancestor(
       of: find.byType(InkWell),
@@ -213,6 +154,8 @@ void main() {
       NavItem(
         icon: Icons.home,
         label: 'Home',
+        selectedColor: selected,
+        unselectedColor: unselected,
         onTap: () {},
         focusNode: focusNode,
       ),
@@ -233,7 +176,13 @@ void main() {
     final focusNode = FocusNode();
     addTearDown(focusNode.dispose);
     await tester.pumpWidget(wrap(
-      NavItem(icon: Icons.home, label: 'Home', focusNode: focusNode),
+      NavItem(
+        icon: Icons.home,
+        label: 'Home',
+        selectedColor: selected,
+        unselectedColor: unselected,
+        focusNode: focusNode,
+      ),
     ));
     focusNode.requestFocus();
     await tester.pump();
@@ -255,6 +204,8 @@ void main() {
         body: NavItem(
           icon: Icons.home,
           label: 'Home',
+          selectedColor: selected,
+          unselectedColor: unselected,
           onTap: () {},
           focusNode: focusNode,
         ),
@@ -269,19 +220,5 @@ void main() {
     ));
     final decoration = ringContainer.decoration! as BoxDecoration;
     expect(decoration.border!.top.color, AppColorsData.dark.borderFocused);
-  });
-
-  testWidgets('selected icon/label resolve against the dark theme',
-      (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: buildAppTheme(Brightness.dark),
-      home: const Scaffold(
-        body: NavItem(icon: Icons.home, label: 'Home', isSelected: true),
-      ),
-    ));
-    final icon = tester.widget<Icon>(find.byIcon(Icons.home));
-    expect(icon.color, AppColorsData.dark.iconAccent);
-    final text = tester.widget<Text>(find.text('Home'));
-    expect(text.style?.color, AppColorsData.dark.iconAccent);
   });
 }

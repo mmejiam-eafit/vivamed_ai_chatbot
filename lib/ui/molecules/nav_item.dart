@@ -15,12 +15,12 @@ class NavItem extends StatelessWidget {
     super.key,
     required this.icon,
     required this.label,
+    required this.selectedColor,
+    required this.unselectedColor,
     this.isSelected = false,
     this.onTap,
     this.layout = NavItemLayout.vertical,
     this.focusNode,
-    this.selectedColor,
-    this.unselectedColor,
   });
 
   final IconData icon;
@@ -30,19 +30,21 @@ class NavItem extends StatelessWidget {
   final NavItemLayout layout;
   final FocusNode? focusNode;
 
-  /// Overrides the resolved color for the selected/unselected state, for a
-  /// caller whose background isn't `AppNavBar`'s own (e.g. `ConversationDrawer`,
-  /// whose brand-navy surface needs the on-brand token pair instead of
-  /// `NavigationTokens.bottomNav*`). Leave both null for the original
-  /// `AppNavBar`-tuned behavior.
-  final Color? selectedColor;
-  final Color? unselectedColor;
+  /// Resolved color for the selected/unselected state. No default: every real
+  /// caller (`ConversationDrawer`, `MenuRail`, `PrimaryNavDrawer`) sits on its
+  /// own brand-dark background and needs its own token pair anyway, so a
+  /// shared `NavigationTokens.bottomNav*` fallback had nothing left relying on
+  /// it except by omission -- which is exactly how `PrimaryNavDrawer` ended up
+  /// resolving its selected color through the wrong semantic token
+  /// (`bottomNavSelected` instead of `sideNavSelected`) without anyone
+  /// choosing to. Required, no-default parameters make that a compile error
+  /// instead of a silent wrong-token fallback.
+  final Color selectedColor;
+  final Color unselectedColor;
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected
-        ? (selectedColor ?? NavigationTokens.bottomNavSelected(context))
-        : (unselectedColor ?? NavigationTokens.bottomNavUnselected(context));
+    final color = isSelected ? selectedColor : unselectedColor;
 
     final iconWidget = AppIcon(icon, color: color, size: 24.0);
     final labelWidget = AppText(label, style: AppTypography.labelSm, color: color);

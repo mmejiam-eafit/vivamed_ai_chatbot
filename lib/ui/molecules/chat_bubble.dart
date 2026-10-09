@@ -3,9 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/ui/atoms/app_avatar.dart';
+import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/molecules/case_reference_chip.dart';
+import 'package:radiologist_helper/ui/core/focus_ring.dart';
 
 class ChatBubble extends StatelessWidget {
   const ChatBubble({
@@ -121,7 +122,7 @@ class ChatBubble extends StatelessWidget {
                     runSpacing: AppSpacing.xs,
                     children: [
                       for (final ref in caseReferences!)
-                        CaseReferenceChip(
+                        _CaseReferenceChip(
                           title: ref.title,
                           onTap: () => onCaseReferenceTap?.call(ref.caseId),
                         ),
@@ -133,6 +134,68 @@ class ChatBubble extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// A small tappable reference to a case, shown below a reply that names one
+/// ("I found 2 similar cases: ..."). Not a separate molecule: it had exactly
+/// one caller (this file), so per AGENTS.md's simplicity rule ("a second
+/// variant earns its place when a second real call site exists") its
+/// composition lives here instead of importing another molecule, which the
+/// atomic-design layer rules forbid outright.
+/// Not `AppChip`: its `onSelected`/`onDeleted` API is a filter/removable-tag
+/// semantic that doesn't fit "tap to navigate."
+class _CaseReferenceChip extends StatelessWidget {
+  const _CaseReferenceChip({required this.title, required this.onTap});
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return FocusRing(
+      borderRadius: BorderRadius.circular(
+        AppRadius.button + AppInteraction.focusRingOffset,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: colors.textPrimary.withValues(
+          alpha: AppInteraction.hoverOverlayOpacity,
+        ),
+        borderRadius: AppRadius.borderButton,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: colors.surfaceAccent,
+            borderRadius: AppRadius.borderButton,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const AppIcon(
+                Icons.folder_outlined,
+                size: 16.0,
+                role: AppIconRole.accent,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Flexible(
+                child: AppText(
+                  title,
+                  style: AppTypography.labelMd,
+                  color: colors.textOnAccent,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
