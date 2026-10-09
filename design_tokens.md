@@ -38,7 +38,7 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 | `NavigationTokens` | App bar, drawer, side nav, bottom nav | Yes — derives from §10.4 |
 | `SeverityTokens` | Clinical finding severity pairs | Yes — values in §10.4 |
 | `TooltipTokens` | Tooltip surface and text | Yes — derives from §10.4 |
-| `DiagnosticImageTokens` | Ground behind and around diagnostic pixel data | **No — mode-exempt by rule** (§2.10) |
+| `diagnosticCanvasGround` | Ground behind and around diagnostic pixel data | **No — mode-exempt by rule** (§2.10) |
 | `buildAppTheme()` | Pre-wired `ThemeData` for `MaterialApp` | — |
 
 Raw hex values live in `_Palette`, which is library-private. **Never reference `_Palette` in widget code** — always go through the semantic layer.
@@ -230,11 +230,11 @@ Every value clears its target with hue held (checked in HLS: every hue shift und
 
 ### 2.10 Diagnostic image
 
-`DiagnosticImageTokens` grounds diagnostic pixel data. It sits outside every other rule in this section because **DL §3.7** and **D-004** put it outside the theme: pixel data is evidence, and the perceived contrast of an image depends on its surround, which must not vary with a user preference.
+`diagnosticCanvasGround` grounds diagnostic pixel data. It sits outside every other rule in this section because **DL §3.7** and **D-004** put it outside the theme: pixel data is evidence, and the perceived contrast of an image depends on its surround, which must not vary with a user preference. It's a single flat constant, not a token class — there's exactly one value, so there's nothing to group it with.
 
 | Token | Value | Use for |
 |---|---|---|
-| `canvasGround` | `#0A0C0E` | The ground behind and around diagnostic imagery — the viewer canvas, and any slot a DICOM image is dropped into |
+| `diagnosticCanvasGround` | `#0A0C0E` | The ground behind and around diagnostic imagery — the viewer canvas, and any slot a DICOM image is dropped into |
 
 **This value is not new.** §10.4 has specified it all along; it simply had no token to live in. It is deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp.
 
@@ -474,11 +474,15 @@ Six breakpoints (five unused) become three tier boundaries and two pane minimums
 | **Onboarding** | Full-bleed carousel; image top, copy below | Content capped 560 | Two columns — image left, copy right, capped `contentMaxWidth` | Generous |
 | **Chat** | Conversations in overlay drawer; findings in draggable bottom sheet | Conversations collapse to 64px rail; findings slide over above `twoPaneMinWidth` | Three panes: nav │ chat │ findings, gated at `threePaneMinWidth` | Comfortable chat, compact findings |
 | **Study Review** | Viewer 4:3 on top, `Findings │ Chat` tabs below | Viewer left / tabs right above `twoPaneMinWidth`, else viewer top | Three zones, gated at `threePaneMinWidth`. **Ultrawide: viewer and findings side by side, viewer absorbs the extra width** | Comfortable → compact |
-| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity. Ultrawide adds columns, caps 1440 | Comfortable → compact → dense |
-| **Heatmap Viewer** | Full-screen canvas, controls in bottom bar over scrim | As compact, 56px control bar | Canvas centered, controls in a 280px right rail | 44px touch to `expanded`, then 32px |
-| **Settings** | Single-column section list | Single column capped 640 | Two columns — 200px index left, content right capped 720 | Generous |
+| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity, gated at `threePaneMinWidth`. The same columns at ultrawide; capped at 1440 (`worklistMaxWidth`) and centered from `threePaneMinWidth` up, which binds from ≈1504px with the 64px menu rail (**D-019**) | Comfortable → compact → dense |
+| **Heatmap Viewer** | Full-screen canvas showing the whole image, letterboxed on the canvas ground and never cropped, with the overlay sharing the image's frame (**D-020**); controls in bottom bar over scrim | As compact, 56px control bar | Canvas centered, controls in a 280px right rail | 44px touch to `expanded`, then 32px |
+| **Settings** | Single-column section list | Single column capped 640 | Two columns — 200px index left, content right capped 720, gated at `threePaneMinWidth` | Generous |
 
-Case List switching from grid to table at `expanded` is deliberate: a worklist is a scanning task, and scanning tasks want tables (**DL §7.1**).
+Case List switching from grid to table is deliberate: a worklist is a scanning task, and scanning tasks want tables (**DL §7.1**).
+
+**Case List's results are top-aligned and centered horizontally only** (the medium grid's `contentMaxWidth` cap, the wide table's 1440 cap). A scanning task is read from its first row down, so the list starts directly under the app bar, or under the page's `header` where it supplies one, instead of floating at the vertical middle of the window. A `header` slot (Similar Cases' "N similar cases found") spans the width of the content and reads left-aligned with the list below it. The empty and loading states stay centered; they are a message, not a list.
+
+**Case List and Settings gate their "expanded/ultrawide" column at `threePaneMinWidth` (1120px), not the `expanded` tier's own start (1024px)** — the same boundary Chat/Study Review's three-pane layout already needed above. This isn't a pane-fit requirement for these two (their two-column layouts would be fine down to 1024px on their own); it's so a page's transition into "no persistent app bar/bottom nav, primary navigation via `PrimaryNavDrawer`" (§9.5 desktop/web revisit, `app_navigation_plan.md`) happens atomically with its content-density change, rather than the chrome and the content switching 96px apart from each other. All five nav-shell templates (these two, Chat, Study Review, and Home Hub) now share one no-chrome threshold.
 
 Settings gains an **Appearance** section at every tier for the theme control (§10.4).
 
@@ -490,7 +494,7 @@ Settings gains an **Appearance** section at every tier for the theme control (§
 
 ## 10. Theming
 
-> **Status: official and live.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal — and implemented: `AppColorsData`/`SeverityData` exist, `buildAppTheme(Brightness)` builds either theme correctly, and `app.dart` sets `darkTheme`/`themeMode: ThemeMode.dark`. Composition reached every layer — atoms through templates read `context.colors`/`context.severity` — and Settings' Appearance section gives users a real Dark/Light/System toggle, so dark mode is reachable from every real screen. The only exceptions are deliberate: `AppLogo` (mode-invariant brand assets) and the `DiagnosticImageTokens` canvas ground (§2.10, mode-exempt by rule).
+> **Status: official and live.** Every dark value in §10.4 is final — decided, computed, and verified, not a proposal — and implemented: `AppColorsData`/`SeverityData` exist, `buildAppTheme(Brightness)` builds either theme correctly, and `app.dart` sets `darkTheme`/`themeMode: ThemeMode.dark`. Composition reached every layer — atoms through templates read `context.colors`/`context.severity` — and Settings' Appearance section gives users a real Dark/Light/System toggle, so dark mode is reachable from every real screen. The only exceptions are deliberate: `AppLogo` (mode-invariant brand assets) and `diagnosticCanvasGround` (§2.10, mode-exempt by rule).
 
 ### 10.1 The split
 
@@ -580,6 +584,7 @@ Every dark pair ships with computed contrast ratios, same as **DL §8.7**.
 | `textLink` / `borderFocused` | `#6DB3CE` | 7.92 on page |
 | `border` | `#5E6B7A` | **Meaningful borders only** — 3.15 vs surface. Three lighter-looking candidates failed 3:1 first |
 | `borderSubdued` | `#2A3442` | Decorative separator, no contrast floor |
+| `sideNavHover` | `#29486E` | 1.43 vs `surfaceBrandSecondary` — matches the light-mode `mediumNavy`→`mediumNavy600` step's own ~1.42:1 magnitude; not a contrast floor, a hover wash (DL D-018) |
 
 **Severity and status** — the light-mode construction inverts: a light tint of the hue in front, a darkened low-chroma version behind.
 
@@ -594,7 +599,7 @@ App status reuses these four pairs under its own token names — the two systems
 
 **Tooltip:** light mode keeps `TooltipTokens.background`/`.foreground` (`#061625`/`#F4F4F4`) unchanged. Dark mode does not carry the same navy over — reuses `surfaceOverlay`/`textPrimary` instead, the elevation ladder's own top step (**DL D-017**). No new value.
 
-**Diagnostic canvas:** `#0A0C0E`. Mode-exempt, and deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp (**DL §3.7**). It is listed here because this is where the value was first written down, but it is **not a dark-mode value** — it is the same in both modes. It lives in `DiagnosticImageTokens.canvasGround` (§2.10).
+**Diagnostic canvas:** `#0A0C0E`. Mode-exempt, and deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp (**DL §3.7**). It is listed here because this is where the value was first written down, but it is **not a dark-mode value** — it is the same in both modes. It lives in `diagnosticCanvasGround` (§2.10).
 
 ### 10.5 Runtime
 
@@ -647,5 +652,5 @@ Live defects and unimplemented specifications. Delete entries as they close.
 | # | Gap | Where |
 |---|---|---|
 | 2 | **Five `AppLayout` tokens still dead.** The tier system (`AppLayoutTier`) and most of §9.3's pane minimums are implemented and drive `LayoutBuilder` branching in all 9 templates. `templateSplitWidth`, `primaryColumnMin`, `panelMinWidth`, and the `sideNavWidth`/`sideNavRailWidth` aliases have no consumer. | `AppLayout` |
-| 5 | **Heatmap overlay has no dedicated perceptual ramp.** Violates **DL §3.7**. `DiagnosticImageTokens` (§2.10) carries only the canvas ground; the ramp is deliberately unbuilt. The overlay is backend-generated, so choosing a ramp also means specifying to the backend what it sends (per-pixel intensity vs. pre-rendered RGBA) and how alpha/transparency works — a cross-system data-contract decision, not a color pick alone. The gradient is production code, fed raw `Colors.*` per finding, not status or severity tokens. | `lung_heatmap_overlay.dart`, reached via `heatmap_viewer_page.dart` |
+| 5 | **Heatmap overlay has no dedicated perceptual ramp.** Violates **DL §3.7**. `diagnosticCanvasGround` (§2.10) is the only value defined so far; the ramp is deliberately unbuilt. The overlay is backend-generated, so choosing a ramp also means specifying to the backend what it sends (per-pixel intensity vs. pre-rendered RGBA) and how alpha/transparency works — a cross-system data-contract decision, not a color pick alone. The gradient is production code, fed raw `Colors.*` per finding, not status or severity tokens. Where the overlay is anchored is not part of this gap: **D-020** lays it out against the image's own frame; the ramp and the data contract remain open. | `lung_heatmap_overlay.dart`, reached via `heatmap_viewer_page.dart` |
 | 13 | **Text scaling only partially verified at 200%.** §3.7 is specification only beyond this. Three files (`case_list_template.dart`, `onboarding_carousel.dart`, `case_worklist_table.dart`) have a pinned 200%-scale test; the rest of `lib/ui/templates/` and `lib/ui/organisms/` do not. | most templates and organisms |

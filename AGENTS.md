@@ -159,7 +159,7 @@ Even when the colors look similar, use the correct class for the context.
 
 ### `NavigationTokens` — navigation components only
 
-Use in: `ConversationDrawer`, `AppNavBar`, custom `AppBar` implementations.
+Use in: `ConversationDrawer`, `AppNavBar`, `PrimaryNavDrawer`, `MenuRail`, `CollapsedNavRail`, custom `AppBar` implementations.
 Never use in other organisms, molecules, or atoms.
 
 ### `context.colors.status*` — app-level operations only

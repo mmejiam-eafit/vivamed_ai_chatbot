@@ -59,7 +59,7 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 
 | Molecule | Composed of | Purpose |
 |---|---|---|
-| `ChatBubble` | `AppText`, `AppAvatar` (optional) | A single message bubble — user or assistant. Responsible for alignment, shape, and text rendering. |
+| `ChatBubble` | `AppText`, `AppAvatar` (optional), `AppIcon` (case-reference chips) | A single message bubble — user or assistant. Responsible for alignment, shape, and text rendering. Case references render as small tappable chips below the message, composed internally from atoms rather than as a separate molecule — it had exactly one caller. |
 | `ChatInput` | `AppTextField`, `AppButton` (send), `AppIcon` (attach) | The message composition bar at the bottom of the chat. Exposes an `onSubmit` callback. |
 | `SeverityChip` | `SeverityDot`, `AppText` | Displays a severity level as a compact labeled chip (e.g., "MODERATE" with a colored dot). |
 | `FindingRow` | `AppText` (finding name), `SeverityChip`, `AppIcon` (expand) | A single finding line item in a findings list. |
@@ -70,7 +70,10 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 | `ImageThumbnail` | `AppImage`, `AppBadge` (optional) | An X-ray thumbnail with an optional badge overlay (e.g., "3 findings"). |
 | `HubActionCard` | `AppIcon`, `AppText` (title), `AppText` (description) | One of the Home Hub's big primary choices (upload a study, view studies, chat) — icon, title, description, the whole card tappable. |
 | `UploadZone` | `AppIcon`/`AppLoadingIndicator`, `AppText` | The Upload screen's one interactive area — a tappable zone carrying its idle/uploading/analyzing states. |
-| `CaseReferenceChip` | `AppIcon`, `AppText` | A small tappable reference to a case, shown below a chat reply that names one — opens Study Review for it. |
+| `SectionCard` | `AppText` (title) | A titled card: a heading above arbitrary content, in the app's standard raised-surface chrome. Frames each section of a list (e.g. `SettingsTemplate`'s single-column and content-pane layouts). |
+| `SectionIndexTile` | `AppText` | One row of a title index — a list of section names beside their content, as in `SettingsTemplate`'s expanded-tier layout. Highlights when selected and reports taps; the caller owns which index is selected. |
+| `ThemeModeSelector` | `AppIcon` (check mark), `AppText` | The Settings Appearance section's theme picker. Always exactly three rows, Dark/Light/System in that order (DL D-013). |
+| `SimilarCasesCountHeader` | `AppText` | The "N similar cases found" header above Similar Cases' results. Owns pluralization and token choice — the page passes only the count. |
 
 ### Rules for molecules
 
@@ -93,10 +96,15 @@ An organism is a self-contained section of the interface that fulfills a distinc
 | `ChatPanel` | `ChatMessageList`, `ChatInput` | The full chat area: message list + input bar. This is the primary interaction surface. |
 | `FindingsPanel` | `FindingRow` (many), `AppText` (section header) | A collapsible panel listing all AI-generated findings for the current study, grouped by region or severity. |
 | `StudyInfoCard` | `MetadataField` (many), `ImageThumbnail`, `AppText` (title) | Displays study metadata: patient pseudonym, modality, date, study UID, and a representative thumbnail. |
-| `ConversationDrawer` | `NavItem` (many), `AppAvatar`, `AppText` | Side drawer listing past conversations. Each item shows a summary and timestamp. |
-| `AppNavBar` | `NavigationBar`/`NavigationDestination` (native) | Bottom navigation bar with destinations: Home, Chat, Studies, Settings. Mounted on Chat, Case List, and Settings via each template's optional `navBar` slot — Home pops to the root; the other two use `pushReplacement` to keep the stack flat. |
+| `ConversationDrawer` | `NavItem` (many), `AppAvatar`, `AppText` | Side drawer listing past conversations. Each item shows a summary and timestamp. Its bottom row is "Settings" (`onSettings`, Chat/Study Review's `drawer` slot at `compact`/`medium`) or "Menu" (`onMenuTap`, opens `PrimaryNavDrawer` — the same instance's `drawerWide` slot at `expanded`/`ultrawide`, where there's no app bar left to host a hamburger). |
+| `AppNavBar` | `NavigationBar`/`NavigationDestination` (native) | Bottom navigation bar with destinations: Home, Chat, Studies, Settings. Mounted on Chat, Case List, and Settings via each template's optional `navBar` slot at `compact`/`medium` — Home pops to the root; the other two use `pushReplacement` to keep the stack flat. |
+| `PrimaryNavDrawer` | `NavItem` (many, horizontal layout) | The same Home/Chat/Studies/Settings destinations as `AppNavBar`, as a drawer instead of a bottom bar. Mounted via each template's `primaryNavDrawer` slot at `expanded`/`ultrawide` only (all five nav-shell templates now: Chat, Case List, Settings, Study Review, Home Hub), where it replaces both `navBar` and the app bar (removed entirely at this tier) — opened via the "Menu" row in `ConversationDrawer`/`MenuRail` instead. Also mounted on `SimilarCasesPage` (a drill-down page like Study Review, `selectedIndex: null`, so it isn't itself highlighted) so the page keeps a way back once its app bar hides. Distinct from `ConversationDrawer` (conversation history, Chat/Study Review only). |
+| `MenuRail` | `NavItem` (vertical layout) | A narrow (`sideNavCollapsedWidth`) persistent column carrying just the "Menu" trigger that opens `PrimaryNavDrawer`, for pages with no `ConversationDrawer` to repurpose the way Chat/Study Review do: Case List, Settings, and Home Hub at `expanded`/`ultrawide`, plus `SimilarCasesPage` (reached from Study Review, delegates to `CaseListTemplate`). Distinct from `CollapsedNavRail` (opens `ConversationDrawer`/findings overlays, Chat's `medium` tier only). |
 | `StatusBar` | `StatusBanner` | Persistent bar at the top of the screen showing connectivity or system status. |
 | `OnboardingCarousel` | `AppImage`, `AppText`, `AppButton` | A swipeable set of introductory slides shown on first launch. |
+| `CaseWorklistTable` | `AppText` (cells), `SeverityChip` | The dense, sortable worklist table DT §9.5 specifies for Case List at expanded and up. Built on Flutter's own `DataTable`, sortable by any column, no default sort. |
+| `CollapsedNavRail` | `AppIcon` (via an internal `_RailIcon`) | The 64px collapsed nav rail `ChatTemplate`'s `medium` tier uses in place of the full 240px sidebar (DT §9.5) — a trigger strip that opens the existing `ConversationDrawer`/findings panel as overlays, rather than re-rendering either as icon-only content. |
+| `DraggableFindingsSheet` | Wraps an externally supplied `child` (typically `FindingsPanel`) | The `compact`-tier findings bottom sheet DT §9.5 specifies as draggable — a `DraggableScrollableSheet` with its own drag handle, independent of `child`'s internal scrolling. |
 
 ### Rules for organisms
 
@@ -119,12 +127,12 @@ A template is a layout skeleton. It defines **where organisms go on screen** —
 | `ChatTemplate` | App bar zone, main body (chat panel), optional side panel (findings) | The primary layout. On narrow screens, the chat panel fills the body and findings appear as a bottom sheet. On wide screens, findings sit in a side panel. |
 | `CaseListTemplate` | App bar zone, optional status/header zone, case content zone | Layout for case discovery/history views. Uses list on narrow screens and grid on wide screens. |
 | `StudyReviewTemplate` | App bar zone, study info zone (top), findings zone (bottom/side) | Layout for reviewing a completed study outside the chat context. |
-| `HeatmapViewerTemplate` | App bar zone, image canvas zone, bottom control zone | Layout for rendering base study image and optional heatmap overlay with externally owned opacity control. |
+| `HeatmapViewerTemplate` | App bar zone, image canvas zone, bottom control zone | Layout for rendering base study image and optional heatmap overlay with externally owned opacity control. Given the image's aspect ratio, it shows the whole image letterboxed on the canvas ground, with the overlay in the same frame (DL D-020). |
 | `SettingsTemplate` | App bar zone, scrollable content zone | Single-column list of sections at compact/medium; at expanded/ultrawide, a 200px index rail beside one continuous scroll of every section, where tapping the rail jumps to (not hides) the others. |
 | `OnboardingTemplate` | Full-bleed content zone, bottom action zone | Edge-to-edge layout for the onboarding carousel with a bottom "Get Started" area. |
 | `AuthTemplate` | Centered content zone | Vertically and horizontally centered card for login/registration flows. |
 | `UploadTemplate` | App bar zone, optional status bar, centered content zone | Centered single-task layout — an `UploadZone`, an action button, and an optional success/error `StatusBar` — same shape as `AuthTemplate` and for the same reason (one focused task, no tier branching needed). |
-| `HomeHubTemplate` | App bar zone, three-card content zone | Layout for the Home Hub's three primary choices (`HubActionCard`s for Upload, View Studies, and Chat). Stacked column below `mediumMinWidth`, a single row at and above it — exactly 3 fixed cards never need a third posture. |
+| `HomeHubTemplate` | App bar zone, three-card content zone, `MenuRail` | Layout for the Home Hub's three primary choices (`HubActionCard`s for Upload, View Studies, and Chat). Stacked column below `mediumMinWidth`, a single row at and above it — exactly 3 fixed cards never need a third posture. At `expanded`/`ultrawide` (gated at `threePaneMinWidth`, same as every other nav-shell template), the app bar disappears in favor of `primaryNavDrawer`/`menuRail`, same shape as `CaseListTemplate`/`SettingsTemplate`. |
 
 ### Rules for templates
 
@@ -151,8 +159,10 @@ A page is a **routed destination** that pairs exactly one template with real dat
 | `OnboardingPage` | `OnboardingTemplate` | Onboarding completion state, first-launch flag. |
 | `LoginPage` | `AuthTemplate` | Authentication state, credential validation. |
 | `UploadPage` | `UploadTemplate` | File-picker selection, upload/analysis status, and the resulting `CaseDetail` — connects to `UploadService`. |
-| `HomeHubPage` | `HomeHubTemplate` | No data of its own — pure navigation chrome. Pushes `UploadPage`, `CaseListPage`, `ChatPage`, or `SettingsPage`. |
-| `SimilarCasesPage` | `CaseListTemplate` | Cases similar to a given one — connects to `CaseService.getSimilarCases`. Reached from Study Review's "View Similar Studies" action. |
+| `HomeHubPage` | `HomeHubTemplate` | No data of its own — pure navigation chrome. Pushes `UploadPage`, `CaseListPage`, `ChatPage`, or `SettingsPage`. Wires `primaryNavDrawer`/`menuRail` (`selectedIndex: 0`, own case omitted) for the `expanded`/`ultrawide` gap this was the last nav-shell page to close. |
+| `SimilarCasesPage` | `CaseListTemplate` | Cases similar to a given one — connects to `CaseService.getSimilarCases`. Reached from Study Review's "View Similar Studies" action. Wires `primaryNavDrawer`/`menuRail` (`selectedIndex: null`, a drill-down page like Study Review, not one of the four destinations itself) so it keeps a way back once its app bar hides at `expanded`/`ultrawide`. |
+| `CaseListPage` | `CaseListTemplate` | Case list fetched via `casesProvider` (loading/data/error states). Wires `navBar`/`primaryNavDrawer`/`menuRail` (`selectedIndex: 2`) and the `caseSlots`/`worklistTable` slots; pushes `StudyReviewPage` on a case tap. |
+| `HeatmapViewerPage` | `HeatmapViewerTemplate` | Heatmap overlay data fetched by finding ID via `heatmapProvider`. Owns the opacity slider's local state; pairs with `StudyReviewPage`'s "View Heatmap" action. |
 
 ### Rules for pages
 
@@ -160,60 +170,6 @@ A page is a **routed destination** that pairs exactly one template with real dat
 - Each page instantiates exactly one template and passes organisms (populated with real data) into the template's slots.
 - This is the **only** level that reads from or writes to state management (Provider, Riverpod, Bloc, etc.), calls services, or triggers navigation (`Navigator`, `GoRouter`).
 - Pages are registered in the app's router and correspond 1:1 to named routes.
-
----
-
-## Directory structure
-
-```
-lib/ui/
-├── atoms/
-│   ├── app_text.dart
-│   ├── app_button.dart
-│   ├── app_icon.dart
-│   ├── app_text_field.dart
-│   ├── app_avatar.dart
-│   ├── app_badge.dart
-│   ├── app_divider.dart
-│   ├── app_loading_indicator.dart
-│   ├── app_chip.dart
-│   ├── app_image.dart
-│   ├── severity_dot.dart
-│   └── app_logo.dart
-├── molecules/
-│   ├── chat_bubble.dart
-│   ├── chat_input.dart
-│   ├── severity_chip.dart
-│   ├── finding_row.dart
-│   ├── nav_item.dart
-│   ├── metadata_field.dart
-│   ├── status_banner.dart
-│   ├── typing_indicator.dart
-│   └── image_thumbnail.dart
-├── organisms/
-│   ├── chat_message_list.dart
-│   ├── chat_panel.dart
-│   ├── findings_panel.dart
-│   ├── study_info_card.dart
-│   ├── conversation_drawer.dart
-│   ├── app_nav_bar.dart
-│   ├── status_bar.dart
-│   └── onboarding_carousel.dart
-├── templates/
-│   ├── chat_template.dart
-│   ├── case_list_template.dart
-│   ├── heatmap_viewer_template.dart
-│   ├── study_review_template.dart
-│   ├── settings_template.dart
-│   ├── onboarding_template.dart
-│   └── auth_template.dart
-└── pages/
-    ├── chat_page.dart
-    ├── study_review_page.dart
-    ├── settings_page.dart
-    ├── onboarding_page.dart
-    └── login_page.dart
-```
 
 ---
 

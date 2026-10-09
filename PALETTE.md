@@ -58,7 +58,7 @@ computed-hex, computed-ratio treatment as dark's §10.4.)
 > from atoms through templates reads it via `context.colors`. Settings'
 > Appearance section gives users a real Dark/Light/System toggle. The only
 > exceptions are deliberate: `AppLogo` (mode-invariant brand assets) and the
-> `DiagnosticImageTokens` canvas ground (mode-exempt by rule).
+> `diagnosticCanvasGround` (mode-exempt by rule).
 
 **Elevation ladder** (~4 L\* apart):
 
