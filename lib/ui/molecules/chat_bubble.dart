@@ -13,6 +13,7 @@ class ChatBubble extends StatelessWidget {
     super.key,
     required this.message,
     required this.isUser,
+    this.status = ChatMessageStatus.complete,
     this.avatarImageUrl,
     this.avatarInitials,
     this.timestamp,
@@ -22,6 +23,10 @@ class ChatBubble extends StatelessWidget {
 
   final String message;
   final bool isUser;
+
+  /// `streaming` and `complete` look the same -- the text growing is the
+  /// signal. Only `failed` adds anything: a caption saying the reply broke off.
+  final ChatMessageStatus status;
   final String? avatarImageUrl;
   final String? avatarInitials;
   final String? timestamp;
@@ -105,6 +110,14 @@ class ChatBubble extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               bubbleRow,
+              if (status == ChatMessageStatus.failed) ...[
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  'Reply failed',
+                  style: AppTypography.caption,
+                  color: context.colors.statusError,
+                ),
+              ],
               if (timestamp != null) ...[
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(

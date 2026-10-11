@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/data/mocks/conversation_mocks.dart';
 import 'package:radiologist_helper/repositories/case_repository.dart';
+import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/typing_indicator.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
@@ -22,6 +25,8 @@ import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../support/fake_chat_stream_repository.dart';
 
 class _FailingCaseRepository implements CaseRepository {
   @override
@@ -442,6 +447,138 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+  });
+
+  // ── Sending a message ──────────────────────────────────────────────────────
+
+  group('StudyReviewPage sending a message', () {
+    late FakeChatStreamRepository stream;
+
+    setUp(() => stream = FakeChatStreamRepository());
+
+    Future<void> pumpStudy(
+      WidgetTester tester, {
+      String? conversationId,
+    }) async {
+      // Three-zone, not the default size: narrower, chat lives in a tab that
+      // is not laid out until selected.
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        wrap(
+          StudyReviewPage(caseId: 'case-1', conversationId: conversationId),
+          overrides: [chatStreamRepositoryProvider.overrideWithValue(stream)],
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // pump, never pumpAndSettle, once a reply is in flight: the typing dots
+    // animate forever, so the tree never settles.
+    Future<void> advance(WidgetTester tester) async {
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+    }
+
+    Future<void> submit(WidgetTester tester, String text) async {
+      await tester.enterText(find.byType(TextField), text);
+      await tester.tap(find.byIcon(Icons.send));
+      await advance(tester);
+    }
+
+    ChatMessageItem reply(String text, {ChatMessageStatus? status}) =>
+        ChatMessageItem(
+          id: 'server-1',
+          message: text,
+          isUser: false,
+          status: status ?? ChatMessageStatus.streaming,
+        );
+
+    String typed(WidgetTester tester) =>
+        tester.widget<TextField>(find.byType(TextField)).controller!.text;
+
+    bool sendLoading(WidgetTester tester) =>
+        tester.widget<ChatPanel>(find.byType(ChatPanel)).isLoading;
+
+    testWidgets("with no conversation of its own, the study's thread is its "
+        'case id', (tester) async {
+      await pumpStudy(tester);
+
+      await submit(tester, 'Any effusion?');
+
+      expect(stream.lastConversationId, 'case-1');
+      expect(find.text('Any effusion?'), findsOneWidget);
+      expect(typed(tester), isEmpty);
+    });
+
+    testWidgets('arriving from a conversation continues that conversation',
+        (tester) async {
+      await pumpStudy(tester, conversationId: 'conv-1');
+
+      await submit(tester, 'Any effusion?');
+
+      expect(stream.lastConversationId, 'conv-1');
+      final sent = stream.lastMessages!;
+      expect(sent.length, mockMessagesFor('conv-1').length + 1);
+      expect(sent.last.message, 'Any effusion?');
+    });
+
+    testWidgets('streams the reply in: dots, then text, then done',
+        (tester) async {
+      await pumpStudy(tester);
+      expect(sendLoading(tester), isFalse);
+
+      await submit(tester, 'Any effusion?');
+      expect(find.byType(TypingIndicator), findsOneWidget);
+      expect(sendLoading(tester), isTrue);
+
+      stream.latest.add(reply('No eff'));
+      await advance(tester);
+      expect(find.byType(TypingIndicator), findsNothing);
+      expect(find.text('No eff'), findsOneWidget);
+
+      stream.latest
+        ..add(reply('No effusion.'))
+        ..add(reply('No effusion.', status: ChatMessageStatus.complete));
+      await stream.latest.close();
+      await advance(tester);
+      expect(find.text('No effusion.'), findsOneWidget);
+      expect(find.text('No eff'), findsNothing);
+      expect(sendLoading(tester), isFalse);
+    });
+
+    testWidgets(
+        'submitting from the keyboard mid-reply is refused and keeps the text',
+        (tester) async {
+      await pumpStudy(tester);
+      await submit(tester, 'First');
+
+      await tester.enterText(find.byType(TextField), 'Second');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await advance(tester);
+
+      expect(stream.controllers, hasLength(1));
+      expect(typed(tester), 'Second');
+    });
+
+    testWidgets('a failed reply keeps its text and says so', (tester) async {
+      await pumpStudy(tester);
+      await submit(tester, 'Any effusion?');
+      stream.latest.add(reply('No eff'));
+      await advance(tester);
+
+      stream.latest.addError(const ChatStreamException('boom'));
+      await advance(tester);
+
+      expect(find.text('No eff'), findsOneWidget);
+      expect(find.text('Reply failed'), findsOneWidget);
+      expect(sendLoading(tester), isFalse);
     });
   });
 }

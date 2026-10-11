@@ -8,6 +8,7 @@ import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/services/auth_service.dart';
 import 'package:radiologist_helper/services/case_service.dart';
 import 'package:radiologist_helper/services/chat_service.dart';
+import 'package:radiologist_helper/services/chat_thread_notifier.dart';
 import 'package:radiologist_helper/services/heatmap_service.dart';
 import 'package:radiologist_helper/services/onboarding_service.dart';
 import 'package:radiologist_helper/services/upload_service.dart';
@@ -31,7 +32,10 @@ final caseServiceProvider = Provider<CaseService>(
 );
 
 final chatServiceProvider = Provider<ChatService>(
-  (ref) => ChatService(ref.watch(conversationRepositoryProvider)),
+  (ref) => ChatService(
+    ref.watch(conversationRepositoryProvider),
+    ref.watch(chatStreamRepositoryProvider),
+  ),
 );
 
 final heatmapServiceProvider = Provider<HeatmapService>(
@@ -70,9 +74,11 @@ final conversationsProvider = FutureProvider<List<ConversationItem>>(
   (ref) => ref.watch(chatServiceProvider).getConversations(),
 );
 
-final messagesProvider = FutureProvider.family<List<ChatMessageItem>, String>(
-  (ref, conversationId) => ref.watch(chatServiceProvider).getMessages(conversationId),
-);
+// Not a FutureProvider: besides the fetched history it holds the reply
+// currently streaming in, and takes `.notifier.send(text)`. Pages still read it
+// as an `AsyncValue<List<ChatMessageItem>>`.
+final messagesProvider = AsyncNotifierProvider.family<ChatThreadNotifier,
+    List<ChatMessageItem>, String>(ChatThreadNotifier.new);
 
 final heatmapProvider = FutureProvider.family<HeatmapData, String>(
   (ref, findingId) => ref.watch(heatmapServiceProvider).getHeatmap(findingId),

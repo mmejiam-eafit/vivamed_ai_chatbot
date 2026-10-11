@@ -8,6 +8,11 @@ abstract class ConversationRepository {
   /// Returns the persisted user message only -- no simulated AI reply.
   /// Authoring a canned assistant response is a content decision, not a
   /// data-layer one; it slots in easily here later.
+  @Deprecated(
+    'Superseded by ChatStreamRepository.streamReply: the backend\'s streaming '
+    'POST carries the user message too. Remove this (and the matching '
+    'endpoint) once that POST is live.',
+  )
   Future<ChatMessageItem> sendMessage({
     required String conversationId,
     required String text,

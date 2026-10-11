@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:radiologist_helper/data/conversation.dart';
@@ -10,6 +11,7 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 
+import 'fixtures/chat_stream_repository_fixture.dart';
 import 'fixtures/conversation_repository_fixture.dart';
 import 'fixtures/fixture_result.dart';
 import 'fixtures/user_repository_fixture.dart';
@@ -46,7 +48,7 @@ void main() {
     final conversationFixture = ConversationRepositoryFixture(
       getConversationsResult: const FixtureSuccess(fixtureConversations),
       getMessagesResult: const FixtureSuccess([
-        ChatMessageItem(message: 'Fixture message', isUser: false),
+        ChatMessageItem(id: 'fixture-msg', message: 'Fixture message', isUser: false),
       ]),
     );
     final userFixture = UserRepositoryFixture(
@@ -71,6 +73,61 @@ void main() {
     expect(drawer.selectedId, 'fixture-conv-1');
     expect(find.text('Fixture Conversation'), findsOneWidget);
     expect(find.text('Fixture message'), findsOneWidget);
+  });
+
+  testWidgets('sending a message streams the fixture reply into the list',
+      (tester) async {
+    setWideSize(tester);
+    final conversationFixture = ConversationRepositoryFixture(
+      getConversationsResult: const FixtureSuccess(fixtureConversations),
+      getMessagesResult: const FixtureSuccess([
+        ChatMessageItem(id: 'fixture-msg', message: 'Fixture message', isUser: false),
+      ]),
+    );
+    final userFixture = UserRepositoryFixture(
+      getCurrentUserResult: const FixtureSuccess(UserProfile(
+        name: 'Fixture User',
+        role: 'Fixture Role',
+        email: 'fixture@example.invalid',
+        initials: 'FU',
+      )),
+    );
+    final streamFixture = ChatStreamRepositoryFixture(snapshots: const [
+      ChatMessageItem(
+        id: 'fixture-reply',
+        message: '',
+        isUser: false,
+        status: ChatMessageStatus.streaming,
+      ),
+      ChatMessageItem(
+        id: 'fixture-reply',
+        message: 'Fixture reply',
+        isUser: false,
+        status: ChatMessageStatus.streaming,
+      ),
+      ChatMessageItem(id: 'fixture-reply', message: 'Fixture reply', isUser: false),
+    ]);
+    await tester.pumpWidget(wrap(
+      const ChatPage(),
+      overrides: [
+        conversationRepositoryProvider.overrideWithValue(conversationFixture),
+        userRepositoryProvider.overrideWithValue(userFixture),
+        chatStreamRepositoryProvider.overrideWithValue(streamFixture),
+      ],
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Fixture question');
+    await tester.tap(find.byIcon(Icons.send));
+    // Settles: the scripted stream finishes at once, so the typing dots are
+    // gone by the end and nothing is left animating.
+    await tester.pumpAndSettle();
+
+    expect(streamFixture.lastConversationId, 'fixture-conv-1');
+    expect(streamFixture.lastMessages!.last.message, 'Fixture question');
+    expect(find.text('Fixture question'), findsOneWidget);
+    expect(find.text('Fixture reply'), findsOneWidget);
+    expect(find.text('Reply failed'), findsNothing);
   });
 
   testWidgets('while loading, shows the loading indicator', (tester) async {

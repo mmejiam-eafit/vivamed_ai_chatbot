@@ -59,7 +59,7 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 
 | Molecule | Composed of | Purpose |
 |---|---|---|
-| `ChatBubble` | `AppText`, `AppAvatar` (optional), `AppIcon` (case-reference chips) | A single message bubble — user or assistant. Responsible for alignment, shape, and text rendering. Case references render as small tappable chips below the message, composed internally from atoms rather than as a separate molecule — it had exactly one caller. |
+| `ChatBubble` | `AppText`, `AppAvatar` (optional), `AppIcon` (case-reference chips) | A single message bubble — user or assistant. Responsible for alignment, shape, and text rendering. Case references render as small tappable chips below the message, composed internally from atoms rather than as a separate molecule — it had exactly one caller. A `ChatMessageStatus.failed` reply gets a short "Reply failed" caption below it in `statusError`; `streaming` and `complete` look identical, since the text growing is the signal. |
 | `ChatInput` | `AppTextField`, `AppButton` (send), `AppIcon` (attach) | The message composition bar at the bottom of the chat. Exposes an `onSubmit` callback. |
 | `SeverityChip` | `SeverityDot`, `AppText` | Displays a severity level as a compact labeled chip (e.g., "MODERATE" with a colored dot). |
 | `FindingRow` | `AppText` (finding name), `SeverityChip`, `AppIcon` (expand) | A single finding line item in a findings list. |
@@ -92,7 +92,7 @@ An organism is a self-contained section of the interface that fulfills a distinc
 
 | Organism | Composed of | Purpose |
 |---|---|---|
-| `ChatMessageList` | `ChatBubble` (many), `TypingIndicator` | The scrollable list of all messages in a conversation. Handles scroll-to-bottom, date separators, and grouping. |
+| `ChatMessageList` | `ChatBubble` (many), `TypingIndicator` | The scrollable list of all messages in a conversation. Handles scroll-to-bottom, date separators, and grouping. A `streaming` reply with no text yet renders as the `TypingIndicator`; text growing in place follows the bottom only while the reader is already within a few lines of it, and never yanks someone who has scrolled up. |
 | `ChatPanel` | `ChatMessageList`, `ChatInput` | The full chat area: message list + input bar. This is the primary interaction surface. |
 | `FindingsPanel` | `FindingRow` (many), `AppText` (section header) | A collapsible panel listing all AI-generated findings for the current study, grouped by region or severity. |
 | `StudyInfoCard` | `MetadataField` (many), `ImageThumbnail`, `AppText` (title) | Displays study metadata: patient pseudonym, modality, date, study UID, and a representative thumbnail. |

@@ -45,12 +45,13 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
     super.dispose();
   }
 
-  Future<void> _sendMessage() async {
-    final text = _chatController.text;
-    if (text.isEmpty) return;
-    _chatController.clear();
-    await ref.read(chatServiceProvider).sendMessage(_conversationId, text);
-    ref.invalidate(messagesProvider(_conversationId));
+  void _sendMessage() {
+    final accepted = ref
+        .read(messagesProvider(_conversationId).notifier)
+        .send(_chatController.text);
+    // A refused send (empty, history still loading, a reply still streaming)
+    // keeps what was typed.
+    if (accepted) _chatController.clear();
   }
 
   // Study Review isn't itself one of the 4 primary destinations (it's a
@@ -188,16 +189,19 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
         ),
         controller: _chatController,
         onSubmit: _sendMessage,
+        isLoading: messagesAsync.value
+                ?.any((m) => m.status == ChatMessageStatus.streaming) ??
+            false,
       ),
       drawer: _conversationDrawer(
         context,
         conversationsAsync,
-        userAsync.valueOrNull,
+        userAsync.value,
       ),
       drawerWide: _conversationDrawerWide(
         context,
         conversationsAsync,
-        userAsync.valueOrNull,
+        userAsync.value,
       ),
       primaryNavDrawer: _primaryNavDrawer(context),
     );

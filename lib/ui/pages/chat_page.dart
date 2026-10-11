@@ -37,12 +37,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     super.dispose();
   }
 
-  Future<void> _sendMessage(String conversationId) async {
-    final text = _chatController.text;
-    if (text.isEmpty) return;
-    _chatController.clear();
-    await ref.read(chatServiceProvider).sendMessage(conversationId, text);
-    ref.invalidate(messagesProvider(conversationId));
+  void _sendMessage(String conversationId) {
+    final accepted = ref
+        .read(messagesProvider(conversationId).notifier)
+        .send(_chatController.text);
+    // A refused send (empty, history still loading, a reply still streaming)
+    // keeps what was typed.
+    if (accepted) _chatController.clear();
   }
 
   void _onPrimaryDestinationSelected(BuildContext context, int i) {
@@ -137,7 +138,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final appBar = AppBar(title: const Text('Chat'));
     final conversationsAsync = ref.watch(conversationsProvider);
     final userAsync = ref.watch(currentUserProvider);
-    final conversations = conversationsAsync.valueOrNull ?? const [];
+    final conversations = conversationsAsync.value ?? const [];
     // Null exactly while conversations haven't loaded yet -- can't pick a
     // default (or watch messagesProvider, a family that needs a real id)
     // before then. Not a new state: this is the same window ConversationDrawer
@@ -184,18 +185,21 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         messageList: messageListSection(),
         controller: _chatController,
         onSubmit: conversationId == null ? () {} : () => _sendMessage(conversationId),
+        isLoading: messagesAsync?.value
+                ?.any((m) => m.status == ChatMessageStatus.streaming) ??
+            false,
       ),
       drawer: _conversationDrawer(
         context,
         conversationsAsync,
         conversationId,
-        userAsync.valueOrNull,
+        userAsync.value,
       ),
       drawerWide: _conversationDrawerWide(
         context,
         conversationsAsync,
         conversationId,
-        userAsync.valueOrNull,
+        userAsync.value,
       ),
       navBar: _navBar(context),
       primaryNavDrawer: _primaryNavDrawer(context),

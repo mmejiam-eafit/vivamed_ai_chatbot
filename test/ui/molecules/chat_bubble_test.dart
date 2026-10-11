@@ -254,6 +254,74 @@ void main() {
     expect(title.style?.color, AppColorsData.dark.textOnAccent);
   });
 
+  // ── Status ─────────────────────────────────────────────────────────────────
+
+  group('status', () {
+    Widget bubble(ChatMessageStatus? status, {Brightness? brightness}) =>
+        MaterialApp(
+          theme: buildAppTheme(brightness ?? Brightness.light),
+          home: Scaffold(
+            body: status == null
+                ? const ChatBubble(message: 'Partial text', isUser: false)
+                : ChatBubble(
+                    message: 'Partial text',
+                    isUser: false,
+                    status: status,
+                  ),
+          ),
+        );
+
+    testWidgets('defaults to complete: no failure caption', (tester) async {
+      await tester.pumpWidget(bubble(null));
+      expect(find.text('Reply failed'), findsNothing);
+      expect(find.text('Partial text'), findsOneWidget);
+    });
+
+    testWidgets('complete: no failure caption', (tester) async {
+      await tester.pumpWidget(bubble(ChatMessageStatus.complete));
+      expect(find.text('Reply failed'), findsNothing);
+    });
+
+    testWidgets('streaming: shows the text so far and no failure caption',
+        (tester) async {
+      await tester.pumpWidget(bubble(ChatMessageStatus.streaming));
+      expect(find.text('Partial text'), findsOneWidget);
+      expect(find.text('Reply failed'), findsNothing);
+    });
+
+    testWidgets('failed: keeps the partial text and adds a caption',
+        (tester) async {
+      await tester.pumpWidget(bubble(ChatMessageStatus.failed));
+      expect(find.text('Partial text'), findsOneWidget);
+      expect(find.text('Reply failed'), findsOneWidget);
+    });
+
+    testWidgets('failed: the caption sits below the bubble', (tester) async {
+      await tester.pumpWidget(bubble(ChatMessageStatus.failed));
+      expect(
+        tester.getTopLeft(find.text('Reply failed')).dy,
+        greaterThan(tester.getBottomLeft(find.text('Partial text')).dy),
+      );
+    });
+
+    testWidgets('failed: the caption is caption-sized and statusError',
+        (tester) async {
+      await tester.pumpWidget(bubble(ChatMessageStatus.failed));
+      final caption = tester.widget<Text>(find.text('Reply failed'));
+      expect(caption.style?.fontSize, AppTypography.caption.fontSize);
+      expect(caption.style?.color, AppColorsData.light.statusError);
+    });
+
+    testWidgets('failed: the caption resolves against the dark theme too',
+        (tester) async {
+      await tester.pumpWidget(
+        bubble(ChatMessageStatus.failed, brightness: Brightness.dark),
+      );
+      final caption = tester.widget<Text>(find.text('Reply failed'));
+      expect(caption.style?.color, AppColorsData.dark.statusError);
+    });
+  });
+
   // ── Dark theme ─────────────────────────────────────────────────────────────
 
   testWidgets('resolves bubble and text colors against the dark theme',

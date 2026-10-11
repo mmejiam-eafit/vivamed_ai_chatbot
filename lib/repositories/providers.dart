@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/repositories/auth_repository.dart';
 import 'package:radiologist_helper/repositories/case_repository.dart';
+import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
 import 'package:radiologist_helper/repositories/findings_repository.dart';
 import 'package:radiologist_helper/repositories/heatmap_repository.dart';
@@ -25,6 +26,14 @@ final findingsRepositoryProvider =
 
 final conversationRepositoryProvider =
     Provider<ConversationRepository>((ref) => MockConversationRepository());
+
+// Streaming is its own repository, not a method on the conversation one: it is
+// the backend's single streaming POST, which can go live before the
+// conversation list/history endpoints do. Still the Mock -- connecting it means
+// `HttpChatStreamRepository(client: ..., endpoint: ...)` here, once the backend
+// is reachable.
+final chatStreamRepositoryProvider =
+    Provider<ChatStreamRepository>((ref) => MockChatStreamRepository());
 
 final heatmapRepositoryProvider =
     Provider<HeatmapRepository>((ref) => MockHeatmapRepository());

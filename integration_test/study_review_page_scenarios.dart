@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:radiologist_helper/data/case.dart';
@@ -77,7 +78,7 @@ void main() {
       overrides: fixtureOverrides(
         conversations: const FixtureSuccess([]),
         messages: const FixtureSuccess([
-          ChatMessageItem(message: 'Fixture study message', isUser: false),
+          ChatMessageItem(id: 'fixture-study-msg', message: 'Fixture study message', isUser: false),
         ]),
         caseDetail: FixtureSuccess(CaseDetail(
           caseSummary: CaseSummary(

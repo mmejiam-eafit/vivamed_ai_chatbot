@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/data/mocks/conversation_mocks.dart';
+import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/typing_indicator.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
@@ -18,6 +21,8 @@ import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../support/fake_chat_stream_repository.dart';
 
 /// Lets each method fail independently, so a test can simulate e.g.
 /// "conversations load fine, but this conversation's messages fail" -- a
@@ -506,5 +511,187 @@ void main() {
         expect(find.textContaining('Could not load messages'), findsOneWidget);
       },
     );
+  });
+
+  // ── Sending a message ──────────────────────────────────────────────────────
+
+  group('ChatPage sending a message', () {
+    late FakeChatStreamRepository stream;
+
+    setUp(() => stream = FakeChatStreamRepository());
+
+    Future<void> pumpChat(WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrap(
+          const ChatPage(),
+          overrides: [chatStreamRepositoryProvider.overrideWithValue(stream)],
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // pump, never pumpAndSettle, once a reply is in flight: the typing dots
+    // animate forever, so the tree never settles. Three frames: rebuild, the
+    // scroll-to-bottom animation's first tick, and its last.
+    Future<void> advance(WidgetTester tester) async {
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+    }
+
+    Future<void> submit(WidgetTester tester, String text) async {
+      await tester.enterText(find.byType(TextField), text);
+      await tester.tap(find.byIcon(Icons.send));
+      await advance(tester);
+    }
+
+    Future<void> push(WidgetTester tester, ChatMessageItem snapshot) async {
+      stream.latest.add(snapshot);
+      await advance(tester);
+    }
+
+    ChatMessageItem reply(String text, {ChatMessageStatus? status}) =>
+        ChatMessageItem(
+          id: 'server-1',
+          message: text,
+          isUser: false,
+          status: status ?? ChatMessageStatus.streaming,
+        );
+
+    String typed(WidgetTester tester) =>
+        tester.widget<TextField>(find.byType(TextField)).controller!.text;
+
+    bool sendLoading(WidgetTester tester) =>
+        tester.widget<ChatPanel>(find.byType(ChatPanel)).isLoading;
+
+    testWidgets('shows the question at once and clears the input',
+        (tester) async {
+      await pumpChat(tester);
+
+      await submit(tester, 'Any effusion?');
+
+      expect(find.text('Any effusion?'), findsOneWidget);
+      expect(typed(tester), isEmpty);
+    });
+
+    testWidgets('streams the thread for the selected conversation',
+        (tester) async {
+      await pumpChat(tester);
+
+      await submit(tester, 'Any effusion?');
+
+      expect(stream.lastConversationId, 'conv-1');
+      final sent = stream.lastMessages!;
+      expect(sent.length, mockMessagesFor('conv-1').length + 1);
+      expect(sent.last.message, 'Any effusion?');
+      expect(sent.last.isUser, isTrue);
+    });
+
+    testWidgets('shows the typing dots until the reply has text',
+        (tester) async {
+      await pumpChat(tester);
+      await submit(tester, 'Any effusion?');
+
+      expect(find.byType(TypingIndicator), findsOneWidget);
+
+      await push(tester, reply('No eff'));
+
+      expect(find.byType(TypingIndicator), findsNothing);
+      expect(find.text('No eff'), findsOneWidget);
+    });
+
+    testWidgets('the reply grows in place rather than adding bubbles',
+        (tester) async {
+      await pumpChat(tester);
+      await submit(tester, 'Any effusion?');
+
+      await push(tester, reply('No eff'));
+      await push(tester, reply('No effusion is seen'));
+
+      expect(find.text('No effusion is seen'), findsOneWidget);
+      expect(find.text('No eff'), findsNothing);
+    });
+
+    testWidgets('a finished reply stays on screen', (tester) async {
+      await pumpChat(tester);
+      await submit(tester, 'Any effusion?');
+
+      await push(tester, reply('No effusion.'));
+      await push(
+        tester,
+        reply('No effusion.', status: ChatMessageStatus.complete),
+      );
+      await stream.latest.close();
+      await advance(tester);
+
+      expect(find.text('No effusion.'), findsOneWidget);
+      expect(find.text('Reply failed'), findsNothing);
+    });
+
+    testWidgets('the send button loads while the reply streams, no longer',
+        (tester) async {
+      await pumpChat(tester);
+      expect(sendLoading(tester), isFalse);
+
+      await submit(tester, 'Any effusion?');
+      expect(sendLoading(tester), isTrue);
+
+      await push(tester, reply('Done.', status: ChatMessageStatus.complete));
+      await stream.latest.close();
+      await advance(tester);
+      expect(sendLoading(tester), isFalse);
+    });
+
+    testWidgets(
+        'submitting from the keyboard mid-reply is refused and keeps the text',
+        (tester) async {
+      await pumpChat(tester);
+      await submit(tester, 'First');
+
+      await tester.enterText(find.byType(TextField), 'Second');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await advance(tester);
+
+      expect(stream.controllers, hasLength(1));
+      expect(typed(tester), 'Second');
+    });
+
+    testWidgets('empty input starts nothing', (tester) async {
+      await pumpChat(tester);
+
+      await tester.tap(find.byIcon(Icons.send));
+      await advance(tester);
+
+      expect(stream.controllers, isEmpty);
+    });
+
+    testWidgets('a failed reply keeps its text, says so, and frees the input',
+        (tester) async {
+      await pumpChat(tester);
+      await submit(tester, 'Any effusion?');
+      await push(tester, reply('No eff'));
+
+      stream.latest.addError(const ChatStreamException('boom'));
+      await advance(tester);
+
+      expect(find.text('No eff'), findsOneWidget);
+      expect(find.text('Reply failed'), findsOneWidget);
+      expect(sendLoading(tester), isFalse);
+
+      await submit(tester, 'Try again');
+      expect(stream.controllers, hasLength(2));
+    });
+
+    testWidgets('a reply that fails before any text still says so',
+        (tester) async {
+      await pumpChat(tester);
+      await submit(tester, 'Any effusion?');
+
+      stream.latest.addError(const ChatStreamException('rejected', statusCode: 422));
+      await advance(tester);
+
+      expect(find.byType(TypingIndicator), findsNothing);
+      expect(find.text('Reply failed'), findsOneWidget);
+    });
   });
 }
