@@ -37,7 +37,7 @@ macos/Pods/
 macos/.symlinks/
 
 # Web
-web/build/
+web/
 
 # Windows / Linux desktop
 windows/

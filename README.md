@@ -153,7 +153,12 @@ flutter build apk --release
 
 # iOS
 flutter build ipa --release
+
+# Web
+flutter build web --release
 ```
+
+**`web/` is not in the repo either**: it is git-ignored, and a fresh clone has none. Generate it before the first browser run or web build with `make bootstrap-web` (or `flutter create --platforms=web .`, then discard what it changed in `.metadata`, `pubspec.lock` and `test/widget_test.dart`; the make target does that for you). A default `web/` is what the project always used, so nothing in it needs editing.
 
 ---
 
