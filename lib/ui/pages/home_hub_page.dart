@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/hub_action_card.dart';
 import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
@@ -15,7 +17,7 @@ import 'package:radiologist_helper/ui/templates/home_hub_template.dart';
 /// reach a study (upload a new one or browse existing ones), plus standalone
 /// Chat and Settings. No data of its own to load, unlike the pages it leads
 /// to.
-class HomeHubPage extends StatelessWidget {
+class HomeHubPage extends ConsumerWidget {
   const HomeHubPage({super.key});
 
   void _push(BuildContext context, Widget page) {
@@ -26,10 +28,12 @@ class HomeHubPage extends StatelessWidget {
   // like every other destination page's tap on its own entry.
   static const _destination = 0;
 
-  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+  Widget _primaryNavDrawer(BuildContext context, int pendingReviewCount) =>
+      PrimaryNavDrawer(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: pendingReviewCount,
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
@@ -42,7 +46,8 @@ class HomeHubPage extends StatelessWidget {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pendingReviewCount = ref.watch(pendingReviewCountProvider);
     return HomeHubTemplate(
       appBar: AppBar(
         title: const Text('Home'),
@@ -72,7 +77,7 @@ class HomeHubPage extends StatelessWidget {
         description: 'Ask about any case',
         onTap: () => _push(context, const ChatPage()),
       ),
-      primaryNavDrawer: _primaryNavDrawer(context),
+      primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
       menuRail: _menuRail(context),
     );
   }

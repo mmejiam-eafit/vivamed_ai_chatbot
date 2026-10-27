@@ -50,9 +50,11 @@ class SimilarCasesPage extends ConsumerWidget {
 
   // Not a primary destination itself (a drill-down page, like Study Review),
   // so every destination navigates away -- none is a no-op.
-  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+  Widget _primaryNavDrawer(BuildContext context, int pendingReviewCount) =>
+      PrimaryNavDrawer(
         selectedIndex: null,
         onDestinationSelected: (i) => openPrimaryDestination(context, i),
+        pendingReviewCount: pendingReviewCount,
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
@@ -66,6 +68,7 @@ class SimilarCasesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final pendingReviewCount = ref.watch(pendingReviewCountProvider);
     final appBar = AppBar(title: const Text('Similar Cases'));
     final heldBack = ref.watch(heldBackReviewsByCaseProvider);
     return ref.watch(similarCasesProvider(caseId)).when(
@@ -99,7 +102,7 @@ class SimilarCasesPage extends ConsumerWidget {
                       'for review.'
                   : 'No similar cases found.',
             ),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
           loading: () => CaseListTemplate(
@@ -107,7 +110,7 @@ class SimilarCasesPage extends ConsumerWidget {
             caseSlots: const [],
             worklistTable: const SizedBox.shrink(),
             emptyState: const AppLoadingIndicator(),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
           error: (error, stackTrace) => CaseListTemplate(
@@ -115,7 +118,7 @@ class SimilarCasesPage extends ConsumerWidget {
             caseSlots: const [],
             worklistTable: const SizedBox.shrink(),
             emptyState: AppText('Could not load similar cases: $error'),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
         );

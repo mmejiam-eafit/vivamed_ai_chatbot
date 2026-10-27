@@ -31,12 +31,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this

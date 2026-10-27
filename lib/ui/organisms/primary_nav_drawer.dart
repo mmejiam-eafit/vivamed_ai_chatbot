@@ -14,12 +14,19 @@ class PrimaryNavDrawer extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    required this.pendingReviewCount,
   });
 
   /// Null on drill-down pages (e.g. Study Review) that aren't any of the 4
   /// destinations themselves -- nothing shows as selected.
   final int? selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+
+  /// Images waiting for a radiologist, badged on Review; none at 0.
+  /// Required, so a page cannot drop the count by forgetting it.
+  final int pendingReviewCount;
+
+  static const _reviewIndex = 3;
 
   static const _destinations = [
     (icon: Icons.home_outlined, label: 'Home'),
@@ -58,6 +65,9 @@ class PrimaryNavDrawer extends StatelessWidget {
                   // to, so this is the fix, not just an override.
                   selectedColor: NavigationTokens.sideNavSelected(context),
                   unselectedColor: context.colors.iconOnBrand,
+                  badgeLabel: i == _reviewIndex && pendingReviewCount > 0
+                      ? '$pendingReviewCount'
+                      : null,
                   onTap: () => onDestinationSelected(i),
                 ),
               ),

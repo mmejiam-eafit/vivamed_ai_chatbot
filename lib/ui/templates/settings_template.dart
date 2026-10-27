@@ -193,7 +193,11 @@ List<SettingsSection> _previewSections() => const [
 Widget previewSettingsTemplate() => SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
       sections: _previewSections(),
-      navBar: AppNavBar(selectedIndex: 4, onDestinationSelected: (_) {}),
+      navBar: AppNavBar(
+        selectedIndex: 4,
+        onDestinationSelected: (_) {},
+        pendingReviewCount: 0,
+      ),
     );
 
 @Preview(name: 'settings — expanded', size: Size(1120, 768), wrapper: previewWrapperFull)

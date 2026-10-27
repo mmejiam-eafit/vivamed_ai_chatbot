@@ -59,6 +59,7 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
         selectedIndex: null,
         onDestinationSelected: (i) => openPrimaryDestination(context, i),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   Widget _conversationDrawer(

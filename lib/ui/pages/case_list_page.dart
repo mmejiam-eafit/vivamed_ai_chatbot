@@ -42,16 +42,20 @@ class CaseListPage extends ConsumerWidget {
 
   static const _destination = 2;
 
-  Widget _navBar(BuildContext context) => AppNavBar(
+  Widget _navBar(BuildContext context, int pendingReviewCount) =>
+      AppNavBar(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: pendingReviewCount,
       );
 
-  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+  Widget _primaryNavDrawer(BuildContext context, int pendingReviewCount) =>
+      PrimaryNavDrawer(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: pendingReviewCount,
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
@@ -71,6 +75,7 @@ class CaseListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final pendingReviewCount = ref.watch(pendingReviewCountProvider);
     final heldBack = ref.watch(heldBackReviewsByCaseProvider);
     return ref.watch(casesProvider).when(
           data: (cases) => CaseListTemplate(
@@ -90,8 +95,8 @@ class CaseListPage extends ConsumerWidget {
               onCaseTap: (c) => _openCase(context, c),
             ),
             emptyState: const AppText('No cases available.'),
-            navBar: _navBar(context),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            navBar: _navBar(context, pendingReviewCount),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
           loading: () => CaseListTemplate(
@@ -99,8 +104,8 @@ class CaseListPage extends ConsumerWidget {
             caseSlots: const [],
             worklistTable: const SizedBox.shrink(),
             emptyState: const AppLoadingIndicator(),
-            navBar: _navBar(context),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            navBar: _navBar(context, pendingReviewCount),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
           error: (error, stackTrace) => CaseListTemplate(
@@ -108,8 +113,8 @@ class CaseListPage extends ConsumerWidget {
             caseSlots: const [],
             worklistTable: const SizedBox.shrink(),
             emptyState: AppText('Could not load cases: $error'),
-            navBar: _navBar(context),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            navBar: _navBar(context, pendingReviewCount),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
         );

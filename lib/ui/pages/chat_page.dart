@@ -52,12 +52,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   Widget _conversationDrawer(

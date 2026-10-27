@@ -51,16 +51,20 @@ class ReviewQueuePage extends ConsumerWidget {
     );
   }
 
-  Widget _navBar(BuildContext context) => AppNavBar(
+  Widget _navBar(BuildContext context, int pendingReviewCount) =>
+      AppNavBar(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: pendingReviewCount,
       );
 
-  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+  Widget _primaryNavDrawer(BuildContext context, int pendingReviewCount) =>
+      PrimaryNavDrawer(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: pendingReviewCount,
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
@@ -74,6 +78,7 @@ class ReviewQueuePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final pendingReviewCount = ref.watch(pendingReviewCountProvider);
     return ref.watch(reviewQueueProvider).when(
           data: (items) => CaseListTemplate(
             appBar: _appBar,
@@ -92,8 +97,8 @@ class ReviewQueuePage extends ConsumerWidget {
             ),
             emptyState:
                 const AppText('No images have been flagged for review.'),
-            navBar: _navBar(context),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            navBar: _navBar(context, pendingReviewCount),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
           loading: () => CaseListTemplate(
@@ -101,8 +106,8 @@ class ReviewQueuePage extends ConsumerWidget {
             caseSlots: const [],
             worklistTable: const SizedBox.shrink(),
             emptyState: const AppLoadingIndicator(),
-            navBar: _navBar(context),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            navBar: _navBar(context, pendingReviewCount),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
           error: (error, stackTrace) => CaseListTemplate(
@@ -110,8 +115,8 @@ class ReviewQueuePage extends ConsumerWidget {
             caseSlots: const [],
             worklistTable: const SizedBox.shrink(),
             emptyState: AppText('Could not load the review queue: $error'),
-            navBar: _navBar(context),
-            primaryNavDrawer: _primaryNavDrawer(context),
+            navBar: _navBar(context, pendingReviewCount),
+            primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),
           ),
         );
