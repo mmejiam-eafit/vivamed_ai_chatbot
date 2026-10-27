@@ -72,7 +72,7 @@ final caseDetailProvider = FutureProvider.family<
   (ref, caseId) => ref.watch(caseServiceProvider).getCaseDetail(caseId),
 );
 
-final similarCasesProvider = FutureProvider.family<List<CaseSummary>, String>(
+final similarCasesProvider = FutureProvider.family<SimilarCases, String>(
   (ref, caseId) => ref.watch(caseServiceProvider).getSimilarCases(caseId),
 );
 

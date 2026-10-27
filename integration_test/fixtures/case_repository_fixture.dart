@@ -17,7 +17,7 @@ class CaseRepositoryFixture implements CaseRepository {
 
   FixtureResult<List<CaseSummary>>? getCasesResult;
   FixtureResult<CaseDetail>? getCaseDetailResult;
-  FixtureResult<List<CaseSummary>>? getSimilarCasesResult;
+  FixtureResult<SimilarCases>? getSimilarCasesResult;
 
   @override
   Future<List<CaseSummary>> getCases() =>
@@ -28,7 +28,7 @@ class CaseRepositoryFixture implements CaseRepository {
       getCaseDetailResult?.resolve() ?? _unconfigured('getCaseDetail');
 
   @override
-  Future<List<CaseSummary>> getSimilarCases(String caseId) =>
+  Future<SimilarCases> getSimilarCases(String caseId) =>
       getSimilarCasesResult?.resolve() ?? _unconfigured('getSimilarCases');
 }
 

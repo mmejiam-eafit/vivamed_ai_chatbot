@@ -60,11 +60,16 @@ class SimilarCasesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appBar = AppBar(title: const Text('Similar Cases'));
     return ref.watch(similarCasesProvider(caseId)).when(
-          data: (cases) => CaseListTemplate(
+          data: (similar) => CaseListTemplate(
             appBar: appBar,
-            header: SimilarCasesCountHeader(count: cases.length),
+            header: SimilarCasesCountHeader(
+              count: similar.cases.length,
+              imagesUsed: similar.imagesUsed,
+              imagesTotal: similar.imagesTotal,
+              imagesHeldBack: similar.imagesHeldBack,
+            ),
             caseSlots: [
-              for (final c in cases)
+              for (final c in similar.cases)
                 StudyInfoCard(
                   title: c.title,
                   fields: _cardFields(c),
@@ -73,10 +78,17 @@ class SimilarCasesPage extends ConsumerWidget {
                 ),
             ],
             worklistTable: CaseWorklistTable(
-              cases: cases,
+              cases: similar.cases,
               onCaseTap: (c) => _openCase(context, c),
             ),
-            emptyState: const AppText('No similar cases found.'),
+            // No image left to search with is a different empty from a
+            // search that found nothing, and the radiologist should know which.
+            emptyState: AppText(
+              similar.imagesUsed == 0 && similar.imagesHeldBack > 0
+                  ? "No similar cases yet: this study's images are held back "
+                      'for review.'
+                  : 'No similar cases found.',
+            ),
             primaryNavDrawer: _primaryNavDrawer(context),
             menuRail: _menuRail(context),
           ),

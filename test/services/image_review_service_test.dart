@@ -46,7 +46,7 @@ class _CasesRepository implements CaseRepository {
   Future<CaseDetail> getCaseDetail(String caseId) => throw UnimplementedError();
 
   @override
-  Future<List<CaseSummary>> getSimilarCases(String caseId) =>
+  Future<SimilarCases> getSimilarCases(String caseId) =>
       throw UnimplementedError();
 }
 

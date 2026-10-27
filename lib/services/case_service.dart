@@ -22,6 +22,6 @@ class CaseService {
     return (detail: detail, findings: findings);
   }
 
-  Future<List<CaseSummary>> getSimilarCases(String caseId) =>
+  Future<SimilarCases> getSimilarCases(String caseId) =>
       _caseRepository.getSimilarCases(caseId);
 }

@@ -38,7 +38,13 @@ class _FailingCaseRepository implements CaseRepository {
   Future<List<CaseSummary>> getCases() async => const [];
 
   @override
-  Future<List<CaseSummary>> getSimilarCases(String caseId) async => const [];
+  Future<SimilarCases> getSimilarCases(String caseId) async =>
+      const SimilarCases(
+        cases: [],
+        imagesUsed: 1,
+        imagesTotal: 1,
+        imagesHeldBack: 0,
+      );
 }
 
 /// Lets each method fail independently -- one repository backs both

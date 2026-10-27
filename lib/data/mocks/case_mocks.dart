@@ -110,6 +110,20 @@ String mockThumbnailUrlFor(String caseId) =>
 String mockCaseImageUrlFor(String caseId) =>
     _realCaseImages[caseId] ?? 'https://picsum.photos/seed/$caseId/800/800';
 
+/// Which of a study's images the mock similar-case search was based on. The
+/// studies with images held back for review (image_review_mocks.dart) are
+/// listed; every other mock study has one image, used.
+const _similarCasesBasis = {
+  'case-6': (used: 0, total: 1, heldBack: 1),
+  'case-7': (used: 2, total: 3, heldBack: 1),
+  'case-8': (used: 2, total: 3, heldBack: 1),
+};
+
+({int used, int total, int heldBack}) mockSimilarCasesBasisFor(
+  String caseId,
+) =>
+    _similarCasesBasis[caseId] ?? (used: 1, total: 1, heldBack: 0);
+
 /// Appends a newly "uploaded" case so it also shows up back in the Studies
 /// worklist afterward -- a stand-in for a real backend persisting it.
 void addMockCase(CaseSummary newCase) => mockCases.add(newCase);

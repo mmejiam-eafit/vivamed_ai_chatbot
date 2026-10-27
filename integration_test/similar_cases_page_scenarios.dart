@@ -39,17 +39,22 @@ void main() {
       (tester) async {
     setNarrowSize(tester);
     final fixture = CaseRepositoryFixture(
-      getSimilarCasesResult: FixtureSuccess([
-        CaseSummary(
-          id: 'fixture-similar-1',
-          title: 'Fixture Similar Case',
-          patient: 'Fixture Patient B',
-          modality: 'CXR',
-          date: DateTime(2026, 1, 1),
-          confidence: 0.7,
-          severity: SeverityLevel.mild,
-        ),
-      ]),
+      getSimilarCasesResult: FixtureSuccess(SimilarCases(
+        cases: [
+          CaseSummary(
+            id: 'fixture-similar-1',
+            title: 'Fixture Similar Case',
+            patient: 'Fixture Patient B',
+            modality: 'CXR',
+            date: DateTime(2026, 1, 1),
+            confidence: 0.7,
+            severity: SeverityLevel.mild,
+          ),
+        ],
+        imagesUsed: 1,
+        imagesTotal: 1,
+        imagesHeldBack: 0,
+      )),
     );
     await tester.pumpWidget(wrap(
       const SimilarCasesPage(caseId: 'source-case'),
@@ -61,10 +66,72 @@ void main() {
     expect(find.text('Fixture Similar Case'), findsOneWidget);
   });
 
+  testWidgets('a search on part of the study says which images it used',
+      (tester) async {
+    setNarrowSize(tester);
+    final fixture = CaseRepositoryFixture(
+      getSimilarCasesResult: FixtureSuccess(SimilarCases(
+        cases: [
+          CaseSummary(
+            id: 'fixture-similar-1',
+            title: 'Fixture Similar Case',
+            patient: 'Fixture Patient B',
+            modality: 'CXR',
+            date: DateTime(2026, 1, 1),
+            confidence: 0.7,
+            severity: SeverityLevel.mild,
+          ),
+        ],
+        imagesUsed: 1,
+        imagesTotal: 2,
+        imagesHeldBack: 1,
+      )),
+    );
+    await tester.pumpWidget(wrap(
+      const SimilarCasesPage(caseId: 'source-case'),
+      overrides: [caseRepositoryProvider.overrideWithValue(fixture)],
+    ));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Based on 1 of 2 images; 1 held back for review'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a study held back entirely says why there are no cases',
+      (tester) async {
+    setNarrowSize(tester);
+    final fixture = CaseRepositoryFixture(
+      getSimilarCasesResult: const FixtureSuccess(SimilarCases(
+        cases: [],
+        imagesUsed: 0,
+        imagesTotal: 1,
+        imagesHeldBack: 1,
+      )),
+    );
+    await tester.pumpWidget(wrap(
+      const SimilarCasesPage(caseId: 'source-case'),
+      overrides: [caseRepositoryProvider.overrideWithValue(fixture)],
+    ));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+          "No similar cases yet: this study's images are held back for review."),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('empty result shows the empty state', (tester) async {
     setNarrowSize(tester);
     final fixture = CaseRepositoryFixture(
-      getSimilarCasesResult: const FixtureSuccess([]),
+      getSimilarCasesResult: const FixtureSuccess(SimilarCases(
+        cases: [],
+        imagesUsed: 1,
+        imagesTotal: 1,
+        imagesHeldBack: 0,
+      )),
     );
     await tester.pumpWidget(wrap(
       const SimilarCasesPage(caseId: 'source-case'),
