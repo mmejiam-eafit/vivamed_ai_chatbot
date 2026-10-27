@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/data/case.dart';
+import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
@@ -17,7 +18,11 @@ import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
-List<StudyMetadataField> _cardFields(CaseSummary c) => [
+List<StudyMetadataField> _cardFields(
+  CaseSummary c,
+  List<ImageReview>? heldBack,
+) =>
+    [
       StudyMetadataField(label: 'Modality', value: c.modality),
       StudyMetadataField(
         label: 'Date',
@@ -25,6 +30,9 @@ List<StudyMetadataField> _cardFields(CaseSummary c) => [
             '${c.date.day.toString().padLeft(2, '0')}',
         valueKind: MetadataValueKind.numeric,
       ),
+      // Only a study with an image held back gets the row (DL D-022).
+      if (heldBack != null)
+        StudyMetadataField(label: 'Review', value: heldBackSummary(heldBack)),
     ];
 
 class CaseListPage extends ConsumerWidget {
@@ -63,6 +71,7 @@ class CaseListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final heldBack = ref.watch(heldBackReviewsByCaseProvider);
     return ref.watch(casesProvider).when(
           data: (cases) => CaseListTemplate(
             appBar: _appBar,
@@ -70,13 +79,14 @@ class CaseListPage extends ConsumerWidget {
               for (final c in cases)
                 StudyInfoCard(
                   title: c.title,
-                  fields: _cardFields(c),
+                  fields: _cardFields(c, heldBack[c.id]),
                   thumbnailUrl: mockThumbnailUrlFor(c.id),
                   onTap: () => _openCase(context, c),
                 ),
             ],
             worklistTable: CaseWorklistTable(
               cases: cases,
+              heldBack: heldBack,
               onCaseTap: (c) => _openCase(context, c),
             ),
             emptyState: const AppText('No cases available.'),

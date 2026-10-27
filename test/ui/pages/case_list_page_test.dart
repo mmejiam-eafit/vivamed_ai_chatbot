@@ -184,6 +184,36 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
+    // ── Images held back for review (DL D-022) ───────────────────────────
+
+    testWidgets('cards say which studies have images held back',
+        (tester) async {
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      // case-7 and case-8 each have one awaiting review; case-6 is processing.
+      expect(find.text('1 awaiting review'), findsNWidgets(2));
+      expect(find.text('1 processing'), findsOneWidget);
+      expect(find.text('Review'), findsNWidgets(3));
+    });
+
+    testWidgets('the worklist passes each study its held-back reviews',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      final table =
+          tester.widget<CaseWorklistTable>(find.byType(CaseWorklistTable));
+      expect(table.heldBack.keys,
+          unorderedEquals(['case-6', 'case-7', 'case-8']));
+    });
+
     // ── Nav bar (own index 2) ────────────────────────────────────────────
 
     testWidgets('tapping Home in the nav bar pops back to the root',

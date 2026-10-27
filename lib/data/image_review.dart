@@ -181,3 +181,17 @@ class ImageReview {
         decision: decision ?? this.decision,
       );
 }
+
+/// How a study's held-back reviews read in a list: "1 awaiting review",
+/// "1 processing", or both. Plain words, never a status color: a worklist row
+/// also carries severity (DL D-022). Empty when nothing is held back.
+String heldBackSummary(List<ImageReview> reviews) {
+  final awaiting =
+      reviews.where((r) => r.status == ReviewStatus.pending).length;
+  final processing =
+      reviews.where((r) => r.status == ReviewStatus.decided).length;
+  return [
+    if (awaiting > 0) '$awaiting awaiting review',
+    if (processing > 0) '$processing processing',
+  ].join(', ');
+}
