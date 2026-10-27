@@ -47,7 +47,14 @@ class ImageReviewPanel extends StatefulWidget {
 }
 
 class _ImageReviewPanelState extends State<ImageReviewPanel> {
-  late bool _editing = widget.canDecide && widget.review.decision == null;
+  /// The radiologist chose Change decision on an existing one.
+  bool _changing = false;
+
+  /// Worked out on every build rather than once: who may decide can arrive
+  /// after the review does (the signed-in user loads separately), and a
+  /// panel first built read-only must still open its form once it does.
+  bool get _showForm =>
+      widget.canDecide && (widget.review.decision == null || _changing);
   late _Choice? _choice = _choiceOf(widget.review.decision);
   late final _note = TextEditingController(
     text: widget.review.decision?.note ?? '',
@@ -102,7 +109,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
   }
 
   void _cancel() => setState(() {
-        _editing = false;
+        _changing = false;
         _choice = _choiceOf(widget.review.decision);
         _note.text = widget.review.decision?.note ?? '';
       });
@@ -150,7 +157,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
         const SizedBox(height: AppSpacing.lg),
         SectionCard(
           title: 'Decision',
-          child: _editing ? _form(colors, recorded) : _summary(colors),
+          child: _showForm ? _form(colors, recorded) : _summary(colors),
         ),
       ],
     );
@@ -307,7 +314,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
             child: AppButton(
               label: 'Change decision',
               variant: AppButtonVariant.secondary,
-              onPressed: () => setState(() => _editing = true),
+              onPressed: () => setState(() => _changing = true),
             ),
           )
         else

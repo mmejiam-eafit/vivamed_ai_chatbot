@@ -29,6 +29,16 @@ class _FakeUserRepository implements UserRepository {
   Future<UserProfile> getCurrentUser() async => user;
 }
 
+/// The signed-in user, arriving whenever the test completes [user].
+class _LateUserRepository implements UserRepository {
+  _LateUserRepository(this.user);
+
+  final Future<UserProfile> user;
+
+  @override
+  Future<UserProfile> getCurrentUser() => user;
+}
+
 /// Reviews that never arrive, for the loading state.
 class _PendingReviewRepository implements ImageReviewRepository {
   @override
@@ -226,6 +236,30 @@ void main() {
     final panel =
         tester.widget<ImageReviewPanel>(find.byType(ImageReviewPanel));
     expect(panel.canDecide, isTrue);
+  });
+
+  testWidgets('a radiologist who signs in after the review loads can decide',
+      (tester) async {
+    final user = Completer<UserProfile>();
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        imageReviewRepositoryProvider
+            .overrideWithValue(FakeImageReviewRepository()),
+        userRepositoryProvider
+            .overrideWithValue(_LateUserRepository(user.future)),
+      ],
+      child: MaterialApp(
+        theme: buildAppTheme(),
+        home: const ImageReviewPage(reviewId: 'review-01'),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Save decision'), findsNothing);
+
+    user.complete(mockCurrentUser);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Save decision'), findsOneWidget);
   });
 
   testWidgets('a review not in the queue says so', (tester) async {

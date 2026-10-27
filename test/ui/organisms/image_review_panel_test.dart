@@ -420,6 +420,22 @@ void main() {
   });
 
   group('read-only, for anyone but a radiologist', () {
+    testWidgets('opens the form once the radiologist is known', (tester) async {
+      // The signed-in user loads separately from the review, so the panel can
+      // be built read-only first and learn it may decide a moment later.
+      Widget panel(bool canDecide) => wrap(ImageReviewPanel(
+            review: _review(),
+            canDecide: canDecide,
+            onSave: (_) {},
+          ));
+      await tester.pumpWidget(panel(false));
+      expect(radioTiles(), findsNothing);
+
+      await tester.pumpWidget(panel(true));
+
+      expect(radioTiles(), findsNWidgets(7));
+    });
+
     testWidgets('a review waiting for a decision offers no form',
         (tester) async {
       await tester.pumpWidget(wrap(ImageReviewPanel(
