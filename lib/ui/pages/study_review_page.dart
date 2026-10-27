@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/data/conversation.dart';
+import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/data/user.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
+import 'package:radiologist_helper/ui/molecules/status_banner.dart';
 import 'package:radiologist_helper/ui/organisms/chat_message_list.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
+import 'package:radiologist_helper/ui/organisms/status_bar.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/image_review_page.dart';
 import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
@@ -61,6 +65,34 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
         onDestinationSelected: (i) => openPrimaryDestination(context, i),
         pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
+
+  /// This study's images held back for review, linked to their review. One
+  /// image awaiting a radiologist is worth a warning; images only processing
+  /// after a decision are worth a note. Null when nothing is held back.
+  Widget? _reviewStatusBar(BuildContext context, List<ImageReview>? heldBack) {
+    if (heldBack == null || heldBack.isEmpty) return null;
+    final awaiting =
+        heldBack.where((r) => r.status == ReviewStatus.pending).toList();
+    final shown = awaiting.isEmpty ? heldBack : awaiting;
+    final count = shown.length;
+    final images = count == 1
+        ? '1 image of this study is'
+        : '$count images of this study are';
+    return StatusBar(
+      message: awaiting.isEmpty
+          ? '$images processing after review.'
+          : '$images awaiting review.',
+      variant: awaiting.isEmpty
+          ? StatusBannerVariant.info
+          : StatusBannerVariant.warning,
+      actionLabel: awaiting.isEmpty ? 'View' : 'Review',
+      onAction: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ImageReviewPage(reviewId: shown.first.id),
+        ),
+      ),
+    );
+  }
 
   Widget _conversationDrawer(
     BuildContext context,
@@ -124,9 +156,11 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
     final userAsync = ref.watch(currentUserProvider);
     final messagesAsync = ref.watch(messagesProvider(_conversationId));
     final caseDetailAsync = ref.watch(caseDetailProvider(widget.caseId));
+    final heldBack = ref.watch(heldBackReviewsByCaseProvider)[widget.caseId];
 
     return StudyReviewTemplate(
       appBar: appBar,
+      statusBar: _reviewStatusBar(context, heldBack),
       // Routed through the template (rather than an early-return Scaffold)
       // so its own tier-aware chrome -- appBar hidden, primaryNavDrawer via
       // drawerWide -- still applies while providers are resolving, not just

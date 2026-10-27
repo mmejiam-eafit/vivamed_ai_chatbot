@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/data/conversation.dart';
+import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/data/mocks/conversation_mocks.dart';
 import 'package:radiologist_helper/repositories/case_repository.dart';
 import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
@@ -13,13 +14,16 @@ import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/status_banner.dart';
 import 'package:radiologist_helper/ui/molecules/typing_indicator.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
+import 'package:radiologist_helper/ui/organisms/status_bar.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/image_review_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
@@ -27,6 +31,7 @@ import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_chat_stream_repository.dart';
+import '../../support/fake_image_review_repository.dart';
 
 class _FailingCaseRepository implements CaseRepository {
   @override
@@ -106,6 +111,68 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(StudyReviewTemplate), findsOneWidget);
+    });
+
+    // ── Images held back for review ──────────────────────────────────────
+
+    testWidgets('a study with nothing held back shows no review bar',
+        (tester) async {
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StatusBar), findsNothing);
+    });
+
+    testWidgets('an image awaiting review warns and links to its review',
+        (tester) async {
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-7')));
+      await tester.pumpAndSettle();
+
+      final bar = tester.widget<StatusBar>(find.byType(StatusBar));
+      expect(bar.variant, StatusBannerVariant.warning);
+      expect(bar.message, '1 image of this study is awaiting review.');
+
+      await tester.tap(find.text('Review'));
+      await tester.pumpAndSettle();
+
+      final page = tester.widget<ImageReviewPage>(find.byType(ImageReviewPage));
+      expect(page.reviewId, 'review-01');
+    });
+
+    testWidgets('an image only processing after review is a note',
+        (tester) async {
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-6')));
+      await tester.pumpAndSettle();
+
+      final bar = tester.widget<StatusBar>(find.byType(StatusBar));
+      expect(bar.variant, StatusBannerVariant.info);
+      expect(bar.message, '1 image of this study is processing after review.');
+      expect(bar.actionLabel, 'View');
+    });
+
+    testWidgets('several images awaiting review are counted', (tester) async {
+      ImageReview pending(String id) => ImageReview(
+            id: id,
+            status: ReviewStatus.pending,
+            reason: ReviewReason.imageBlank,
+            image: const StudyImage(
+                id: 'i', url: 'u', recorded: RecordedLabels()),
+            caseId: 'case-1',
+            otherImages: const [],
+            report: const [],
+          );
+      await tester.pumpWidget(wrap(
+        const StudyReviewPage(caseId: 'case-1'),
+        overrides: [
+          imageReviewRepositoryProvider.overrideWithValue(
+            FakeImageReviewRepository(reviews: [pending('r1'), pending('r2')]),
+          ),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      final bar = tester.widget<StatusBar>(find.byType(StatusBar));
+      expect(bar.message, '2 images of this study are awaiting review.');
     });
 
     testWidgets('renders Study Review in app bar', (tester) async {
