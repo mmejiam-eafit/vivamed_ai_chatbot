@@ -57,6 +57,27 @@ final mockCases = <CaseSummary>[
     confidence: 0.81,
     severity: SeverityLevel.moderate,
   ),
+  // case-7 and case-8 are CheXpert Plus studies with images held back for
+  // review (image_review_mocks.dart). Their confidence and severity are made
+  // up like every other case's here.
+  CaseSummary(
+    id: 'case-7',
+    title: 'Chest X-Ray — PA and Lateral',
+    patient: 'Anonymous 7',
+    modality: 'CXR',
+    date: DateTime(2026, 10, 22),
+    confidence: 0.76,
+    severity: SeverityLevel.mild,
+  ),
+  CaseSummary(
+    id: 'case-8',
+    title: 'Chest X-Ray — Semi-upright',
+    patient: 'Anonymous 8',
+    modality: 'CXR',
+    date: DateTime(2026, 10, 20),
+    confidence: 0.69,
+    severity: SeverityLevel.normal,
+  ),
 ];
 
 /// Thumbnail (list views) and full-size (case detail) images, both seeded by
@@ -71,10 +92,16 @@ final mockCases = <CaseSummary>[
 /// images_001/00000008_000.png (Cardiomegaly). The other 3 mock cases are a
 /// different body part entirely (abdomen/brain/knee) and keep the placeholder
 /// -- AppImage renders either kind of string automatically.
+///
+/// case-7 and case-8 show a frontal image of their CheXpert Plus study. Those
+/// PNGs are converted locally by `make mock-images` and never committed, so on
+/// a fresh clone AppImage shows its broken-image placeholder for them.
 const _realCaseImages = {
   'case-1': 'lib/data/mocks/images/case-1.png',
   'case-3': 'lib/data/mocks/images/case-3.png',
   'case-6': 'lib/data/mocks/images/case-6.png',
+  'case-7': 'lib/data/mocks/images/chexpert/case-7-view1.png',
+  'case-8': 'lib/data/mocks/images/chexpert/case-8-view2.png',
 };
 
 String mockThumbnailUrlFor(String caseId) =>

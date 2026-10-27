@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
@@ -72,7 +73,7 @@ void main() {
       await tester.pumpWidget(wrap(const CaseListPage()));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StudyInfoCard), findsNWidgets(6));
+      expect(find.byType(StudyInfoCard), findsNWidgets(mockCases.length));
     });
 
     testWidgets('renders case titles', (tester) async {
