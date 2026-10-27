@@ -91,6 +91,13 @@ class ReportSection {
   final String text;
 }
 
+/// What a radiologist submits. The backend adds who decided and when.
+typedef ReviewDecisionDraft = ({
+  ReviewOutcome outcome,
+  ImageView? view,
+  String? note,
+});
+
 class ReviewDecision {
   const ReviewDecision({
     required this.outcome,
