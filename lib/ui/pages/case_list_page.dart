@@ -13,8 +13,7 @@ import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
-import 'package:radiologist_helper/ui/pages/chat_page.dart';
-import 'package:radiologist_helper/ui/pages/settings_page.dart';
+import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
@@ -33,29 +32,18 @@ class CaseListPage extends ConsumerWidget {
 
   static final _appBar = AppBar(title: const Text('Cases'));
 
-  void _onPrimaryDestinationSelected(BuildContext context, int i) {
-    switch (i) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      case 1:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ChatPage()),
-        );
-      case 3:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SettingsPage()),
-        );
-    }
-  }
+  static const _destination = 2;
 
   Widget _navBar(BuildContext context) => AppNavBar(
-        selectedIndex: 2,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
       );
 
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
-        selectedIndex: 2,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this

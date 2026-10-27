@@ -13,9 +13,7 @@ import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
-import 'package:radiologist_helper/ui/pages/case_list_page.dart';
-import 'package:radiologist_helper/ui/pages/chat_page.dart';
-import 'package:radiologist_helper/ui/pages/settings_page.dart';
+import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
@@ -42,30 +40,11 @@ class SimilarCasesPage extends ConsumerWidget {
     );
   }
 
-  // Not one of the 4 primary destinations itself (a drill-down page, like
-  // Study Review), so every case navigates away -- none omitted as a no-op.
-  void _onPrimaryDestinationSelected(BuildContext context, int i) {
-    switch (i) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      case 1:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ChatPage()),
-        );
-      case 2:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CaseListPage()),
-        );
-      case 3:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SettingsPage()),
-        );
-    }
-  }
-
+  // Not a primary destination itself (a drill-down page, like Study Review),
+  // so every destination navigates away -- none is a no-op.
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
         selectedIndex: null,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        onDestinationSelected: (i) => openPrimaryDestination(context, i),
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this

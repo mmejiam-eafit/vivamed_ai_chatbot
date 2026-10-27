@@ -6,6 +6,7 @@ import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/upload_page.dart';
 import 'package:radiologist_helper/ui/templates/home_hub_template.dart';
@@ -21,30 +22,14 @@ class HomeHubPage extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
-  // Home Hub is itself the "Home" destination -- case 0 is deliberately
-  // omitted, the same "own destination is a no-op" pattern every other
-  // primary destination page already uses (Case List omits case 2,
-  // Settings omits case 3, etc.).
-  void _onPrimaryDestinationSelected(BuildContext context, int i) {
-    switch (i) {
-      case 1:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ChatPage()),
-        );
-      case 2:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CaseListPage()),
-        );
-      case 3:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SettingsPage()),
-        );
-    }
-  }
+  // Home Hub is itself the "Home" destination, so a tap on Home is a no-op,
+  // like every other destination page's tap on its own entry.
+  static const _destination = 0;
 
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
-        selectedIndex: 0,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this

@@ -13,9 +13,8 @@ import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
-import 'package:radiologist_helper/ui/pages/case_list_page.dart';
-import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
@@ -54,31 +53,12 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
     if (accepted) _chatController.clear();
   }
 
-  // Study Review isn't itself one of the 4 primary destinations (it's a
-  // drill-down page), so every case is handled -- none skipped -- and
+  // Study Review isn't itself a primary destination (it's a drill-down
+  // page), so every destination navigates away -- none is a no-op -- and
   // nothing shows as selected in the drawer.
-  void _onPrimaryDestinationSelected(BuildContext context, int i) {
-    switch (i) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      case 1:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ChatPage()),
-        );
-      case 2:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CaseListPage()),
-        );
-      case 3:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SettingsPage()),
-        );
-    }
-  }
-
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
         selectedIndex: null,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        onDestinationSelected: (i) => openPrimaryDestination(context, i),
       );
 
   Widget _conversationDrawer(

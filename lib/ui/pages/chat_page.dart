@@ -12,7 +12,7 @@ import 'package:radiologist_helper/ui/organisms/chat_message_list.dart';
 import 'package:radiologist_helper/ui/organisms/chat_panel.dart';
 import 'package:radiologist_helper/ui/organisms/conversation_drawer.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
-import 'package:radiologist_helper/ui/pages/case_list_page.dart';
+import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/chat_template.dart';
@@ -46,29 +46,18 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     if (accepted) _chatController.clear();
   }
 
-  void _onPrimaryDestinationSelected(BuildContext context, int i) {
-    switch (i) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      case 2:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CaseListPage()),
-        );
-      case 3:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SettingsPage()),
-        );
-    }
-  }
+  static const _destination = 1;
 
   Widget _navBar(BuildContext context) => AppNavBar(
-        selectedIndex: 1,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
       );
 
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
-        selectedIndex: 1,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
       );
 
   Widget _conversationDrawer(
