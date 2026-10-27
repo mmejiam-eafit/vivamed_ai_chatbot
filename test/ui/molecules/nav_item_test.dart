@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/ui/atoms/app_badge.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/focus_ring.dart';
 import 'package:radiologist_helper/ui/molecules/nav_item.dart';
@@ -87,6 +88,60 @@ void main() {
   // ── onTap ──────────────────────────────────────────────────────────────────
 
   // ── Touch target (DL §8.5, gap 14) ────────────────────────────────────────
+
+  // ── Badge (DL D-021) ───────────────────────────────────────────────────────
+
+  testWidgets('no badge without a badgeLabel', (tester) async {
+    await tester.pumpWidget(wrap(const NavItem(
+      icon: Icons.flag_outlined,
+      label: 'Review',
+      selectedColor: selected,
+      unselectedColor: unselected,
+    )));
+    expect(find.byType(AppBadge), findsNothing);
+  });
+
+  for (final layout in NavItemLayout.values) {
+    testWidgets('${layout.name}: the badge follows the label', (tester) async {
+      await tester.pumpWidget(wrap(NavItem(
+        icon: Icons.flag_outlined,
+        label: 'Review',
+        selectedColor: selected,
+        unselectedColor: unselected,
+        layout: layout,
+        badgeLabel: '2',
+      )));
+      expect(find.text('2'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('2')).dx,
+        greaterThan(tester.getTopRight(find.text('Review')).dx),
+      );
+    });
+  }
+
+  for (final brightness in Brightness.values) {
+    testWidgets('the badge is on the warning pair ($brightness)',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: buildAppTheme(brightness),
+        home: const Scaffold(
+          body: NavItem(
+            icon: Icons.flag_outlined,
+            label: 'Review',
+            selectedColor: selected,
+            unselectedColor: unselected,
+            badgeLabel: '2',
+          ),
+        ),
+      ));
+      final colors = brightness == Brightness.light
+          ? AppColorsData.light
+          : AppColorsData.dark;
+      final badge = tester.widget<AppBadge>(find.byType(AppBadge));
+      expect(badge.backgroundColor, colors.statusWarningSubdued);
+      expect(badge.textColor, colors.statusWarning);
+    });
+  }
 
   testWidgets('vertical layout meets the 44px floor', (tester) async {
     await tester.pumpWidget(wrap(const NavItem(
