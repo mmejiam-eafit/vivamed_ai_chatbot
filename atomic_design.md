@@ -67,7 +67,7 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 | `MetadataField` | `AppText` (label), `AppText` (value) | A key-value pair for displaying DICOM metadata or study info (label left, value right). |
 | `StatusBanner` | `AppIcon`, `AppText`, `AppButton` (optional action) | A horizontal banner communicating a status message (info, warning, error). |
 | `TypingIndicator` | `AppLoadingIndicator` or animated dots | Shows that the assistant is generating a response. |
-| `ImageThumbnail` | `AppImage`, `AppBadge` (optional) | An X-ray thumbnail with an optional badge overlay (e.g., "3 findings"). |
+| `ImageThumbnail` | `AppImage`, `AppBadge` (optional) | An X-ray thumbnail with an optional badge overlay (e.g., "3 findings"). The study is letterboxed whole on `diagnosticCanvasGround`, never cropped (DL D-020). |
 | `HubActionCard` | `AppIcon`, `AppText` (title), `AppText` (description) | One of the Home Hub's big primary choices (upload a study, view studies, chat) — icon, title, description, the whole card tappable. |
 | `UploadZone` | `AppIcon`/`AppLoadingIndicator`, `AppText` | The Upload screen's one interactive area — a tappable zone carrying its idle/uploading/analyzing states. |
 | `SectionCard` | `AppText` (title) | A titled card: a heading above arbitrary content, in the app's standard raised-surface chrome. Frames each section of a list (e.g. `SettingsTemplate`'s single-column and content-pane layouts). |

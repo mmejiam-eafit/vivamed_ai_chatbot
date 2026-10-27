@@ -48,7 +48,7 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 | `FindingRow` | `AppSpacing.md` vertical padding, `AppTypography.bodyMd` for finding text, `AppColors.borderSubdued` bottom border |
 | `StatusBanner` | `AppColors.statusSuccess` / `statusWarning` / `statusError` / `statusInfo` icon, matching `status*Subdued` background, `AppTypography.bodyMd`, `AppRadius.borderButton` |
 | `TypingIndicator` | `ChatTokens.typingIndicator` dot color, `AppMotion.transition` animation duration |
-| `ImageThumbnail` | `AppRadius.borderCard` clip, `AppElevation.card` shadow, `AppColors.surfaceSubdued` loading placeholder |
+| `ImageThumbnail` | `AppRadius.borderCard` clip, `AppElevation.card` shadow, `diagnosticCanvasGround` letterbox (`BoxFit.contain`, DL D-020), `AppColors.surfaceSubdued` loading placeholder |
 
 ### Organisms
 

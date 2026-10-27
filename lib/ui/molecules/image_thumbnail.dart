@@ -42,11 +42,17 @@ class ImageThumbnail extends StatelessWidget {
           borderRadius: AppRadius.borderCard,
           child: Stack(
             children: [
-              AppImage(
-                url: url,
-                width: width,
-                height: height,
-                fit: BoxFit.cover,
+              // A study is evidence: letterboxed whole on the diagnostic
+              // canvas ground, never cropped to fill the square (DL D-020,
+              // DT §2.10). The ground is dark in both modes (DL §3.7).
+              ColoredBox(
+                color: diagnosticCanvasGround,
+                child: AppImage(
+                  url: url,
+                  width: width,
+                  height: height,
+                  fit: BoxFit.contain,
+                ),
               ),
               if (badgeLabel != null)
                 Positioned(
