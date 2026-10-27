@@ -135,12 +135,12 @@ void main() {
 
     // ── Primary nav drawer (expanded/ultrawide) ──────────────────────────
     //
-    // Not one of the 4 primary destinations itself (a drill-down page, like
+    // Not one of the 5 primary destinations itself (a drill-down page, like
     // Study Review) -- CaseListPage already wires primaryNavDrawer/menuRail
     // for its own "Studies" destination, but this page previously wired
     // neither, leaving no way back at all once its app bar is hidden here.
 
-    testWidgets('drawer: opens with all 4 destinations, none selected',
+    testWidgets('drawer: opens with all 5 destinations, none selected',
         (tester) async {
       setWideSize(tester);
       await tester.pumpWidget(wrap(const SimilarCasesPage(caseId: 'case-1')));
@@ -157,6 +157,10 @@ void main() {
       expect(
           find.descendant(
               of: find.byType(Drawer), matching: find.text('Studies')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byType(Drawer), matching: find.text('Review')),
           findsOneWidget);
       expect(
           find.descendant(

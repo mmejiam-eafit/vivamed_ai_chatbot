@@ -12,7 +12,7 @@ void main() {
 
   // ── Structure ──────────────────────────────────────────────────────────────
 
-  testWidgets('renders Home, Chat, Studies, and Settings labels',
+  testWidgets('renders Home, Chat, Studies, Review, and Settings labels',
       (tester) async {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
@@ -21,6 +21,7 @@ void main() {
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Chat'), findsOneWidget);
     expect(find.text('Studies'), findsOneWidget);
+    expect(find.text('Review'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
   });
 
@@ -31,7 +32,7 @@ void main() {
       onDestinationSelected: (_) {},
     )));
     final items = tester.widgetList<NavItem>(find.byType(NavItem));
-    expect(items.length, 4);
+    expect(items.length, 5);
     expect(items.every((i) => i.layout == NavItemLayout.horizontal), isTrue);
   });
 
@@ -69,7 +70,19 @@ void main() {
     expect(tapped, 0);
   });
 
-  testWidgets('tapping Settings calls onDestinationSelected with 3',
+  testWidgets('tapping Review calls onDestinationSelected with 3',
+      (tester) async {
+    int? tapped;
+    await tester.pumpWidget(wrap(PrimaryNavDrawer(
+      selectedIndex: 0,
+      onDestinationSelected: (i) => tapped = i,
+    )));
+    await tester.tap(find.text('Review'));
+    await tester.pump();
+    expect(tapped, 3);
+  });
+
+  testWidgets('tapping Settings calls onDestinationSelected with 4',
       (tester) async {
     int? tapped;
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
@@ -78,7 +91,7 @@ void main() {
     )));
     await tester.tap(find.text('Settings'));
     await tester.pump();
-    expect(tapped, 3);
+    expect(tapped, 4);
   });
 
   // ── Color: on-brand, not AppNavBar's default ──────────────────────────────

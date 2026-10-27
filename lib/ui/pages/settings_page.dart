@@ -25,7 +25,7 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   int _selectedIndex = 0;
 
-  static const _destination = 3;
+  static const _destination = 4;
 
   Widget _navBar(BuildContext context) => AppNavBar(
         selectedIndex: _destination,

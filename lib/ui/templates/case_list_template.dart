@@ -30,7 +30,7 @@ class CaseListTemplate extends StatelessWidget {
   final Widget? emptyState;
   final Widget? navBar;
 
-  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// Primary app navigation (Home/Chat/Studies/Review/Settings) at expanded/
   /// ultrawide, replacing navBar there -- see DT §9.5 desktop/web revisit.
   final Widget? primaryNavDrawer;
 

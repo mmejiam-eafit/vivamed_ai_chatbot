@@ -38,7 +38,7 @@ class SettingsTemplate extends StatelessWidget {
   final ValueChanged<int>? onSectionSelected;
   final Widget? navBar;
 
-  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// Primary app navigation (Home/Chat/Studies/Review/Settings) at expanded/
   /// ultrawide, replacing navBar there -- see DT §9.5 desktop/web revisit.
   final Widget? primaryNavDrawer;
 
@@ -193,7 +193,7 @@ List<SettingsSection> _previewSections() => const [
 Widget previewSettingsTemplate() => SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
       sections: _previewSections(),
-      navBar: AppNavBar(selectedIndex: 3, onDestinationSelected: (_) {}),
+      navBar: AppNavBar(selectedIndex: 4, onDestinationSelected: (_) {}),
     );
 
 @Preview(name: 'settings — expanded', size: Size(1120, 768), wrapper: previewWrapperFull)

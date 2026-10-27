@@ -3,9 +3,9 @@ import 'package:flutter/widget_previews.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
-/// The app's bottom navigation — Home / Chat / Studies / Settings. Built on
-/// Flutter's own `NavigationBar`/`NavigationDestination` rather than a
-/// hand-rolled row of `NavItem`s: four destinations with a filled/outline icon
+/// The app's bottom navigation — Home / Chat / Studies / Review / Settings.
+/// Built on Flutter's own `NavigationBar`/`NavigationDestination` rather than
+/// a hand-rolled row of `NavItem`s: five destinations with a filled/outline icon
 /// swap per selection is exactly what `NavigationDestination.icon`/
 /// `.selectedIcon` already do.
 class AppNavBar extends StatelessWidget {
@@ -64,6 +64,11 @@ class AppNavBar extends StatelessWidget {
               label: 'Studies',
             ),
             NavigationDestination(
+              icon: Icon(Icons.flag_outlined, color: unselectedColor),
+              selectedIcon: Icon(Icons.flag, color: selectedColor),
+              label: 'Review',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.settings_outlined, color: unselectedColor),
               selectedIcon: Icon(Icons.settings, color: selectedColor),
               label: 'Settings',
@@ -95,8 +100,14 @@ Widget previewAppNavBarStudies() => AppNavBar(
       onDestinationSelected: (_) {},
     );
 
+@Preview(name: 'review selected', size: Size(390, 72), wrapper: previewWrapper)
+Widget previewAppNavBarReview() => AppNavBar(
+      selectedIndex: 3,
+      onDestinationSelected: (_) {},
+    );
+
 @Preview(name: 'settings selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarSettings() => AppNavBar(
-      selectedIndex: 3,
+      selectedIndex: 4,
       onDestinationSelected: (_) {},
     );

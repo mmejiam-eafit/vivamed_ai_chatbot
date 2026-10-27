@@ -310,12 +310,12 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
     }
 
-    testWidgets('drawer: opens with all 4 destinations, none selected',
+    testWidgets('drawer: opens with all 5 destinations, none selected',
         (tester) async {
-      // Study Review isn't itself Home/Chat/Studies/Settings -- the
+      // Study Review isn't itself a primary destination -- the
       // selectedIndex-null case, exhaustively unit-tested in
       // primary_nav_drawer_test.dart; this just confirms the page actually
-      // wires PrimaryNavDrawer with a null selectedIndex, not one of the 4.
+      // wires PrimaryNavDrawer with a null selectedIndex, not one of the 5.
       setThreeZoneSize(tester);
       await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-1')));
       await tester.pumpAndSettle();

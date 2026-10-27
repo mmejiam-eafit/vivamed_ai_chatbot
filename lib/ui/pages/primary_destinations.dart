@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/review_queue_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 
 /// Opens primary destination [index] -- the order `AppNavBar` and
@@ -28,6 +29,8 @@ void openPrimaryDestination(BuildContext context, int index, {int? current}) {
     case 2:
       page = const CaseListPage();
     case 3:
+      page = const ReviewQueuePage();
+    case 4:
       page = const SettingsPage();
     default:
       throw ArgumentError.value(index, 'index', 'No primary destination');

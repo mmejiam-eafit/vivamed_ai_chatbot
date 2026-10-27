@@ -9,6 +9,7 @@ import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/review_queue_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
@@ -194,7 +195,13 @@ void main() {
       // case-7 and case-8 each have one awaiting review; case-6 is processing.
       expect(find.text('1 awaiting review'), findsNWidgets(2));
       expect(find.text('1 processing'), findsOneWidget);
-      expect(find.text('Review'), findsNWidgets(3));
+      expect(
+        find.descendant(
+          of: find.byType(StudyInfoCard),
+          matching: find.text('Review'),
+        ),
+        findsNWidgets(3),
+      );
     });
 
     testWidgets('the worklist passes each study its held-back reviews',
@@ -241,6 +248,22 @@ void main() {
       await tester.tap(find.text('Home'));
       await tester.pumpAndSettle();
 
+      expect(find.byType(CaseListPage), findsNothing);
+    });
+
+    testWidgets('tapping Review in the nav bar replaces with ReviewQueuePage',
+        (tester) async {
+      await tester.pumpWidget(await wrapWithNav(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      // The cards carry a "Review" row too; tap the bar's destination.
+      await tester.tap(find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Review'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReviewQueuePage), findsOneWidget);
       expect(find.byType(CaseListPage), findsNothing);
     });
 
