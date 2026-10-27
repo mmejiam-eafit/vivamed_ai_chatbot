@@ -221,8 +221,7 @@ void main() {
       expect(saved!.note, isNull);
     });
 
-    testWidgets('Unusable sends no view, and the note trimmed',
-        (tester) async {
+    testWidgets('Unusable sends no view, and the note trimmed', (tester) async {
       ReviewDecisionDraft? saved;
       await tester.pumpWidget(wrap(ImageReviewPanel(
         review: _review(reason: ReviewReason.imageBlank),
@@ -430,8 +429,8 @@ void main() {
       )));
       expect(radioTiles(), findsNothing);
       expect(find.text('Save decision'), findsNothing);
-      expect(find.textContaining('Only radiologists can record'),
-          findsOneWidget);
+      expect(
+          find.textContaining('Only radiologists can record'), findsOneWidget);
     });
 
     testWidgets('a decision shows without Change decision', (tester) async {

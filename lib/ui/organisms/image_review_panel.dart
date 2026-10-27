@@ -63,17 +63,9 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
     super.dispose();
   }
 
-  /// Header codes read as codes, with the name where it isn't obvious; the
-  /// two orientation-only choices read as words.
-  static String _viewText(ImageView view) => switch (view) {
-    ImageView.pa || ImageView.ap => view.code,
-    ImageView.ll || ImageView.rl => '${view.label} (${view.code})',
-    ImageView.frontal || ImageView.lateral => view.label,
-  };
-
   static String _outcomeText(ReviewDecision decision) =>
       switch (decision.outcome) {
-        ReviewOutcome.setView => 'View set to ${_viewText(decision.view!)}',
+        ReviewOutcome.setView => 'View set to ${decision.view!.displayName}',
         ReviewOutcome.unusable => 'Marked unusable',
         ReviewOutcome.confirmed => 'Recorded view confirmed',
       };
@@ -110,10 +102,10 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
   }
 
   void _cancel() => setState(() {
-    _editing = false;
-    _choice = _choiceOf(widget.review.decision);
-    _note.text = widget.review.decision?.note ?? '';
-  });
+        _editing = false;
+        _choice = _choiceOf(widget.review.decision);
+        _note.text = widget.review.decision?.note ?? '';
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +135,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                 label: 'File header',
                 value: recorded.viewPosition == null
                     ? 'Not recorded'
-                    : _viewText(recorded.viewPosition!),
+                    : recorded.viewPosition!.displayName,
                 valueKind: MetadataValueKind.identifier,
               ),
               // Both labels are transcribed, so neither may truncate (DL §4.6).
@@ -209,7 +201,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                   _option(
                     colors,
                     (outcome: ReviewOutcome.setView, view: view),
-                    _viewText(view),
+                    view.displayName,
                     subtitle: _sourceOf(view, recorded),
                   ),
                 _option(
@@ -225,7 +217,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                     colors,
                     (outcome: ReviewOutcome.confirmed, view: null),
                     'Recorded view is correct '
-                    '(${_viewText(recorded.viewPosition!)})',
+                    '(${recorded.viewPosition!.displayName})',
                   ),
               ],
             ),
@@ -372,27 +364,27 @@ final _previewDecided = ImageReview(
 
 @Preview(name: 'needs review', size: Size(360, 900), wrapper: previewWrapper)
 Widget previewImageReviewPanelPending() => SingleChildScrollView(
-  child: ImageReviewPanel(
-    review: _previewPending,
-    canDecide: true,
-    onSave: (_) {},
-  ),
-);
+      child: ImageReviewPanel(
+        review: _previewPending,
+        canDecide: true,
+        onSave: (_) {},
+      ),
+    );
 
 @Preview(name: 'processing', size: Size(360, 700), wrapper: previewWrapper)
 Widget previewImageReviewPanelDecided() => SingleChildScrollView(
-  child: ImageReviewPanel(
-    review: _previewDecided,
-    canDecide: true,
-    onSave: (_) {},
-  ),
-);
+      child: ImageReviewPanel(
+        review: _previewDecided,
+        canDecide: true,
+        onSave: (_) {},
+      ),
+    );
 
 @Preview(name: 'read-only', size: Size(360, 500), wrapper: previewWrapper)
 Widget previewImageReviewPanelReadOnly() => SingleChildScrollView(
-  child: ImageReviewPanel(
-    review: _previewPending,
-    canDecide: false,
-    onSave: (_) {},
-  ),
-);
+      child: ImageReviewPanel(
+        review: _previewPending,
+        canDecide: false,
+        onSave: (_) {},
+      ),
+    );

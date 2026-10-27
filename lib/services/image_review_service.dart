@@ -3,9 +3,6 @@ import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/data/user.dart';
 import 'package:radiologist_helper/repositories/image_review_repository.dart';
 
-/// A review together with the study it belongs to, for a queue row.
-typedef ReviewQueueItem = ({ImageReview review, CaseSummary caseSummary});
-
 class ImageReviewService {
   ImageReviewService(this._repository);
 

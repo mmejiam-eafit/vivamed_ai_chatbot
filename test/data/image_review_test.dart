@@ -47,6 +47,20 @@ void main() {
     }
   });
 
+  group('ImageView.displayName', () {
+    const expected = {
+      ImageView.pa: 'PA',
+      ImageView.ap: 'AP',
+      ImageView.ll: 'Left lateral (LL)',
+      ImageView.rl: 'Right lateral (RL)',
+      ImageView.frontal: 'Frontal',
+      ImageView.lateral: 'Lateral',
+    };
+    for (final view in ImageView.values) {
+      test(view.name, () => expect(view.displayName, expected[view]));
+    }
+  });
+
   group('ImageReview.copyWith', () {
     const pending = ImageReview(
       id: 'r1',

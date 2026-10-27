@@ -1,3 +1,5 @@
+import 'package:radiologist_helper/data/case.dart';
+
 /// Where a flagged image's review stands. The pipeline sets [pending] when it
 /// flags the image, a radiologist's decision sets [decided], and the pipeline
 /// sets [applied] once it has updated the image's embeddings and the search
@@ -50,6 +52,14 @@ enum ImageView {
   final String code;
   final String label;
   final ImageOrientation orientation;
+
+  /// How the app writes it: header codes as codes, with the name where it
+  /// isn't obvious; the two orientation-only views as words.
+  String get displayName => switch (this) {
+        pa || ap => code,
+        ll || rl => '$label ($code)',
+        frontal || lateral => label,
+      };
 }
 
 /// The two labels an image arrives with. Either may be missing. Neither is
@@ -122,6 +132,9 @@ class ReviewDecision {
   /// When the pipeline applied the decision; null until then.
   final DateTime? appliedAt;
 }
+
+/// A review together with the study it belongs to, for a queue row.
+typedef ReviewQueueItem = ({ImageReview review, CaseSummary caseSummary});
 
 /// An image the pipeline flagged, with what a radiologist needs to decide
 /// about it: the study's other images and its report.
