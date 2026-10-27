@@ -4,7 +4,7 @@ SHELL := /bin/sh
 .PHONY: install update update-major outdated bootstrap-linux bootstrap-android bootstrap-web \
 	run run-linux run-web run-android preview devices emulators emulator-phone emulator-tablet \
 	unit-test coverage integration-test-linux integration-test-phone integration-test-tablet update-goldens \
-	analyze check build-web build-linux build-apk clean help
+	analyze check mock-images build-web build-linux build-apk clean help
 
 
 # Configurable variables — override on the command line as needed.
@@ -19,6 +19,8 @@ TABLET_DEVICE    := $(if $(TABLET_DEVICE),$(TABLET_DEVICE),emulator-5556)
 TEST_PATH        := $(TEST_PATH)
 SCENARIO         := $(SCENARIO)
 ARGS             := $(ARGS)
+# The uncompressed CheXpert Plus DICOM train split; mock-images reads from it.
+CHEXPERT_DIR     := $(if $(CHEXPERT_DIR),$(CHEXPERT_DIR),/media/mmejia/EAFF-B3D3/chexpert-plus/chexpertplus/DICOM/Uncompressed/train)
 
 # Git-ignored paths that building, testing and running generate. IDE and agent
 # folders (.idea/, .vscode/, .claude/) are settings, not build output, so they stay.
@@ -158,6 +160,13 @@ analyze:
 check: # @HELP Run analyze, then the unit tests (the gate before a change is done).
 check: analyze unit-test
 
+# ─── Mock data ───────────────────────────────────────────────────────────────
+
+mock-images: # @HELP Convert the CheXpert Plus studies behind the review mocks into git-ignored PNGs (needs uv and CHEXPERT_DIR).
+mock-images:
+	@uv run --no-project --with 'pydicom>=3' --with numpy --with pillow \
+		python -I tool/convert_chexpert_mocks.py "$(CHEXPERT_DIR)" lib/data/mocks/images/chexpert
+
 # ─── Build ───────────────────────────────────────────────────────────────────
 
 build-web: # @HELP Build the release web bundle into build/web.
@@ -192,6 +201,7 @@ help:
 	echo "  TEST_PATH        = $(TEST_PATH)" && \
 	echo "  SCENARIO         = $(SCENARIO)" && \
 	echo "  ARGS             = $(ARGS)" && \
+	echo "  CHEXPERT_DIR     = $(CHEXPERT_DIR)" && \
 	echo " " && \
 	echo "TARGETS:" && \
 	grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST) \

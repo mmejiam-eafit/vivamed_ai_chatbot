@@ -55,3 +55,9 @@ coverage/
 .cursor/
 .aider*
 .agent/
+
+# CheXpert Plus mock images: research-use data, converted locally by
+# `make mock-images` and never committed. The .gitkeep keeps the folder that
+# pubspec.yaml declares.
+lib/data/mocks/images/chexpert/*
+!lib/data/mocks/images/chexpert/.gitkeep

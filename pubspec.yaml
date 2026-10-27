@@ -65,3 +65,6 @@ flutter:
     - lib/data/mocks/images/case-1.png
     - lib/data/mocks/images/case-3.png
     - lib/data/mocks/images/case-6.png
+    # Folder, not files: its PNGs are git-ignored and built locally by
+    # `make mock-images`, so a fresh clone has only the .gitkeep.
+    - lib/data/mocks/images/chexpert/
