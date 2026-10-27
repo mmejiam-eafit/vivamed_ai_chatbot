@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:radiologist_helper/data/image_review.dart';
+import 'package:radiologist_helper/data/user.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
@@ -10,9 +11,12 @@ import 'package:radiologist_helper/ui/pages/image_review_page.dart';
 
 import 'fixtures/fixture_result.dart';
 import 'fixtures/image_review_repository_fixture.dart';
+import 'fixtures/user_repository_fixture.dart';
 
-/// Fixture-backed scenarios: they override `imageReviewRepositoryProvider`,
-/// so these assert against the fixture below rather than the mocks.
+/// Fixture-backed scenarios: they override `imageReviewRepositoryProvider`
+/// and `userRepositoryProvider`, so these assert against the fixtures below
+/// rather than the mocks -- including who is signed in, which decides
+/// whether the decision form shows at all.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -52,8 +56,20 @@ void main() {
     ),
   );
 
+  const radiologist = UserProfile(
+    name: 'Dr. Fixture',
+    role: 'Radiologist',
+    email: 'fixture@hospital.org',
+    initials: 'DF',
+  );
+
   Widget wrap(ImageReviewRepositoryFixture fixture) => ProviderScope(
-        overrides: [imageReviewRepositoryProvider.overrideWithValue(fixture)],
+        overrides: [
+          imageReviewRepositoryProvider.overrideWithValue(fixture),
+          userRepositoryProvider.overrideWithValue(UserRepositoryFixture(
+            getCurrentUserResult: const FixtureSuccess(radiologist),
+          )),
+        ],
         child: MaterialApp(
           theme: buildAppTheme(),
           home: const ImageReviewPage(reviewId: 'fixture-review'),
