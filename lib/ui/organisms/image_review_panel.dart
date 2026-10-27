@@ -234,7 +234,6 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
         AppTextField(
           controller: _note,
           hintText: 'Note (optional)',
-          maxLines: 3,
           enabled: !widget.isSaving,
         ),
         if (widget.errorMessage != null) ...[
