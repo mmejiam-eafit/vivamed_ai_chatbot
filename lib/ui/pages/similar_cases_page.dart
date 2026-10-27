@@ -101,6 +101,7 @@ class SimilarCasesPage extends ConsumerWidget {
                   ? "No similar cases yet: this study's images are held back "
                       'for review.'
                   : 'No similar cases found.',
+              textAlign: TextAlign.center,
             ),
             primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
             menuRail: _menuRail(context),

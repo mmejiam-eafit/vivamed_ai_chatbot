@@ -90,7 +90,14 @@ class CaseListTemplate extends StatelessWidget {
 
   Widget _buildContent(AppLayoutTier tier, bool isWide) {
     if (caseSlots.isEmpty && emptyState != null) {
-      return Center(child: emptyState);
+      // Padded so a message long enough to wrap keeps the screen margin
+      // instead of running to the window's edges.
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: emptyState,
+        ),
+      );
     }
 
     if (isWide) {
