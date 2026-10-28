@@ -26,7 +26,7 @@ class HomeHubTemplate extends StatelessWidget {
   final HubActionCard viewStudiesCard;
   final HubActionCard chatCard;
 
-  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// Primary app navigation (Home/Chat/Studies/Review/Settings) at expanded/
   /// ultrawide, replacing the app bar's gear-icon Settings shortcut there --
   /// see DT §9.5 desktop/web revisit. Compact/medium are unchanged: still
   /// just the app bar and its gear icon, no bottom nav bar of its own here.

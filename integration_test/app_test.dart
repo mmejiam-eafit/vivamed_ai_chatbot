@@ -8,6 +8,8 @@ import 'app_flow_scenarios.dart' as app_flow;
 import 'case_list_page_scenarios.dart' as case_list_page;
 import 'chat_page_scenarios.dart' as chat_page;
 import 'heatmap_viewer_page_scenarios.dart' as heatmap_viewer_page;
+import 'image_review_page_scenarios.dart' as image_review_page;
+import 'review_queue_page_scenarios.dart' as review_queue_page;
 import 'settings_page_scenarios.dart' as settings_page;
 import 'similar_cases_page_scenarios.dart' as similar_cases_page;
 import 'study_review_page_scenarios.dart' as study_review_page;
@@ -51,6 +53,8 @@ void main() {
   group('case_list_page', case_list_page.main);
   group('chat_page', chat_page.main);
   group('heatmap_viewer_page', heatmap_viewer_page.main);
+  group('image_review_page', image_review_page.main);
+  group('review_queue_page', review_queue_page.main);
   group('settings_page', settings_page.main);
   group('similar_cases_page', similar_cases_page.main);
   group('study_review_page', study_review_page.main);

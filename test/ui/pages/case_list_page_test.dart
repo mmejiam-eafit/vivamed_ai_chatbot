@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
@@ -8,6 +9,7 @@ import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/review_queue_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
@@ -72,7 +74,7 @@ void main() {
       await tester.pumpWidget(wrap(const CaseListPage()));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StudyInfoCard), findsNWidgets(6));
+      expect(find.byType(StudyInfoCard), findsNWidgets(mockCases.length));
     });
 
     testWidgets('renders case titles', (tester) async {
@@ -183,6 +185,42 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
+    // ── Images held back for review (DL D-022) ───────────────────────────
+
+    testWidgets('cards say which studies have images held back',
+        (tester) async {
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      // case-7 and case-8 each have one awaiting review; case-6 is processing.
+      expect(find.text('1 awaiting review'), findsNWidgets(2));
+      expect(find.text('1 processing'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(StudyInfoCard),
+          matching: find.text('Review'),
+        ),
+        findsNWidgets(3),
+      );
+    });
+
+    testWidgets('the worklist passes each study its held-back reviews',
+        (tester) async {
+      tester.view.physicalSize =
+          const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(wrap(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      final table =
+          tester.widget<CaseWorklistTable>(find.byType(CaseWorklistTable));
+      expect(table.heldBack.keys,
+          unorderedEquals(['case-6', 'case-7', 'case-8']));
+    });
+
     // ── Nav bar (own index 2) ────────────────────────────────────────────
 
     testWidgets('tapping Home in the nav bar pops back to the root',
@@ -210,6 +248,22 @@ void main() {
       await tester.tap(find.text('Home'));
       await tester.pumpAndSettle();
 
+      expect(find.byType(CaseListPage), findsNothing);
+    });
+
+    testWidgets('tapping Review in the nav bar replaces with ReviewQueuePage',
+        (tester) async {
+      await tester.pumpWidget(await wrapWithNav(const CaseListPage()));
+      await tester.pumpAndSettle();
+
+      // The cards carry a "Review" row too; tap the bar's destination.
+      await tester.tap(find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Review'),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReviewQueuePage), findsOneWidget);
       expect(find.byType(CaseListPage), findsNothing);
     });
 

@@ -12,8 +12,7 @@ import 'package:radiologist_helper/ui/molecules/theme_mode_selector.dart';
 import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 import 'package:radiologist_helper/ui/organisms/menu_rail.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
-import 'package:radiologist_helper/ui/pages/case_list_page.dart';
-import 'package:radiologist_helper/ui/pages/chat_page.dart';
+import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -26,29 +25,20 @@ class SettingsPage extends ConsumerStatefulWidget {
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   int _selectedIndex = 0;
 
-  void _onPrimaryDestinationSelected(BuildContext context, int i) {
-    switch (i) {
-      case 0:
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      case 1:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ChatPage()),
-        );
-      case 2:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const CaseListPage()),
-        );
-    }
-  }
+  static const _destination = 4;
 
   Widget _navBar(BuildContext context) => AppNavBar(
-        selectedIndex: 3,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
-        selectedIndex: 3,
-        onDestinationSelected: (i) => _onPrimaryDestinationSelected(context, i),
+        selectedIndex: _destination,
+        onDestinationSelected: (i) =>
+            openPrimaryDestination(context, i, current: _destination),
+        pendingReviewCount: ref.watch(pendingReviewCountProvider),
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this

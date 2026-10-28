@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/molecules/nav_item.dart';
 
-/// Primary app navigation (Home/Chat/Studies/Settings) at `expanded`/
+/// Primary app navigation (Home/Chat/Studies/Review/Settings) at `expanded`/
 /// `ultrawide`, opened via the app bar's own automatic hamburger once a
 /// template wires this into `Scaffold.drawer` -- no manual `IconButton`
 /// needed, Flutter shows a `DrawerButton` whenever `Scaffold.drawer != null`.
 /// Distinct from `ConversationDrawer` (conversation history, Chat/Study
-/// Review only): this is the same four destinations `AppNavBar` renders as a
+/// Review only): this is the same five destinations `AppNavBar` renders as a
 /// bottom bar at narrower tiers, just as a drawer instead.
 class PrimaryNavDrawer extends StatelessWidget {
   const PrimaryNavDrawer({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    required this.pendingReviewCount,
   });
 
   /// Null on drill-down pages (e.g. Study Review) that aren't any of the 4
@@ -21,10 +22,17 @@ class PrimaryNavDrawer extends StatelessWidget {
   final int? selectedIndex;
   final ValueChanged<int> onDestinationSelected;
 
+  /// Images waiting for a radiologist, badged on Review; none at 0.
+  /// Required, so a page cannot drop the count by forgetting it.
+  final int pendingReviewCount;
+
+  static const _reviewIndex = 3;
+
   static const _destinations = [
     (icon: Icons.home_outlined, label: 'Home'),
     (icon: Icons.chat_bubble_outline, label: 'Chat'),
     (icon: Icons.folder_outlined, label: 'Studies'),
+    (icon: Icons.flag_outlined, label: 'Review'),
     (icon: Icons.settings_outlined, label: 'Settings'),
   ];
 
@@ -57,6 +65,9 @@ class PrimaryNavDrawer extends StatelessWidget {
                   // to, so this is the fix, not just an override.
                   selectedColor: NavigationTokens.sideNavSelected(context),
                   unselectedColor: context.colors.iconOnBrand,
+                  badgeLabel: i == _reviewIndex && pendingReviewCount > 0
+                      ? '$pendingReviewCount'
+                      : null,
                   onTap: () => onDestinationSelected(i),
                 ),
               ),

@@ -94,6 +94,24 @@ void main() {
       expect(find.text('no cases'), findsOneWidget);
     });
 
+    testWidgets('emptyState keeps the screen margin when it wraps', (
+      tester,
+    ) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: buildAppTheme(),
+        home: CaseListTemplate(
+          appBar: AppBar(),
+          caseSlots: const [],
+          worklistTable: const SizedBox.shrink(),
+          emptyState: Text('A message long enough to wrap ' * 4),
+        ),
+      ));
+      final message = tester.getRect(find.textContaining('A message'));
+      final body = tester.getRect(find.byType(Scaffold));
+      expect(message.left, greaterThanOrEqualTo(body.left + AppSpacing.lg));
+      expect(message.right, lessThanOrEqualTo(body.right - AppSpacing.lg));
+    });
+
     testWidgets('emptyState is absent when caseSlots is non-empty', (
       tester,
     ) async {

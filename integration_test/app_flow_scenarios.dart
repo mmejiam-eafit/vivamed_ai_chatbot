@@ -5,9 +5,12 @@ import 'package:radiologist_helper/ui/atoms/app_image.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/findings_panel.dart';
+import 'package:radiologist_helper/ui/organisms/image_review_table.dart';
 import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
+import 'package:radiologist_helper/ui/pages/image_review_page.dart';
+import 'package:radiologist_helper/ui/pages/review_queue_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
@@ -205,5 +208,49 @@ void main() {
     await goViaMenu(tester, 'Settings');
     expect(find.byType(SettingsPage), findsOneWidget);
     expect(find.byType(ChatPage), findsNothing);
+  });
+
+  testWidgets('review: hub -> Review -> decide a flagged image -> Processing', (
+    tester,
+  ) async {
+    pinWindow(tester, wideSize);
+    await signInToHub(tester);
+
+    await goViaMenu(tester, 'Review');
+    expect(find.byType(ReviewQueuePage), findsOneWidget);
+    expect(find.byType(ImageReviewTable), findsOneWidget);
+
+    // review-01: case-7's frontal film whose header says left lateral.
+    await tester.tap(find.text('Anonymous 7'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ImageReviewPage), findsOneWidget);
+    expect(find.text('Flagged · Header LL · Dataset Frontal'), findsOneWidget);
+
+    final frontal = find.descendant(
+      of: find.byWidgetPredicate((w) => w is RadioListTile),
+      matching: find.text('Frontal'),
+    );
+    await tester.ensureVisible(frontal);
+    await tester.pumpAndSettle();
+    await tester.tap(frontal);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save decision'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save decision'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Processing'), findsOneWidget);
+    expect(find.text('View set to Frontal'), findsOneWidget);
+
+    // Back in the queue, one image is left needing review.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(ReviewQueuePage), findsOneWidget);
+    await tester.tap(find.text('Menu'));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: find.byType(Drawer), matching: find.text('1')),
+      findsOneWidget,
+    );
   });
 }

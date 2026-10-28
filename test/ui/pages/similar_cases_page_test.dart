@@ -63,6 +63,39 @@ void main() {
       expect(find.text('3 similar cases found'), findsOneWidget);
     });
 
+    testWidgets('a study searched with every image shows no basis line',
+        (tester) async {
+      await tester.pumpWidget(wrap(const SimilarCasesPage(caseId: 'case-1')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Based on'), findsNothing);
+    });
+
+    testWidgets('a study with an image held back says which images it used',
+        (tester) async {
+      await tester.pumpWidget(wrap(const SimilarCasesPage(caseId: 'case-7')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Based on 2 of 3 images; 1 held back for review'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a study held back entirely says why there are no cases',
+        (tester) async {
+      await tester.pumpWidget(wrap(const SimilarCasesPage(caseId: 'case-6')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+            "No similar cases yet: this study's images are held back for "
+            'review.'),
+        findsOneWidget,
+      );
+      expect(find.text('No similar cases found.'), findsNothing);
+    });
+
     testWidgets('excludes the given case from the results', (tester) async {
       await tester.pumpWidget(wrap(const SimilarCasesPage(caseId: 'case-1')));
       await tester.pumpAndSettle();
@@ -102,12 +135,12 @@ void main() {
 
     // ── Primary nav drawer (expanded/ultrawide) ──────────────────────────
     //
-    // Not one of the 4 primary destinations itself (a drill-down page, like
+    // Not one of the 5 primary destinations itself (a drill-down page, like
     // Study Review) -- CaseListPage already wires primaryNavDrawer/menuRail
     // for its own "Studies" destination, but this page previously wired
     // neither, leaving no way back at all once its app bar is hidden here.
 
-    testWidgets('drawer: opens with all 4 destinations, none selected',
+    testWidgets('drawer: opens with all 5 destinations, none selected',
         (tester) async {
       setWideSize(tester);
       await tester.pumpWidget(wrap(const SimilarCasesPage(caseId: 'case-1')));
@@ -124,6 +157,10 @@ void main() {
       expect(
           find.descendant(
               of: find.byType(Drawer), matching: find.text('Studies')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byType(Drawer), matching: find.text('Review')),
           findsOneWidget);
       expect(
           find.descendant(

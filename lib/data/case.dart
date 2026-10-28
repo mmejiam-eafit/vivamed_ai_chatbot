@@ -31,3 +31,21 @@ class CaseDetail {
   final CaseSummary caseSummary;
   final String imageUrl;
 }
+
+/// What a similar-cases search returns: the cases, and which of the source
+/// study's images the search was based on. An image held back for review is
+/// left out of the search until its review is applied, so a study can be
+/// searched with only part of its images, or none.
+class SimilarCases {
+  const SimilarCases({
+    required this.cases,
+    required this.imagesUsed,
+    required this.imagesTotal,
+    required this.imagesHeldBack,
+  });
+
+  final List<CaseSummary> cases;
+  final int imagesUsed;
+  final int imagesTotal;
+  final int imagesHeldBack;
+}

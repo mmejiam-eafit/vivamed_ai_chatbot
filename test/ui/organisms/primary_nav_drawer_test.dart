@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/ui/atoms/app_badge.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/molecules/nav_item.dart';
 import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
@@ -12,15 +13,17 @@ void main() {
 
   // ── Structure ──────────────────────────────────────────────────────────────
 
-  testWidgets('renders Home, Chat, Studies, and Settings labels',
+  testWidgets('renders Home, Chat, Studies, Review, and Settings labels',
       (tester) async {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Chat'), findsOneWidget);
     expect(find.text('Studies'), findsOneWidget);
+    expect(find.text('Review'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
   });
 
@@ -29,9 +32,10 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final items = tester.widgetList<NavItem>(find.byType(NavItem));
-    expect(items.length, 4);
+    expect(items.length, 5);
     expect(items.every((i) => i.layout == NavItemLayout.horizontal), isTrue);
   });
 
@@ -41,6 +45,7 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final items = tester.widgetList<NavItem>(find.byType(NavItem));
     expect(items.any((i) => i.isSelected), isFalse);
@@ -50,9 +55,32 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: 2,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final items = tester.widgetList<NavItem>(find.byType(NavItem));
     expect(items.where((i) => i.isSelected).single.label, 'Studies');
+  });
+
+  // ── Review count (DL D-021) ────────────────────────────────────────────────
+
+  testWidgets('no badge when nothing needs review', (tester) async {
+    await tester.pumpWidget(wrap(PrimaryNavDrawer(
+      selectedIndex: null,
+      onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
+    )));
+    expect(find.byType(AppBadge), findsNothing);
+  });
+
+  testWidgets('only Review carries the count', (tester) async {
+    await tester.pumpWidget(wrap(PrimaryNavDrawer(
+      selectedIndex: null,
+      onDestinationSelected: (_) {},
+      pendingReviewCount: 2,
+    )));
+    final items = tester.widgetList<NavItem>(find.byType(NavItem)).toList();
+    expect(items.where((i) => i.badgeLabel != null).single.label, 'Review');
+    expect(items.firstWhere((i) => i.label == 'Review').badgeLabel, '2');
   });
 
   // ── onDestinationSelected ──────────────────────────────────────────────────
@@ -63,22 +91,37 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: 1,
       onDestinationSelected: (i) => tapped = i,
+      pendingReviewCount: 0,
     )));
     await tester.tap(find.text('Home'));
     await tester.pump();
     expect(tapped, 0);
   });
 
-  testWidgets('tapping Settings calls onDestinationSelected with 3',
+  testWidgets('tapping Review calls onDestinationSelected with 3',
       (tester) async {
     int? tapped;
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: 0,
       onDestinationSelected: (i) => tapped = i,
+      pendingReviewCount: 0,
+    )));
+    await tester.tap(find.text('Review'));
+    await tester.pump();
+    expect(tapped, 3);
+  });
+
+  testWidgets('tapping Settings calls onDestinationSelected with 4',
+      (tester) async {
+    int? tapped;
+    await tester.pumpWidget(wrap(PrimaryNavDrawer(
+      selectedIndex: 0,
+      onDestinationSelected: (i) => tapped = i,
+      pendingReviewCount: 0,
     )));
     await tester.tap(find.text('Settings'));
     await tester.pump();
-    expect(tapped, 3);
+    expect(tapped, 4);
   });
 
   // ── Color: on-brand, not AppNavBar's default ──────────────────────────────
@@ -90,6 +133,7 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final icon = tester.widget<Icon>(find.byIcon(Icons.chat_bubble_outline));
     expect(icon.color, AppColorsData.light.iconOnBrand);
@@ -104,6 +148,7 @@ void main() {
         body: PrimaryNavDrawer(
           selectedIndex: null,
           onDestinationSelected: (_) {},
+          pendingReviewCount: 0,
         ),
       ),
     ));
@@ -125,6 +170,7 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: 1,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final icon = tester.widget<Icon>(find.byIcon(Icons.chat_bubble_outline));
     expect(icon.color, AppColorsData.light.interactivePrimary);
@@ -138,6 +184,7 @@ void main() {
         body: PrimaryNavDrawer(
           selectedIndex: 1,
           onDestinationSelected: (_) {},
+          pendingReviewCount: 0,
         ),
       ),
     ));
@@ -152,6 +199,7 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final drawer = tester.widget<Drawer>(find.byType(Drawer));
     expect(drawer.width, NavigationTokens.sideNavWidth);
@@ -162,6 +210,7 @@ void main() {
     await tester.pumpWidget(wrap(PrimaryNavDrawer(
       selectedIndex: null,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 0,
     )));
     final drawer = tester.widget<Drawer>(find.byType(Drawer));
     expect(drawer.backgroundColor, AppColorsData.light.surfaceBrandSecondary);

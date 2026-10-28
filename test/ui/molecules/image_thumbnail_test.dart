@@ -52,6 +52,34 @@ void main() {
     expect(image.height, 90.0);
   });
 
+  // ── Whole study, never cropped (DL D-020) ──────────────────────────────
+
+  testWidgets('letterboxes the image instead of cropping it', (tester) async {
+    await tester.pumpWidget(wrap(
+      const ImageThumbnail(url: 'https://example.com/img.png'),
+    ));
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(image.fit, BoxFit.contain);
+  });
+
+  for (final brightness in Brightness.values) {
+    testWidgets('letterbox ground is the diagnostic canvas ($brightness)',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: buildAppTheme(brightness),
+        home: const Scaffold(
+          body: ImageThumbnail(url: 'https://example.com/img.png'),
+        ),
+      ));
+      // The nearest ColoredBox above the image; Scaffold and Material
+      // contribute their own further up.
+      final ground = tester.widget<ColoredBox>(find
+          .ancestor(of: find.byType(Image), matching: find.byType(ColoredBox))
+          .first);
+      expect(ground.color, diagnosticCanvasGround);
+    });
+  }
+
   testWidgets('badge is shown when badgeLabel provided', (tester) async {
     await tester.pumpWidget(wrap(
       const ImageThumbnail(

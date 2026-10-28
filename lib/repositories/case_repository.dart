@@ -10,8 +10,9 @@ abstract class CaseRepository {
 
   /// A plausible real endpoint (`GET /cases/{id}/similar`), not a
   /// transformation of already-fetched data -- belongs here, not in
-  /// `CaseService`.
-  Future<List<CaseSummary>> getSimilarCases(String caseId);
+  /// `CaseService`. Only the backend knows which of the study's images the
+  /// search used, so that comes back with the cases.
+  Future<SimilarCases> getSimilarCases(String caseId);
 }
 
 class MockCaseRepository implements CaseRepository {
@@ -32,8 +33,17 @@ class MockCaseRepository implements CaseRepository {
   }
 
   @override
-  Future<List<CaseSummary>> getSimilarCases(String caseId) async {
+  Future<SimilarCases> getSimilarCases(String caseId) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
-    return mockCases.where((c) => c.id != caseId).take(3).toList();
+    final basis = mockSimilarCasesBasisFor(caseId);
+    return SimilarCases(
+      // With every image held back there is nothing to search with.
+      cases: basis.used == 0
+          ? const []
+          : mockCases.where((c) => c.id != caseId).take(3).toList(),
+      imagesUsed: basis.used,
+      imagesTotal: basis.total,
+      imagesHeldBack: basis.heldBack,
+    );
   }
 }

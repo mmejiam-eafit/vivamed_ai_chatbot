@@ -48,7 +48,9 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 | `FindingRow` | `AppSpacing.md` vertical padding, `AppTypography.bodyMd` for finding text, `AppColors.borderSubdued` bottom border |
 | `StatusBanner` | `AppColors.statusSuccess` / `statusWarning` / `statusError` / `statusInfo` icon, matching `status*Subdued` background, `AppTypography.bodyMd`, `AppRadius.borderButton` |
 | `TypingIndicator` | `ChatTokens.typingIndicator` dot color, `AppMotion.transition` animation duration |
-| `ImageThumbnail` | `AppRadius.borderCard` clip, `AppElevation.card` shadow, `AppColors.surfaceSubdued` loading placeholder |
+| `ImageThumbnail` | `AppRadius.borderCard` clip, `AppElevation.card` shadow, `diagnosticCanvasGround` letterbox (`BoxFit.contain`, DL D-020), `AppColors.surfaceSubdued` loading placeholder |
+| `ReviewStatusChip` | `statusWarning` / `statusInfo` / `statusSuccess` foreground on the matching `status*Subdued` background (Needs review / Processing / Applied, DL D-021), `AppRadius.borderInput`, `AppIconSize.sm` icon, `AppTypography.labelMd` |
+| `CaptionedImage` | `AppImage` with `BoxFit.contain`; caption `AppTypography.labelMd` in `textSecondary` below the pixels, `AppSpacing.xs` gap — read on the Image Review canvas's forced dark theme |
 
 ### Organisms
 
@@ -59,8 +61,10 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 | `FindingsPanel` | `AppColors.surface` background, `AppElevation.card` or `AppColors.borderSubdued` border, `AppSpacing.lg` internal padding, `AppTypography.headingMd` section header |
 | `StudyInfoCard` | `AppColors.surface` surface, `AppElevation.card`, `AppRadius.borderCard`, `AppSpacing.xl` padding, `AppTypography.headingLg` title, `AppTypography.mono` for study UID |
 | `ConversationDrawer` | `NavigationTokens.drawerBackground`, `NavigationTokens.drawerForeground`, `AppSpacing.lg` item padding |
-| `AppNavBar` | `NavigationTokens.bottomNav*` colors, `AppTypography.labelSm` labels |
+| `AppNavBar` | `NavigationTokens.bottomNav*` colors, `AppTypography.labelSm` labels; Review's count is an `AppBadge` on `statusWarningSubdued` / `statusWarning` (DL D-021) |
 | `StatusBar` | Full-width, no border radius, `AppSpacing.md` vertical padding |
+| `ImageReviewPanel` | `SectionCard` sections, `AppTypography.bodyMd` in `textPrimary` for the reason and decision, `bodySm` / `textSecondary` for choice tags, `interactivePrimary` radio, `AppSpacing.md`–`lg` between sections |
+| `ImageReviewTable` | As `CaseWorklistTable`: `AppTypography.labelMd` / `textSecondary` headings on `surfaceSubdued`, `numeric` dates, `mono` recorded labels, `borderSubdued` dividers |
 
 ### Templates
 
@@ -68,6 +72,7 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 |---|---|
 | `ChatTemplate` | `AppColors.surfacePage` scaffold background, `AppSpacing.lg` zone padding on wide screens; side panel gated on `AppLayout.threePaneMinWidth` (see `design_tokens.md` §9) |
 | `StudyReviewTemplate` | Same scaffold background, `AppSpacing.xl` between top and bottom zones |
+| `ImageReviewTemplate` | `surfacePage` scaffold background; the canvas is `diagnosticCanvasGround` under a forced dark theme, `AppSpacing.sm` between images, details column `AppLayout.panelMaxWidth` from `twoPaneMinWidth` with `AppSpacing.lg` padding |
 | `SettingsTemplate` | `AppSpacing.lg` horizontal padding, `AppSpacing.xxl` between setting sections |
 | `OnboardingTemplate` | No page-level padding (full-bleed), `AppSpacing.xl` bottom action area padding |
 | `AuthTemplate` | Centered card with `AppElevation.overlay`, `AppRadius.borderPanel`, capped at `AppLayout.formMaxWidth` |

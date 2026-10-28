@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:radiologist_helper/ui/atoms/app_badge.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
-/// The app's bottom navigation — Home / Chat / Studies / Settings. Built on
-/// Flutter's own `NavigationBar`/`NavigationDestination` rather than a
-/// hand-rolled row of `NavItem`s: four destinations with a filled/outline icon
+/// The app's bottom navigation — Home / Chat / Studies / Review / Settings.
+/// Built on Flutter's own `NavigationBar`/`NavigationDestination` rather than
+/// a hand-rolled row of `NavItem`s: five destinations with a filled/outline icon
 /// swap per selection is exactly what `NavigationDestination.icon`/
 /// `.selectedIcon` already do.
 class AppNavBar extends StatelessWidget {
@@ -13,10 +14,40 @@ class AppNavBar extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    required this.pendingReviewCount,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+
+  /// Images waiting for a radiologist, badged on Review; none at 0.
+  /// Required, so a page cannot drop the count by forgetting it.
+  final int pendingReviewCount;
+
+  /// The Review icon with its count over the top-right corner, where
+  /// Material's `Badge` sits. `AppBadge` rather than `Badge`: Badge's fixed
+  /// height clips a count at large text sizes, AppBadge grows with it. On
+  /// the warning pair; its digits carry the count (DL D-021).
+  Widget _reviewIcon(BuildContext context, IconData icon, Color color) {
+    final iconWidget = Icon(icon, color: color);
+    if (pendingReviewCount == 0) return iconWidget;
+    final colors = context.colors;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        iconWidget,
+        PositionedDirectional(
+          start: AppSpacing.md,
+          top: -AppSpacing.xs,
+          child: AppBadge(
+            label: '$pendingReviewCount',
+            backgroundColor: colors.statusWarningSubdued,
+            textColor: colors.statusWarning,
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +95,11 @@ class AppNavBar extends StatelessWidget {
               label: 'Studies',
             ),
             NavigationDestination(
+              icon: _reviewIcon(context, Icons.flag_outlined, unselectedColor),
+              selectedIcon: _reviewIcon(context, Icons.flag, selectedColor),
+              label: 'Review',
+            ),
+            NavigationDestination(
               icon: Icon(Icons.settings_outlined, color: unselectedColor),
               selectedIcon: Icon(Icons.settings, color: selectedColor),
               label: 'Settings',
@@ -81,22 +117,33 @@ class AppNavBar extends StatelessWidget {
 Widget previewAppNavBarHome() => AppNavBar(
       selectedIndex: 0,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 2,
     );
 
 @Preview(name: 'chat selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarChat() => AppNavBar(
       selectedIndex: 1,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 2,
     );
 
 @Preview(name: 'studies selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarStudies() => AppNavBar(
       selectedIndex: 2,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 2,
+    );
+
+@Preview(name: 'review selected', size: Size(390, 72), wrapper: previewWrapper)
+Widget previewAppNavBarReview() => AppNavBar(
+      selectedIndex: 3,
+      onDestinationSelected: (_) {},
+      pendingReviewCount: 2,
     );
 
 @Preview(name: 'settings selected', size: Size(390, 72), wrapper: previewWrapper)
 Widget previewAppNavBarSettings() => AppNavBar(
-      selectedIndex: 3,
+      selectedIndex: 4,
       onDestinationSelected: (_) {},
+      pendingReviewCount: 2,
     );

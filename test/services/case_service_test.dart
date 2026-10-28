@@ -16,9 +16,14 @@ class _FakeCaseRepository implements CaseRepository {
       throw UnimplementedError();
 
   @override
-  Future<List<CaseSummary>> getSimilarCases(String caseId) async {
+  Future<SimilarCases> getSimilarCases(String caseId) async {
     lastSimilarCasesCaseId = caseId;
-    return const [];
+    return const SimilarCases(
+      cases: [],
+      imagesUsed: 1,
+      imagesTotal: 1,
+      imagesHeldBack: 0,
+    );
   }
 }
 

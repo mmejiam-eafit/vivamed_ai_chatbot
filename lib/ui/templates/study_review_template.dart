@@ -41,7 +41,7 @@ class StudyReviewTemplate extends StatelessWidget {
   /// in anymore). Rendered as a persistent sidebar inside the three-zone Row.
   final Widget? drawerWide;
 
-  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// Primary app navigation (Home/Chat/Studies/Review/Settings) at expanded/
   /// ultrawide -- see DT §9.5 desktop/web revisit.
   final Widget? primaryNavDrawer;
 

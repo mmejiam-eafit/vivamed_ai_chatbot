@@ -5,6 +5,7 @@ import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
 import 'package:radiologist_helper/repositories/findings_repository.dart';
 import 'package:radiologist_helper/repositories/heatmap_repository.dart';
+import 'package:radiologist_helper/repositories/image_review_repository.dart';
 import 'package:radiologist_helper/repositories/onboarding_repository.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/repositories/user_repository.dart';
@@ -23,6 +24,9 @@ final caseRepositoryProvider =
 
 final findingsRepositoryProvider =
     Provider<FindingsRepository>((ref) => MockFindingsRepository());
+
+final imageReviewRepositoryProvider =
+    Provider<ImageReviewRepository>((ref) => MockImageReviewRepository());
 
 final conversationRepositoryProvider =
     Provider<ConversationRepository>((ref) => MockConversationRepository());

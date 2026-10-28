@@ -30,7 +30,7 @@ class CaseListTemplate extends StatelessWidget {
   final Widget? emptyState;
   final Widget? navBar;
 
-  /// Primary app navigation (Home/Chat/Studies/Settings) at expanded/
+  /// Primary app navigation (Home/Chat/Studies/Review/Settings) at expanded/
   /// ultrawide, replacing navBar there -- see DT §9.5 desktop/web revisit.
   final Widget? primaryNavDrawer;
 
@@ -90,7 +90,14 @@ class CaseListTemplate extends StatelessWidget {
 
   Widget _buildContent(AppLayoutTier tier, bool isWide) {
     if (caseSlots.isEmpty && emptyState != null) {
-      return Center(child: emptyState);
+      // Padded so a message long enough to wrap keeps the screen margin
+      // instead of running to the window's edges.
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: emptyState,
+        ),
+      );
     }
 
     if (isWide) {

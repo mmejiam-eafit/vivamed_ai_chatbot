@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:radiologist_helper/ui/atoms/app_badge.dart';
 import 'package:radiologist_helper/ui/atoms/app_icon.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
@@ -21,6 +22,7 @@ class NavItem extends StatelessWidget {
     this.onTap,
     this.layout = NavItemLayout.vertical,
     this.focusNode,
+    this.badgeLabel,
   });
 
   final IconData icon;
@@ -29,6 +31,12 @@ class NavItem extends StatelessWidget {
   final VoidCallback? onTap;
   final NavItemLayout layout;
   final FocusNode? focusNode;
+
+  /// A count of work waiting at this destination, shown after the label --
+  /// the Review destination's images needing review. On the warning pair,
+  /// whose digits carry it; the pill's own edge is too faint against some
+  /// navigation surfaces to be relied on (DL D-021).
+  final String? badgeLabel;
 
   /// Resolved color for the selected/unselected state. No default: every real
   /// caller (`ConversationDrawer`, `MenuRail`, `PrimaryNavDrawer`) sits on its
@@ -47,7 +55,22 @@ class NavItem extends StatelessWidget {
     final color = isSelected ? selectedColor : unselectedColor;
 
     final iconWidget = AppIcon(icon, color: color, size: 24.0);
-    final labelWidget = AppText(label, style: AppTypography.labelSm, color: color);
+    final colors = context.colors;
+    final text = AppText(label, style: AppTypography.labelSm, color: color);
+    final labelWidget = badgeLabel == null
+        ? text
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              text,
+              const SizedBox(width: AppSpacing.xs),
+              AppBadge(
+                label: badgeLabel!,
+                backgroundColor: colors.statusWarningSubdued,
+                textColor: colors.statusWarning,
+              ),
+            ],
+          );
 
     final child = switch (layout) {
       NavItemLayout.horizontal => Row(

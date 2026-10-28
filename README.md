@@ -160,6 +160,8 @@ flutter build web --release
 
 **`web/` is not in the repo either**: it is git-ignored, and a fresh clone has none. Generate it before the first browser run or web build with `make bootstrap-web` (or `flutter create --platforms=web .`, then discard what it changed in `.metadata`, `pubspec.lock` and `test/widget_test.dart`; the make target does that for you). A default `web/` is what the project always used, so nothing in it needs editing.
 
+**The image-review mocks' CheXpert Plus pictures are not in the repo either.** CheXpert Plus is research-use data, so it is converted locally and never committed: `make mock-images` turns the six DICOMs the mocks use into git-ignored PNGs under `lib/data/mocks/images/chexpert/` (it needs `uv`, and the dataset's uncompressed DICOM `train` folder at `CHEXPERT_DIR`). Without them the app still builds and runs, and shows a placeholder for those images.
+
 ---
 
 ## Tests

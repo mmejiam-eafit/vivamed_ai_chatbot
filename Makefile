@@ -3,8 +3,8 @@ SHELL := /bin/sh
 # build/, test/ and coverage/ are directories here, so every target is phony.
 .PHONY: install update update-major outdated bootstrap-linux bootstrap-android bootstrap-web \
 	run run-linux run-web run-android preview devices emulators emulator-phone emulator-tablet \
-	unit-test coverage integration-test integration-test-android update-goldens \
-	analyze check build-web build-linux build-apk clean help
+	unit-test coverage integration-test-linux integration-test-phone integration-test-tablet update-goldens \
+	analyze check mock-images build-web build-linux build-apk clean help
 
 
 # Configurable variables — override on the command line as needed.
@@ -12,15 +12,22 @@ DEVICE           := $(if $(DEVICE),$(DEVICE),linux)
 ANDROID_DEVICE   := $(if $(ANDROID_DEVICE),$(ANDROID_DEVICE),emulator-5554)
 PHONE_AVD        := $(if $(PHONE_AVD),$(PHONE_AVD),Medium_Phone_API_35)
 TABLET_AVD       := $(if $(TABLET_AVD),$(TABLET_AVD),Tablet_Landscape_API_35)
+# Android numbers emulators in launch order (see `make devices`): the first one up is
+# emulator-5554, the next emulator-5556. Override if you start them differently.
+PHONE_DEVICE     := $(if $(PHONE_DEVICE),$(PHONE_DEVICE),emulator-5554)
+TABLET_DEVICE    := $(if $(TABLET_DEVICE),$(TABLET_DEVICE),emulator-5556)
 TEST_PATH        := $(TEST_PATH)
 SCENARIO         := $(SCENARIO)
 ARGS             := $(ARGS)
+# The uncompressed CheXpert Plus DICOM train split; mock-images reads from it.
+CHEXPERT_DIR     := $(if $(CHEXPERT_DIR),$(CHEXPERT_DIR),/media/mmejia/EAFF-B3D3/chexpert-plus/chexpertplus/DICOM/Uncompressed/train)
 
 # Git-ignored paths that building, testing and running generate. IDE and agent
 # folders (.idea/, .vscode/, .claude/) are settings, not build output, so they stay.
 CLEAN_PATHS := build .dart_tool coverage android linux web .flutter-plugins-dependencies
 
 # One scenario file under integration_test/, or all of them when SCENARIO is empty.
+# Only the desktop run takes one: on a phone or tablet the suite is a single file.
 INTEGRATION_PATH := integration_test$(if $(SCENARIO),/$(SCENARIO))
 
 # Generate a git-ignored platform folder, as the README prescribes. `flutter create`
@@ -128,13 +135,17 @@ coverage:
 		echo "coverage/lcov.info written (install lcov for an HTML report)"; \
 	fi
 
-integration-test: # @HELP Run integration_test/ on DEVICE (default linux). One file: SCENARIO=<name>_scenarios.dart.
-integration-test:
-	@flutter test $(INTEGRATION_PATH) -d $(DEVICE) $(ARGS)
+integration-test-linux: # @HELP Run integration_test/ on the Linux desktop: wide and ultrawide flows, page scenarios, goldens. One file: SCENARIO=<name>_scenarios.dart.
+integration-test-linux:
+	@flutter test $(INTEGRATION_PATH) -d linux $(ARGS)
 
-integration-test-android: # @HELP Run integration_test/ on ANDROID_DEVICE (the device's width picks the tier).
-integration-test-android:
-	@flutter test $(INTEGRATION_PATH) -d $(ANDROID_DEVICE) $(ARGS)
+integration-test-phone: # @HELP Run the compact-tier flows on PHONE_DEVICE (default emulator-5554; start it with emulator-phone).
+integration-test-phone:
+	@flutter test integration_test -d $(PHONE_DEVICE) $(ARGS)
+
+integration-test-tablet: # @HELP Run the medium-tier flows on TABLET_DEVICE (default emulator-5556; start it with emulator-tablet).
+integration-test-tablet:
+	@flutter test integration_test -d $(TABLET_DEVICE) $(ARGS)
 
 update-goldens: # @HELP Regenerate integration_test/goldens/ on the Linux desktop.
 update-goldens:
@@ -148,6 +159,13 @@ analyze:
 
 check: # @HELP Run analyze, then the unit tests (the gate before a change is done).
 check: analyze unit-test
+
+# ─── Mock data ───────────────────────────────────────────────────────────────
+
+mock-images: # @HELP Convert the CheXpert Plus studies behind the review mocks into git-ignored PNGs (needs uv and CHEXPERT_DIR).
+mock-images:
+	@uv run --no-project --with 'pydicom>=3' --with numpy --with pillow \
+		python -I tool/convert_chexpert_mocks.py "$(CHEXPERT_DIR)" lib/data/mocks/images/chexpert
 
 # ─── Build ───────────────────────────────────────────────────────────────────
 
@@ -178,9 +196,12 @@ help:
 	echo "  ANDROID_DEVICE   = $(ANDROID_DEVICE)" && \
 	echo "  PHONE_AVD        = $(PHONE_AVD)" && \
 	echo "  TABLET_AVD       = $(TABLET_AVD)" && \
+	echo "  PHONE_DEVICE     = $(PHONE_DEVICE)" && \
+	echo "  TABLET_DEVICE    = $(TABLET_DEVICE)" && \
 	echo "  TEST_PATH        = $(TEST_PATH)" && \
 	echo "  SCENARIO         = $(SCENARIO)" && \
 	echo "  ARGS             = $(ARGS)" && \
+	echo "  CHEXPERT_DIR     = $(CHEXPERT_DIR)" && \
 	echo " " && \
 	echo "TARGETS:" && \
 	grep -E '^.*: *# *@HELP' $(MAKEFILE_LIST) \

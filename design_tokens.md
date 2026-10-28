@@ -104,10 +104,12 @@ Each token names the text's **role**, not its appearance.
 
 | Pair | Use for |
 |---|---|
-| `statusSuccess` / `statusSuccessSubdued` | Upload complete, study processed |
-| `statusWarning` / `statusWarningSubdued` | Low-confidence result, connection issue, stale data |
+| `statusSuccess` / `statusSuccessSubdued` | Upload complete, study processed, image review applied ("Applied", review queue only) |
+| `statusWarning` / `statusWarningSubdued` | Low-confidence result, connection issue, stale data, image awaiting review ("Needs review", and the Review destination's count) |
 | `statusError` / `statusErrorSubdued` | Failed upload, invalid input, server error |
-| `statusInfo` / `statusInfoSubdued` | Informational banners, non-actionable notices |
+| `statusInfo` / `statusInfoSubdued` | Informational banners, non-actionable notices, image review decided and being applied ("Processing") |
+
+Image-review state always pairs its status color with a text label and an icon, and never appears inside a component that renders severity (**DL D-021**).
 
 ### 2.6 Severity — clinical findings only
 
@@ -234,7 +236,7 @@ Every value clears its target with hue held (checked in HLS: every hue shift und
 
 | Token | Value | Use for |
 |---|---|---|
-| `diagnosticCanvasGround` | `#0A0C0E` | The ground behind and around diagnostic imagery — the viewer canvas, and any slot a DICOM image is dropped into |
+| `diagnosticCanvasGround` | `#0A0C0E` | The ground behind and around diagnostic imagery — the viewer canvas, the Image Review canvas, study thumbnails, and any slot a DICOM image is dropped into |
 
 **This value is not new.** §10.4 has specified it all along; it simply had no token to live in. It is deliberately *not* the chrome navy — the boundary between interface and evidence has to stay sharp.
 
@@ -474,8 +476,10 @@ Six breakpoints (five unused) become three tier boundaries and two pane minimums
 | **Onboarding** | Full-bleed carousel; image top, copy below | Content capped 560 | Two columns — image left, copy right, capped `contentMaxWidth` | Generous |
 | **Chat** | Conversations in overlay drawer; findings in draggable bottom sheet | Conversations collapse to 64px rail; findings slide over above `twoPaneMinWidth` | Three panes: nav │ chat │ findings, gated at `threePaneMinWidth` | Comfortable chat, compact findings |
 | **Study Review** | Viewer 4:3 on top, `Findings │ Chat` tabs below | Viewer left / tabs right above `twoPaneMinWidth`, else viewer top | Three zones, gated at `threePaneMinWidth`. **Ultrawide: viewer and findings side by side, viewer absorbs the extra width** | Comfortable → compact |
-| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity, gated at `threePaneMinWidth`. The same columns at ultrawide; capped at 1440 (`worklistMaxWidth`) and centered from `threePaneMinWidth` up, which binds from ≈1504px with the 64px menu rail (**D-019**) | Comfortable → compact → dense |
+| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity, and review (images held back, neutral text, **D-022**), gated at `threePaneMinWidth`. The same columns at ultrawide; capped at 1440 (`worklistMaxWidth`) and centered from `threePaneMinWidth` up, which binds from ≈1504px with the 64px menu rail (**D-019**) | Comfortable → compact → dense |
 | **Heatmap Viewer** | Full-screen canvas showing the whole image, letterboxed on the canvas ground and never cropped, with the overlay sharing the image's frame (**D-020**); controls in bottom bar over scrim | As compact, 56px control bar | Canvas centered, controls in a 280px right rail | 44px touch to `expanded`, then 32px |
+| **Review** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense table** — status, patient, date, reason, recorded labels, decision, gated at `threePaneMinWidth` and capped like Case List. Not sortable: rows keep the queue's priority order, needs review → processing → applied | Comfortable → compact → dense |
+| **Image Review** | Canvas on top at 45% of the height, the flagged image (two thirds) beside the study's other images (one third), whole and never cropped (**D-020**); reason, decision and report scroll below | From `twoPaneMinWidth`: canvas left, a `panelMaxWidth` column right holding reason, decision and report | As medium | Generous: a deciding task (**DL §7.1**) |
 | **Settings** | Single-column section list | Single column capped 640 | Two columns — 200px index left, content right capped 720, gated at `threePaneMinWidth` | Generous |
 
 Case List switching from grid to table is deliberate: a worklist is a scanning task, and scanning tasks want tables (**DL §7.1**).
@@ -653,4 +657,5 @@ Live defects and unimplemented specifications. Delete entries as they close.
 |---|---|---|
 | 2 | **Five `AppLayout` tokens still dead.** The tier system (`AppLayoutTier`) and most of §9.3's pane minimums are implemented and drive `LayoutBuilder` branching in all 9 templates. `templateSplitWidth`, `primaryColumnMin`, `panelMinWidth`, and the `sideNavWidth`/`sideNavRailWidth` aliases have no consumer. | `AppLayout` |
 | 5 | **Heatmap overlay has no dedicated perceptual ramp.** Violates **DL §3.7**. `diagnosticCanvasGround` (§2.10) is the only value defined so far; the ramp is deliberately unbuilt. The overlay is backend-generated, so choosing a ramp also means specifying to the backend what it sends (per-pixel intensity vs. pre-rendered RGBA) and how alpha/transparency works — a cross-system data-contract decision, not a color pick alone. The gradient is production code, fed raw `Colors.*` per finding, not status or severity tokens. Where the overlay is anchored is not part of this gap: **D-020** lays it out against the image's own frame; the ramp and the data contract remain open. | `lung_heatmap_overlay.dart`, reached via `heatmap_viewer_page.dart` |
-| 13 | **Text scaling only partially verified at 200%.** §3.7 is specification only beyond this. Three files (`case_list_template.dart`, `onboarding_carousel.dart`, `case_worklist_table.dart`) have a pinned 200%-scale test; the rest of `lib/ui/templates/` and `lib/ui/organisms/` do not. | most templates and organisms |
+| 33 | **The bottom navigation bar caps its labels at 1.3× text scale.** Flutter's `NavigationBar` clamps its destination labels' text scaler to 1.3 internally, so they do not follow the OS setting to 200% (**DL §8.6**, **D-010**). Nothing in this repo sets that cap and it was unrecorded. Lifting it means replacing `NavigationBar`, and five destinations leave each label about 64px at 320px width. | `app_nav_bar.dart` |
+| 13 | **Text scaling only partially verified at 200%.** §3.7 is specification only beyond this. Seven files (`case_list_template.dart`, `onboarding_carousel.dart`, `case_worklist_table.dart`, `image_review_template.dart`, `image_review_panel.dart`, `image_review_table.dart`, `app_nav_bar.dart`) have a pinned 200%-scale test; the rest of `lib/ui/templates/` and `lib/ui/organisms/` do not. | most templates and organisms |
