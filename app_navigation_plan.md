@@ -18,7 +18,8 @@ Standalone Chat (not tied to a study) stays as a real hub option, not retired �
 Login ──(first run)──> Onboarding ──Get started──> Home Hub
 Login ──(returning)───────────────────────────────> Home Hub
 
-Home Hub ──Upload a study──> Upload ──(mock analysis done)──> Study Review (new case)
+Home Hub ──Upload a study──> Upload ──(files stored)──> Processing (the upload's run) ──Open study──> Study Review (new case)
+Upload ──(every file already in the study: no run)──> Study Review (that case)
 Home Hub ──View studies────> Case List ──tap a case────────> Study Review (that case)
 Home Hub ──Chat─────────────> Chat (standalone, general)
 Home Hub ──(gear icon)──────> Settings
@@ -35,6 +36,7 @@ Study Review ──view similar studies──> Similar Cases ──tap a case─
 
 Chat/Case List/Review/Settings ──AppNavBar: Review──> Review queue ──tap an image──> Image Review
 Study Review ──status bar: Review (an image awaiting review)──> Image Review
+Study Review ──status bar: Review (failed processing items)──> Processing (the study's failed items, no run)
 ```
 
 Home Hub is the navigation **root** after login — reached once, then everything else is `Navigator.push`ed on top of it, so the AppBar back arrow eventually returns to it. `AppNavBar` gets reused, not stranded, but in a different role than the design canvas's proposal gave it: not a bar mounted on the Hub itself (the Hub *is* the equivalent of "home"), but a **4th "Home" destination added to it**, mounted only on the three screens it already represents — Chat, Case List, Settings — so a radiologist can jump laterally between those three, or straight back to the Hub, without walking back through the stack. Study Review, Heatmap, Upload, and Similar Cases stay nav-bar-free — standard drill-down UX, matching every app that hides its tab bar once you're inside a detail screen.
@@ -175,5 +177,7 @@ Implemented, in sequenced chunks:
 11. Follow-up 2, after a manual pass on Chunk 10 found the app bar still visible on some pages: four independent gaps found and closed — see "Follow-up 2: root-causing 'still see it in some pages'" above. `case_list_template.dart`/`settings_template.dart` now share `chat_template.dart`/`study_review_template.dart`'s `threePaneMinWidth` boundary instead of their own, independently-arrived-at `expandedMinWidth` one; `study_review_page.dart`/`chat_page.dart`/`case_list_page.dart`/`similar_cases_page.dart` no longer bypass their template with an early-return `Scaffold` while loading; `home_hub_template.dart`/`home_hub_page.dart` gained the same expanded/ultrawide treatment as Case List/Settings; `similar_cases_page.dart` gained the `primaryNavDrawer`/`menuRail` wiring it never had. Heatmap Viewer and Upload deliberately excluded, with reasoning, not silently skipped.
 
 12. A fifth destination, Review, between Studies and Settings (Settings moves from index 3 to 4), carrying the count of images needing a radiologist on both `AppNavBar` and `PrimaryNavDrawer`. The six per-page copies of the index-to-page switch became one shared `openPrimaryDestination` in `lib/ui/pages/primary_destinations.dart` first, so adding the destination changed one mapping. The review queue (`ReviewQueuePage`) is itself a destination page; `ImageReviewPage` is a drill-down reached from it and from Study Review's status bar. Home Hub still has no bar at compact/medium, so the count is not visible there.
+
+13. `ProcessingPage`, after the upload action: Upload replaces itself with it once the files are stored (no longer straight to Study Review), and it follows the run until it ends, then lists the study's failed items to retry or discard; Open study replaces it with Study Review. Study Review's status bars stack, and one of them links back to the same page while the study has open failures, since steps can fail after the radiologist has left. Not a destination and not counted on the Review badge: failed items are reached from their study. Leaving mid-run leaves nothing that leads back to its progress; a study's run status in the worklist would.
 
 Every navigation path described in Chunks 1-11 is wired and tested (`flutter test`, plus `integration_test/app_flow_test.dart` driving the real compiled app end-to-end for Chunks 1-8; Chunks 9-11's own tests, listed in the Verification section above, pass — `integration_test/app_flow_test.dart` not yet extended to cover any of them).
