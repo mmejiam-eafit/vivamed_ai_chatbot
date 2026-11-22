@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/pages/processing_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/pages/upload_page.dart';
+
+import '../../support/fake_processing_repository.dart';
 
 class _FailingUploadRepository implements UploadRepository {
   int calls = 0;
@@ -20,13 +24,36 @@ class _FailingUploadRepository implements UploadRepository {
   }
 }
 
+/// Every file was already in the study: no run to follow.
+class _DuplicateUploadRepository implements UploadRepository {
+  @override
+  Future<UploadResult> uploadStudy(List<String> fileNames) async =>
+      const UploadResult(caseId: 'case-6');
+}
+
 void main() {
+  // The mock upload's first run in a fresh pipeline is run-1; answered as
+  // finished, so the Processing page it leads to reads it once and settles.
+  List<Override> finishedRun() => [
+        processingRepositoryProvider.overrideWithValue(
+          FakeProcessingRepository(runs: {
+            'run-1': [
+              const ProcessingRun(
+                status: RunStatus.ready,
+                openFailures: 0,
+                steps: [],
+              ),
+            ],
+          }),
+        ),
+      ];
+
   Widget wrap(
     Widget child, {
     List<Override> overrides = const [],
   }) =>
       ProviderScope(
-        overrides: overrides,
+        overrides: [...finishedRun(), ...overrides],
         child: MaterialApp(theme: buildAppTheme(), home: child),
       );
 
@@ -53,8 +80,8 @@ void main() {
   });
 
   testWidgets(
-      'uploading succeeds: navigates to Study Review automatically',
-      (tester) async {
+      'uploading succeeds: follows the run on the Processing page '
+      'automatically', (tester) async {
     await tester.pumpWidget(wrap(UploadPage(pickFiles: threeFiles)));
     await tester.tap(find.byType(InkWell).first);
     await tester.pumpAndSettle();
@@ -66,12 +93,33 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // No manual step: navigation happens as soon as upload/analysis
-    // resolves, with no intervening "View Study" banner/button to tap.
-    expect(find.byType(StudyReviewPage), findsOneWidget);
+    // No manual step: navigation happens as soon as the files are stored,
+    // with no intervening "View Study" banner/button to tap.
+    final page = tester.widget<ProcessingPage>(find.byType(ProcessingPage));
+    expect(page.runId, 'run-1');
+    expect(page.caseId, startsWith('case-upload-'));
     expect(find.byType(UploadPage), findsNothing);
-    expect(find.text('Study processed successfully'), findsNothing);
     expect(find.text('View Study'), findsNothing);
+  });
+
+  testWidgets('an upload with nothing to process goes straight to the study',
+      (tester) async {
+    await tester.pumpWidget(wrap(
+      UploadPage(pickFiles: threeFiles),
+      overrides: [
+        uploadRepositoryProvider
+            .overrideWithValue(_DuplicateUploadRepository()),
+      ],
+    ));
+    await tester.tap(find.byType(InkWell).first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Upload'));
+    await tester.pumpAndSettle();
+
+    final page = tester.widget<StudyReviewPage>(find.byType(StudyReviewPage));
+    expect(page.caseId, 'case-6');
+    expect(find.byType(ProcessingPage), findsNothing);
   });
 
   testWidgets('back navigation is blocked while uploading', (tester) async {
