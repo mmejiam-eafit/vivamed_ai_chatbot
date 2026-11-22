@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:radiologist_helper/data/case.dart';
+import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
@@ -14,7 +14,7 @@ class _FailingUploadRepository implements UploadRepository {
   int calls = 0;
 
   @override
-  Future<CaseDetail> uploadStudy(List<String> fileNames) async {
+  Future<UploadResult> uploadStudy(List<String> fileNames) async {
     calls++;
     throw Exception('mock failure');
   }

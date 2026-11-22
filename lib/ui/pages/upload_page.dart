@@ -64,13 +64,13 @@ class _UploadPageState extends ConsumerState<UploadPage> {
       if (!mounted) return;
       setState(() => _status = UploadZoneStatus.analyzing);
 
-      final detail = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
+      final result = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
       if (!mounted) return;
       // Straight to the study once analysis resolves -- no manual "View
       // Study" tap in between.
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => StudyReviewPage(caseId: detail.caseSummary.id),
+          builder: (_) => StudyReviewPage(caseId: result.caseId),
         ),
       );
     } catch (_) {

@@ -44,16 +44,18 @@ final chatStreamRepositoryProvider =
 final heatmapRepositoryProvider =
     Provider<HeatmapRepository>((ref) => MockHeatmapRepository());
 
-/// The mock pipeline the processing repository reads, one per
-/// `ProviderScope` so retries and discards never leak between tests.
+/// The mock pipeline behind the upload and processing repositories, one per
+/// `ProviderScope` so an upload's run, retries and discards never leak
+/// between tests.
 final mockPipelineProvider = Provider<MockPipeline>((ref) => MockPipeline());
 
 final processingRepositoryProvider = Provider<ProcessingRepository>(
   (ref) => MockProcessingRepository(ref.watch(mockPipelineProvider)),
 );
 
-final uploadRepositoryProvider =
-    Provider<UploadRepository>((ref) => MockUploadRepository());
+final uploadRepositoryProvider = Provider<UploadRepository>(
+  (ref) => MockUploadRepository(ref.watch(mockPipelineProvider)),
+);
 
 final onboardingRepositoryProvider = Provider<OnboardingRepository>(
   (ref) => SharedPreferencesOnboardingRepository(),
