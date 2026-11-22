@@ -13,9 +13,19 @@ import 'package:radiologist_helper/ui/molecules/stage_progress_row.dart';
 /// to it, and how far each stage has got. A run can be ready with failures
 /// still open, since one failed image does not stop the others being used.
 class RunProgressCard extends StatelessWidget {
-  const RunProgressCard({super.key, required this.run, this.onOpenStudy});
+  const RunProgressCard({
+    super.key,
+    required this.run,
+    this.onOpenStudy,
+    this.refreshError,
+  });
 
+  /// The run as last read.
   final ProcessingRun run;
+
+  /// Why the last read failed, already worded, while [run] is the one
+  /// before it; the progress shown is then older than it looks.
+  final String? refreshError;
 
   /// Shown as "Open study" when set.
   final VoidCallback? onOpenStudy;
@@ -59,6 +69,14 @@ class RunProgressCard extends StatelessWidget {
               done: progress.done,
               total: progress.total,
               details: _details(progress),
+            ),
+          ],
+          if (refreshError case final refreshError?) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              refreshError,
+              style: AppTypography.bodySm,
+              color: colors.textSecondary,
             ),
           ],
           if (onOpenStudy != null) ...[

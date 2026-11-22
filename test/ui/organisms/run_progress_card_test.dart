@@ -87,6 +87,17 @@ void main() {
     expect(opened, isTrue);
   });
 
+  testWidgets('says when the progress could not be refreshed', (tester) async {
+    await tester.pumpWidget(wrap(RunProgressCard(
+      run: _run(),
+      refreshError: 'Could not refresh the progress: offline',
+    )));
+    expect(
+      find.text('Could not refresh the progress: offline'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('a run with no steps yet shows only its status', (tester) async {
     await tester.pumpWidget(wrap(RunProgressCard(
       run: _run(status: RunStatus.queued),
