@@ -3,6 +3,7 @@ import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/data/image_review.dart';
+import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/data/user.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_image.dart';
@@ -19,6 +20,7 @@ import 'package:radiologist_helper/ui/organisms/status_bar.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
 import 'package:radiologist_helper/ui/pages/image_review_page.dart';
 import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
+import 'package:radiologist_helper/ui/pages/processing_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/templates/study_review_template.dart';
@@ -94,6 +96,29 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
     );
   }
 
+  /// This study's failed processing steps, linked to the Processing page
+  /// where they are retried or discarded. Something sent was not processed,
+  /// so it is an error (DL D-023). Null when none is open.
+  Widget? _failuresStatusBar(
+    BuildContext context,
+    List<ProcessingFailure>? failures,
+  ) {
+    if (failures == null || failures.isEmpty) return null;
+    final count = failures.length;
+    return StatusBar(
+      message: count == 1
+          ? '1 item of this study failed processing.'
+          : '$count items of this study failed processing.',
+      variant: StatusBannerVariant.error,
+      actionLabel: 'Review',
+      onAction: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ProcessingPage(caseId: widget.caseId),
+        ),
+      ),
+    );
+  }
+
   Widget _conversationDrawer(
     BuildContext context,
     AsyncValue<List<ConversationItem>> conversationsAsync,
@@ -157,10 +182,14 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
     final messagesAsync = ref.watch(messagesProvider(_conversationId));
     final caseDetailAsync = ref.watch(caseDetailProvider(widget.caseId));
     final heldBack = ref.watch(heldBackReviewsByCaseProvider)[widget.caseId];
+    final failures = ref.watch(openFailuresByCaseProvider)[widget.caseId];
 
     return StudyReviewTemplate(
       appBar: appBar,
-      statusBars: [?_reviewStatusBar(context, heldBack)],
+      statusBars: [
+        ?_reviewStatusBar(context, heldBack),
+        ?_failuresStatusBar(context, failures),
+      ],
       // Routed through the template (rather than an early-return Scaffold)
       // so its own tier-aware chrome -- appBar hidden, primaryNavDrawer via
       // drawerWide -- still applies while providers are resolving, not just
