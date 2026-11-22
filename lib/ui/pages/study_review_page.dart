@@ -160,7 +160,7 @@ class _StudyReviewPageState extends ConsumerState<StudyReviewPage> {
 
     return StudyReviewTemplate(
       appBar: appBar,
-      statusBar: _reviewStatusBar(context, heldBack),
+      statusBars: [?_reviewStatusBar(context, heldBack)],
       // Routed through the template (rather than an early-return Scaffold)
       // so its own tier-aware chrome -- appBar hidden, primaryNavDrawer via
       // drawerWide -- still applies while providers are resolving, not just

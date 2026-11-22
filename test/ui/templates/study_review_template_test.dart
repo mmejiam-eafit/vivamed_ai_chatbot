@@ -75,7 +75,7 @@ void main() {
       expect(find.text('chat'), findsOneWidget);
     });
 
-    testWidgets('renders statusBar when provided', (tester) async {
+    testWidgets('renders its status bars, stacked in order', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildAppTheme(),
@@ -84,14 +84,17 @@ void main() {
             imageViewer: const SizedBox(),
             findingsPanel: const SizedBox(),
             chatPanel: const SizedBox(),
-            statusBar: const Text('status'),
+            statusBars: const [Text('first'), Text('second')],
           ),
         ),
       );
-      expect(find.text('status'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('first')).dy,
+        lessThan(tester.getTopLeft(find.text('second')).dy),
+      );
     });
 
-    testWidgets('statusBar is absent when null', (tester) async {
+    testWidgets('shows no status bar by default', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildAppTheme(),
@@ -99,11 +102,19 @@ void main() {
             appBar: AppBar(),
             imageViewer: const SizedBox(),
             findingsPanel: const SizedBox(),
-            chatPanel: const SizedBox(),
+            chatPanel: const Text('chat'),
           ),
         ),
       );
-      expect(find.text('status'), findsNothing);
+      final body = find.descendant(
+        of: find.byType(Scaffold),
+        matching: find.byType(Column),
+      ).first;
+      // The body's first child is the content, not a bar.
+      expect(
+        tester.widget<Column>(body).children.first,
+        isA<Expanded>(),
+      );
     });
 
     testWidgets('has Scaffold with surfacePage background', (tester) async {
