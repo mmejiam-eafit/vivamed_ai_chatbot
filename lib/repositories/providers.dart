@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/data/mocks/processing_mocks.dart';
 import 'package:radiologist_helper/repositories/auth_repository.dart';
 import 'package:radiologist_helper/repositories/case_repository.dart';
 import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
@@ -7,6 +8,7 @@ import 'package:radiologist_helper/repositories/findings_repository.dart';
 import 'package:radiologist_helper/repositories/heatmap_repository.dart';
 import 'package:radiologist_helper/repositories/image_review_repository.dart';
 import 'package:radiologist_helper/repositories/onboarding_repository.dart';
+import 'package:radiologist_helper/repositories/processing_repository.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/repositories/user_repository.dart';
 
@@ -41,6 +43,14 @@ final chatStreamRepositoryProvider =
 
 final heatmapRepositoryProvider =
     Provider<HeatmapRepository>((ref) => MockHeatmapRepository());
+
+/// The mock pipeline the processing repository reads, one per
+/// `ProviderScope` so retries and discards never leak between tests.
+final mockPipelineProvider = Provider<MockPipeline>((ref) => MockPipeline());
+
+final processingRepositoryProvider = Provider<ProcessingRepository>(
+  (ref) => MockProcessingRepository(ref.watch(mockPipelineProvider)),
+);
 
 final uploadRepositoryProvider =
     Provider<UploadRepository>((ref) => MockUploadRepository());
