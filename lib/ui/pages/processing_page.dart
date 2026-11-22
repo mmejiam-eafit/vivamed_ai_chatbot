@@ -46,35 +46,42 @@ class _ProcessingPageState extends ConsumerState<ProcessingPage> {
       ? '1 selected item had already changed'
       : '$count selected items had already changed';
 
+  /// Runs [action], then shows its outcome. Nothing the user sees changes
+  /// until the refreshed list has arrived: the reload itself rebuilds the
+  /// page, so the outcome, the cleared selection and the end of the busy state
+  /// are applied together afterwards, never against the old list.
   Future<void> _act(_Action action, List<String> stepIds) async {
     setState(() {
       _busy = true;
       _status = null;
     });
     final service = ref.read(processingServiceProvider);
+    ({String message, StatusBannerVariant variant}) status;
+    var done = false;
     try {
       switch (action) {
         case _Action.retry:
           await service.retry(stepIds);
-          // A retry reopens the run, so follow it again.
-          if (widget.runId case final runId?) {
-            ref.invalidate(processingRunProvider(runId));
-          }
-          _status = (
+          status = (
             message: 'Retrying ${_items(stepIds.length)}.',
             variant: StatusBannerVariant.info,
           );
         case _Action.discard:
           await service.discard(stepIds);
-          _status = (
+          status = (
             message: 'Discarded ${_items(stepIds.length)}.',
             variant: StatusBannerVariant.success,
           );
       }
-      _selected = {};
+      done = true;
+      // A retry reopens the run and a discard changes its counts, so read
+      // it again.
+      if (widget.runId case final runId?) {
+        ref.invalidate(processingRunProvider(runId));
+      }
       await _reloadFailures();
     } on StepConflictException catch (conflict) {
-      _status = (
+      status = (
         message: '${_changed(conflict.stepIds.length)}, so nothing was done. '
             'The list has been refreshed.',
         variant: StatusBannerVariant.warning,
@@ -82,13 +89,17 @@ class _ProcessingPageState extends ConsumerState<ProcessingPage> {
       await _reloadFailures();
     } catch (error) {
       final verb = action == _Action.retry ? 'retry' : 'discard';
-      _status = (
+      status = (
         message: 'Could not $verb: $error',
         variant: StatusBannerVariant.error,
       );
-    } finally {
-      if (mounted) setState(() => _busy = false);
     }
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _status = status;
+      if (done) _selected = {};
+    });
   }
 
   /// Waits for the new list before leaving the busy state, so the selection

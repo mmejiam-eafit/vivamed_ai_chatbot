@@ -47,6 +47,20 @@ class _SlowRetry extends FakeProcessingRepository {
   }
 }
 
+/// Holds every read of the failures after the first until the test opens
+/// [gate]: the list reload after an action.
+class _GatedFailures extends FakeProcessingRepository {
+  _GatedFailures({super.failures});
+
+  Completer<void>? gate;
+
+  @override
+  Future<List<StudyFailures>> getFailures() async {
+    if (gate case final gate?) await gate.future;
+    return super.getFailures();
+  }
+}
+
 class _CountingReviews extends FakeImageReviewRepository {
   var reads = 0;
 
@@ -320,6 +334,43 @@ void main() {
       expect(find.text('No failed items.'), findsOneWidget);
     });
 
+    testWidgets('nothing changes until the refreshed list has arrived',
+        (tester) async {
+      // The reload rebuilds the page while it runs; the outcome must not
+      // show beside the old list, nor the selection vanish under it.
+      final repository = _GatedFailures(failures: [
+        (caseId: 'case-6', failures: [_failure('a')]),
+      ]);
+      await tester.pumpWidget(wrap(repository));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('img-a'));
+      await tester.pump();
+      await tester.tap(button('Discard 1'));
+      await tester.pump();
+      repository.gate = Completer<void>();
+      await tester.tap(button('Discard'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(repository.discarded, [
+        ['a'],
+      ]);
+      expect(find.byType(StatusBanner), findsNothing);
+      expect(find.text('img-a'), findsOneWidget);
+      expect(
+        tester.widget<FailureActionBar>(find.byType(FailureActionBar)).isBusy,
+        isTrue,
+      );
+
+      repository.gate!.complete();
+      await tester.pumpAndSettle();
+
+      expect(banner(tester).message, 'Discarded 1 item.');
+      expect(find.text('No failed items.'), findsOneWidget);
+      expect(find.byType(FailureActionBar), findsNothing);
+    });
+
     testWidgets('a failed discard is reported', (tester) async {
       final repository = withFailures([_failure('a')])
         ..actionError = Exception('offline');
@@ -490,6 +541,30 @@ void main() {
       await tester.tap(find.text('img-a'));
       await tester.pump();
       await tester.tap(button('Retry 1'));
+      await tester.pumpAndSettle();
+
+      expect(repository.runReads, readsBefore + 1);
+    });
+
+    testWidgets('a discard reads the run again, for its new counts',
+        (tester) async {
+      final repository = FakeProcessingRepository(
+        runs: {
+          'run-1': [_run(RunStatus.ready, openFailures: 1)],
+        },
+        failures: [
+          (caseId: 'case-6', failures: [_failure('a')]),
+        ],
+      );
+      await tester.pumpWidget(wrap(repository, runId: 'run-1'));
+      await tester.pumpAndSettle();
+      final readsBefore = repository.runReads;
+
+      await tester.tap(find.text('img-a'));
+      await tester.pump();
+      await tester.tap(button('Discard 1'));
+      await tester.pump();
+      await tester.tap(button('Discard'));
       await tester.pumpAndSettle();
 
       expect(repository.runReads, readsBefore + 1);
