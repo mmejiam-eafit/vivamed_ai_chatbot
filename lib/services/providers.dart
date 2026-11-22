@@ -4,6 +4,7 @@ import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/data/finding.dart';
 import 'package:radiologist_helper/data/heatmap.dart';
 import 'package:radiologist_helper/data/image_review.dart';
+import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/data/user.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/services/auth_service.dart';
@@ -13,6 +14,7 @@ import 'package:radiologist_helper/services/chat_thread_notifier.dart';
 import 'package:radiologist_helper/services/heatmap_service.dart';
 import 'package:radiologist_helper/services/image_review_service.dart';
 import 'package:radiologist_helper/services/onboarding_service.dart';
+import 'package:radiologist_helper/services/processing_service.dart';
 import 'package:radiologist_helper/services/upload_service.dart';
 
 // ── Service instances ───────────────────────────────────────────────────────
@@ -46,6 +48,10 @@ final heatmapServiceProvider = Provider<HeatmapService>(
 
 final imageReviewServiceProvider = Provider<ImageReviewService>(
   (ref) => ImageReviewService(ref.watch(imageReviewRepositoryProvider)),
+);
+
+final processingServiceProvider = Provider<ProcessingService>(
+  (ref) => ProcessingService(ref.watch(processingRepositoryProvider)),
 );
 
 final uploadServiceProvider = Provider<UploadService>(
@@ -118,3 +124,24 @@ final heldBackReviewsByCaseProvider =
   if (reviews == null) return const {};
   return ref.watch(imageReviewServiceProvider).heldBackByCase(reviews);
 });
+
+// One run's progress, read again until it ends. Auto-disposed, unlike every
+// other provider here: polling must stop once no page shows the run.
+final processingRunProvider =
+    StreamProvider.autoDispose.family<ProcessingRun, String>(
+  (ref, runId) => ref.watch(processingServiceProvider).watchRun(runId),
+);
+
+// Every study's open failures, by case id. After a retry or discard the page
+// invalidates this one provider; the map below derives from it.
+final processingFailuresProvider =
+    FutureProvider<Map<String, List<ProcessingFailure>>>(
+  (ref) => ref.watch(processingServiceProvider).failuresByCase(),
+);
+
+// Empty while the failures load or if they fail: Study Review's link to them
+// is not worth an error of its own.
+final openFailuresByCaseProvider =
+    Provider<Map<String, List<ProcessingFailure>>>(
+  (ref) => ref.watch(processingFailuresProvider).value ?? const {},
+);
