@@ -58,15 +58,9 @@ class _UploadPageState extends ConsumerState<UploadPage> {
     });
 
     try {
-      // A fixed choreography, not a real progress signal -- there's no
-      // backend yet to report one, only the one mocked repository call.
-      await Future<void>.delayed(const Duration(milliseconds: 400));
-      if (!mounted) return;
-      setState(() => _status = UploadZoneStatus.analyzing);
-
       final result = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
       if (!mounted) return;
-      // Straight to the study once analysis resolves -- no manual "View
+      // Straight to the study once the files are stored -- no manual "View
       // Study" tap in between.
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

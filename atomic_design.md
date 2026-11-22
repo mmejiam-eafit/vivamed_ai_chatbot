@@ -69,7 +69,7 @@ A molecule is a purposeful grouping of 2–4 atoms that forms a single conceptua
 | `TypingIndicator` | `AppLoadingIndicator` or animated dots | Shows that the assistant is generating a response. |
 | `ImageThumbnail` | `AppImage`, `AppBadge` (optional) | An X-ray thumbnail with an optional badge overlay (e.g., "3 findings"). The study is letterboxed whole on `diagnosticCanvasGround`, never cropped (DL D-020). |
 | `HubActionCard` | `AppIcon`, `AppText` (title), `AppText` (description) | One of the Home Hub's big primary choices (upload a study, view studies, chat) — icon, title, description, the whole card tappable. |
-| `UploadZone` | `AppIcon`/`AppLoadingIndicator`, `AppText` | The Upload screen's one interactive area — a tappable zone carrying its idle/uploading/analyzing states. |
+| `UploadZone` | `AppIcon`/`AppLoadingIndicator`, `AppText` | The Upload screen's one interactive area — a tappable zone carrying its idle and uploading states. |
 | `SectionCard` | `AppText` (title) | A titled card: a heading above arbitrary content, in the app's standard raised-surface chrome. Frames each section of a list (e.g. `SettingsTemplate`'s single-column and content-pane layouts). |
 | `SectionIndexTile` | `AppText` | One row of a title index — a list of section names beside their content, as in `SettingsTemplate`'s expanded-tier layout. Highlights when selected and reports taps; the caller owns which index is selected. |
 | `ThemeModeSelector` | `AppIcon` (check mark), `AppText` | The Settings Appearance section's theme picker. Always exactly three rows, Dark/Light/System in that order (DL D-013). |

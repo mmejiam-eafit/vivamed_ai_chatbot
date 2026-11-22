@@ -93,8 +93,6 @@ void main() {
     // Not pumpAndSettle -- the fixture's Future never resolves, so settling
     // would hang; a single pump is enough to reach the busy state.
     await tester.pump();
-    await tester.pump(const Duration(
-        milliseconds: 500)); // past the internal 400ms choreography delay
 
     expect(find.byType(AppLoadingIndicator), findsOneWidget);
     final popScope = tester.widget<PopScope>(find.byType(PopScope));
