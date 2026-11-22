@@ -27,7 +27,15 @@ enum RunStatus {
 }
 
 /// Where one step stands.
-enum StepState { pending, running, done, failed, skipped, heldBack, discarded }
+enum ProcessingStepState {
+  pending,
+  running,
+  done,
+  failed,
+  skipped,
+  heldBack,
+  discarded
+}
 
 /// What a step does, named the way a radiologist reads it.
 enum ProcessingStage {
@@ -76,7 +84,7 @@ class ProcessingStep {
   const ProcessingStep({required this.stage, required this.state});
 
   final ProcessingStage stage;
-  final StepState state;
+  final ProcessingStepState state;
 }
 
 /// How far one stage of a run has got.
@@ -116,15 +124,16 @@ class ProcessingRun {
       for (final s in steps)
         if (s.stage == stage) s.state,
     ];
-    int count(StepState state) => states.where((s) => s == state).length;
+    int count(ProcessingStepState state) =>
+        states.where((s) => s == state).length;
     return (
       stage: stage,
       total: states.length,
-      done: count(StepState.done),
-      failed: count(StepState.failed),
-      skipped: count(StepState.skipped),
-      heldBack: count(StepState.heldBack),
-      discarded: count(StepState.discarded),
+      done: count(ProcessingStepState.done),
+      failed: count(ProcessingStepState.failed),
+      skipped: count(ProcessingStepState.skipped),
+      heldBack: count(ProcessingStepState.heldBack),
+      discarded: count(ProcessingStepState.discarded),
     );
   }
 }

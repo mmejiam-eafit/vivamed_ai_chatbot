@@ -92,8 +92,8 @@ void main() {
           .run('run-case-6')
           .steps
           .where((s) => s.stage == ProcessingStage.viewCheck);
-      expect(
-          viewChecks.where((s) => s.state == StepState.pending), hasLength(1));
+      expect(viewChecks.where((s) => s.state == ProcessingStepState.pending),
+          hasLength(1));
     });
 
     test('retry refuses a step that cannot be retried, and resets none', () {
@@ -118,7 +118,7 @@ void main() {
       final run = pipeline.run('run-case-6');
       expect(run.openFailures, 2);
       expect(
-        run.steps.where((s) => s.state == StepState.discarded),
+        run.steps.where((s) => s.state == ProcessingStepState.discarded),
         hasLength(1),
       );
     });

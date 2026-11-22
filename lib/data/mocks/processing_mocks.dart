@@ -52,7 +52,8 @@ class MockPipeline {
   /// creates the steps that follow the ones that succeeded.
   void advance(String runId) {
     final waiting = _steps
-        .where((s) => s.runId == runId && s.state == StepState.pending)
+        .where(
+            (s) => s.runId == runId && s.state == ProcessingStepState.pending)
         .toList();
     for (final step in waiting) {
       _finish(step);
@@ -66,7 +67,8 @@ class MockPipeline {
     final steps = _steps.where((s) => s.runId == runId).toList();
     return ProcessingRun(
       status: _statusOf(steps),
-      openFailures: steps.where((s) => s.state == StepState.failed).length,
+      openFailures:
+          steps.where((s) => s.state == ProcessingStepState.failed).length,
       steps: [
         for (final s in steps) ProcessingStep(stage: s.stage, state: s.state),
       ],
@@ -75,7 +77,8 @@ class MockPipeline {
 
   List<StudyFailures> failures() {
     final byCase = <String, List<ProcessingFailure>>{};
-    for (final step in _steps.where((s) => s.state == StepState.failed)) {
+    for (final step
+        in _steps.where((s) => s.state == ProcessingStepState.failed)) {
       byCase
           .putIfAbsent(_caseOfRun[step.runId]!, () => [])
           .add(step.toFailure());
@@ -96,7 +99,7 @@ class MockPipeline {
     ];
     if (refused.isNotEmpty) return refused;
     for (final id in stepIds) {
-      _failedStep(id)!.state = StepState.pending;
+      _failedStep(id)!.state = ProcessingStepState.pending;
     }
     return const [];
   }
@@ -110,14 +113,16 @@ class MockPipeline {
     ];
     if (refused.isNotEmpty) return refused;
     for (final id in stepIds) {
-      _failedStep(id)!.state = StepState.discarded;
+      _failedStep(id)!.state = ProcessingStepState.discarded;
     }
     return const [];
   }
 
   _Step? _failedStep(String id) {
     for (final step in _steps) {
-      if (step.id == id && step.state == StepState.failed) return step;
+      if (step.id == id && step.state == ProcessingStepState.failed) {
+        return step;
+      }
     }
     return null;
   }
@@ -129,14 +134,14 @@ class MockPipeline {
     if (failure != null) {
       step
         ..failWith = null
-        ..state = StepState.failed
+        ..state = ProcessingStepState.failed
         ..code = failure
         ..attempts += _transient.contains(failure) ? _automaticAttempts : 1
         ..failedAt = DateTime.now().toUtc();
       return;
     }
     step
-      ..state = StepState.done
+      ..state = ProcessingStepState.done
       ..attempts += 1;
     for (final stage in _next(step.stage)) {
       _steps.add(_Step(
@@ -163,15 +168,19 @@ class MockPipeline {
       };
 
   static RunStatus _statusOf(List<_Step> steps) {
-    if (steps.every((s) => s.state == StepState.pending && s.attempts == 0)) {
+    if (steps.every(
+        (s) => s.state == ProcessingStepState.pending && s.attempts == 0)) {
       return RunStatus.queued;
     }
-    if (steps.any(
-        (s) => s.state == StepState.pending || s.state == StepState.running)) {
+    if (steps.any((s) =>
+        s.state == ProcessingStepState.pending ||
+        s.state == ProcessingStepState.running)) {
       return RunStatus.processing;
     }
     final anyChecked = steps.any(
-      (s) => s.stage == ProcessingStage.viewCheck && s.state == StepState.done,
+      (s) =>
+          s.stage == ProcessingStage.viewCheck &&
+          s.state == ProcessingStepState.done,
     );
     return anyChecked ? RunStatus.ready : RunStatus.failed;
   }
@@ -186,7 +195,7 @@ class MockPipeline {
     void add(
       ProcessingStage stage,
       String itemName,
-      StepState state, {
+      ProcessingStepState state, {
       ProcessingErrorCode? code,
       int attempts = 1,
       DateTime? failedAt,
@@ -206,15 +215,15 @@ class MockPipeline {
         ));
 
     for (final name in ['img-4c1e07', 'img-4c1e08']) {
-      add(ProcessingStage.intake, name, StepState.done);
-      add(ProcessingStage.viewCheck, name, StepState.done);
-      add(ProcessingStage.embedding, name, StepState.done);
+      add(ProcessingStage.intake, name, ProcessingStepState.done);
+      add(ProcessingStage.viewCheck, name, ProcessingStepState.done);
+      add(ProcessingStage.embedding, name, ProcessingStepState.done);
     }
-    add(ProcessingStage.prediction, 'img-4c1e07', StepState.done);
+    add(ProcessingStage.prediction, 'img-4c1e07', ProcessingStepState.done);
     add(
       ProcessingStage.prediction,
       'img-4c1e08',
-      StepState.failed,
+      ProcessingStepState.failed,
       code: ProcessingErrorCode.modelUnavailable,
       attempts: _automaticAttempts,
       failedAt: DateTime.utc(2026, 11, 22, 10, 15, 40),
@@ -222,7 +231,7 @@ class MockPipeline {
     add(
       ProcessingStage.intake,
       'img-4c1e09',
-      StepState.failed,
+      ProcessingStepState.failed,
       code: ProcessingErrorCode.unsupportedPixelData,
       failedAt: DateTime.utc(2026, 11, 22, 10, 14, 3),
     );
@@ -230,7 +239,7 @@ class MockPipeline {
     add(
       ProcessingStage.intake,
       'img-4c1e0a',
-      StepState.failed,
+      ProcessingStepState.failed,
       code: ProcessingErrorCode.unreadableHeader,
       attempts: 0,
       failedAt: DateTime.utc(2026, 11, 22, 10, 14, 1),
@@ -246,7 +255,7 @@ class _Step {
     required this.stage,
     required this.itemName,
     required this.position,
-    this.state = StepState.pending,
+    this.state = ProcessingStepState.pending,
     this.code,
     this.failWith,
     this.attempts = 0,
@@ -262,7 +271,7 @@ class _Step {
   /// The file's position in its upload, carried to the image's steps; 0 for
   /// seeded steps, which no rule reads.
   final int position;
-  StepState state;
+  ProcessingStepState state;
   ProcessingErrorCode? code;
 
   /// The failure this step's next attempt ends in; null to succeed.

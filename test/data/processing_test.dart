@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/processing.dart';
 
-ProcessingStep _step(ProcessingStage stage, StepState state) =>
+ProcessingStep _step(ProcessingStage stage, ProcessingStepState state) =>
     ProcessingStep(stage: stage, state: state);
 
 void main() {
@@ -40,8 +40,8 @@ void main() {
         status: RunStatus.processing,
         openFailures: 0,
         steps: [
-          _step(ProcessingStage.viewCheck, StepState.pending),
-          _step(ProcessingStage.intake, StepState.done),
+          _step(ProcessingStage.viewCheck, ProcessingStepState.pending),
+          _step(ProcessingStage.intake, ProcessingStepState.done),
         ],
       );
       expect(
@@ -55,13 +55,13 @@ void main() {
         status: RunStatus.ready,
         openFailures: 1,
         steps: [
-          _step(ProcessingStage.intake, StepState.done),
-          _step(ProcessingStage.intake, StepState.done),
-          _step(ProcessingStage.intake, StepState.failed),
-          _step(ProcessingStage.intake, StepState.skipped),
-          _step(ProcessingStage.intake, StepState.discarded),
-          _step(ProcessingStage.viewCheck, StepState.heldBack),
-          _step(ProcessingStage.viewCheck, StepState.running),
+          _step(ProcessingStage.intake, ProcessingStepState.done),
+          _step(ProcessingStage.intake, ProcessingStepState.done),
+          _step(ProcessingStage.intake, ProcessingStepState.failed),
+          _step(ProcessingStage.intake, ProcessingStepState.skipped),
+          _step(ProcessingStage.intake, ProcessingStepState.discarded),
+          _step(ProcessingStage.viewCheck, ProcessingStepState.heldBack),
+          _step(ProcessingStage.viewCheck, ProcessingStepState.running),
         ],
       );
       final intake = run.progress.first;
