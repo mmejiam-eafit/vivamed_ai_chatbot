@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:radiologist_helper/data/case.dart';
-import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/ui/atoms/app_text.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/molecules/severity_chip.dart';
 
-enum _SortColumn { patient, modality, date, confidence, severity, review }
+enum _SortColumn { patient, modality, date, confidence, severity, status }
 
 String _formatDate(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-'
@@ -27,16 +26,10 @@ class CaseWorklistTable extends StatefulWidget {
   const CaseWorklistTable({
     super.key,
     required this.cases,
-    required this.heldBack,
     this.onCaseTap,
   });
 
   final List<CaseSummary> cases;
-
-  /// Each case's reviews still holding an image back, by case id; a case
-  /// with none is absent. Fills the Review column (DL D-022). Required, so a
-  /// page cannot leave the column silently empty by forgetting it.
-  final Map<String, List<ImageReview>> heldBack;
   final ValueChanged<CaseSummary>? onCaseTap;
 
   @override
@@ -58,12 +51,17 @@ class _CaseWorklistTableState extends State<CaseWorklistTable> {
       _SortColumn.date => a.date.compareTo(b.date),
       _SortColumn.confidence => a.confidence.compareTo(b.confidence),
       _SortColumn.severity => a.severity.index.compareTo(b.severity.index),
-      _SortColumn.review => _heldBackCount(a).compareTo(_heldBackCount(b)),
+      _SortColumn.status => _compareStatus(a, b),
     };
     return _ascending ? result : -result;
   }
 
-  int _heldBackCount(CaseSummary c) => widget.heldBack[c.id]?.length ?? 0;
+  /// What needs the radiologist first: the status in its declared order,
+  /// then, within one status, the most open failures (DL D-024).
+  static int _compareStatus(CaseSummary a, CaseSummary b) {
+    final byStatus = a.status.index.compareTo(b.status.index);
+    return byStatus != 0 ? byStatus : b.openFailures.compareTo(a.openFailures);
+  }
 
   void _onSort(int columnIndex, bool ascending) {
     setState(() {
@@ -132,9 +130,9 @@ class _CaseWorklistTableState extends State<CaseWorklistTable> {
             ),
             // Plain text, never a status chip: this row already carries
             // severity, and the two systems never share a component
-            // (DL §3.5, D-022).
+            // (DL §3.5, D-024).
             DataColumn(
-              label: const Expanded(child: Text('Review')),
+              label: const Expanded(child: Text('Status')),
               columnWidth: const FlexColumnWidth(1.4),
               onSort: _onSort,
             ),
@@ -153,9 +151,7 @@ class _CaseWorklistTableState extends State<CaseWorklistTable> {
                   DataCell(cellText(_formatConfidence(item.confidence),
                       style: AppTypography.numeric)),
                   DataCell(SeverityChip(severity: item.severity)),
-                  DataCell(cellText(
-                    heldBackSummary(widget.heldBack[item.id] ?? const []),
-                  )),
+                  DataCell(cellText(item.statusSummary)),
                 ],
               ),
           ],
