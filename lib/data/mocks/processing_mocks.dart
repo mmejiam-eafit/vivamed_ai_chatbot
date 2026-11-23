@@ -64,7 +64,7 @@ class MockPipeline {
       '${n.toRadixString(16).padLeft(12, '0')}';
 
   /// Each run's study, in the order the runs were created (a map literal
-  /// keeps insertion order), so the latest active run is the last one found.
+  /// keeps insertion order), so the latest of several runs is the last found.
   final _caseOfRun = <String, String>{};
   final _steps = <_Step>[];
   final _studies = <CaseSummary>[];
@@ -103,18 +103,23 @@ class MockPipeline {
                 s.state == ProcessingStepState.running)))
           runId,
     ];
+    final startedRunIds = [
+      for (final runId in activeRunIds)
+        if (steps.any((s) => s.runId == runId && s.attempts > 0)) runId,
+    ];
     return (
       runs: runIds.length,
       activeRuns: activeRunIds.length,
-      started: steps
-          .any((s) => activeRunIds.contains(s.runId) && s.attempts > 0),
+      started: startedRunIds.isNotEmpty,
       checked: steps.any((s) =>
           s.stage == ProcessingStage.viewCheck &&
           (s.state == ProcessingStepState.done ||
               s.state == ProcessingStepState.heldBack)),
       openFailures:
           steps.where((s) => s.state == ProcessingStepState.failed).length,
-      activeRunId: activeRunIds.lastOrNull,
+      // As the backend picks it: the latest run that has started, else the
+      // latest, so a processing study points at a run in progress.
+      activeRunId: startedRunIds.lastOrNull ?? activeRunIds.lastOrNull,
     );
   }
 

@@ -62,8 +62,10 @@ class CaseSummary {
   /// or discarded. A ready study can have some.
   final int openFailures;
 
-  /// The study's run that still has work left, the latest created if there
-  /// are two: the one its progress follows. Null when no run has.
+  /// The study's run that still has work left: the one its progress
+  /// follows. Of several, the latest created that has started a step, else
+  /// the latest created, so a processing study points at a run in progress
+  /// and a queued one at a queued run. Null when no run has work left.
   final String? activeRunId;
 
   /// How the status reads in a list: "Ready", "Ready · 1 failed item",

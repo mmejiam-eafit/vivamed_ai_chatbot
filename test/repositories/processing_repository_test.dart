@@ -208,10 +208,22 @@ void main() {
       expect(pipeline.studyFacts('case-1').started, isTrue);
     });
 
-    test('with two active runs, the one to follow is the latest created', () {
+    test('with two active runs, neither started, the one to follow is the '
+        'latest created', () {
       final pipeline = MockPipeline()..startRun('case-1', 1);
       final latest = pipeline.startRun('case-1', 1);
       expect(pipeline.studyFacts('case-1').activeRunId, latest);
+    });
+
+    test('a run that has started comes before a newer one still queued', () {
+      final pipeline = MockPipeline();
+      final older = pipeline.startRun('case-1', 2);
+      pipeline.advance(older);
+      pipeline.startRun('case-1', 1);
+
+      final facts = pipeline.studyFacts('case-1');
+      expect(facts.started, isTrue);
+      expect(facts.activeRunId, older);
     });
 
     test('a study the pipeline never ran has no runs', () {
