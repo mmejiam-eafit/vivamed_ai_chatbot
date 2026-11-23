@@ -160,6 +160,23 @@ flutter build web --release
 
 **`web/` is not in the repo either**: it is git-ignored, and a fresh clone has none. Generate it before the first browser run or web build with `make bootstrap-web` (or `flutter create --platforms=web .`, then discard what it changed in `.metadata`, `pubspec.lock` and `test/widget_test.dart`; the make target does that for you). A default `web/` is what the project always used, so nothing in it needs editing.
 
+### Run in Docker
+
+The `Dockerfile` builds the web app with Flutter 3.47.4 and serves it with nginx, which also proxies `/api/` to the
+backend and `/pipeline/` to the pipeline. The page and both APIs then share one origin, so the browser needs no CORS and
+the build holds no address:
+
+```bash
+docker build -t radiologists-chatbot/web .
+docker run --rm -p 8080:80 \
+  -e BACKEND_UPSTREAM=http://<backend>:4105 -e PIPELINE_UPSTREAM=http://<pipeline>:8000 \
+  radiologists-chatbot/web
+```
+
+The build generates `web/` itself, and `FLUTTER_BUILD_ARGS` passes flags to `flutter build web`. The deploy repository
+(`../radiologists_chatbot_deploy`) runs it together with the backend, the pipeline and their services. Any local CheXpert
+mock images (below) are copied into the image, so keep it on this machine.
+
 **The image-review mocks' CheXpert Plus pictures are not in the repo either.** CheXpert Plus is research-use data, so it is converted locally and never committed: `make mock-images` turns the six DICOMs the mocks use into git-ignored PNGs under `lib/data/mocks/images/chexpert/` (it needs `uv`, and the dataset's uncompressed DICOM `train` folder at `CHEXPERT_DIR`). Without them the app still builds and runs, and shows a placeholder for those images.
 
 ---
