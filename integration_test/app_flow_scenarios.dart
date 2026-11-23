@@ -10,6 +10,7 @@ import 'package:radiologist_helper/ui/pages/case_list_page.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
 import 'package:radiologist_helper/ui/pages/image_review_page.dart';
+import 'package:radiologist_helper/ui/pages/processing_page.dart';
 import 'package:radiologist_helper/ui/pages/review_queue_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
@@ -250,6 +251,42 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.descendant(of: find.byType(Drawer), matching: find.text('1')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('failures: studies -> a study with failed items -> its '
+      'Processing page', (tester) async {
+    pinWindow(tester, wideSize);
+    await signInToHub(tester);
+
+    await tester.tap(find.text('View studies'));
+    await tester.pumpAndSettle();
+    // case-6, "Chest X-Ray — Follow-up": one image processing after review
+    // and three failed items in the mock pipeline. No run is under way, so
+    // the worklist opens Study Review, where both bars show.
+    expect(find.text('Processing · 3 failed items'), findsOneWidget);
+    await tester.tap(find.text('Anonymous 6'));
+    await tester.pumpAndSettle();
+    expect(find.byType(StudyReviewPage), findsOneWidget);
+    expect(
+      find.text('1 image of this study is processing after review.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('3 items of this study failed processing.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Review'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProcessingPage), findsOneWidget);
+    expect(find.text('3 failed items'), findsOneWidget);
+    // The file whose header could not be read can only be discarded.
+    await tester.tap(find.text('4c1e08a2-00004'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text("1 selected item can't be retried. Upload its file again."),
       findsOneWidget,
     );
   });

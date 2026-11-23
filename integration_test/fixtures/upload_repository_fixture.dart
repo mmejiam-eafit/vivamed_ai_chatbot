@@ -1,4 +1,4 @@
-import 'package:radiologist_helper/data/case.dart';
+import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 
 import 'fixture_result.dart';
@@ -8,10 +8,10 @@ import 'fixture_result.dart';
 class UploadRepositoryFixture implements UploadRepository {
   UploadRepositoryFixture({this.uploadStudyResult});
 
-  FixtureResult<CaseDetail>? uploadStudyResult;
+  FixtureResult<UploadResult>? uploadStudyResult;
 
   @override
-  Future<CaseDetail> uploadStudy(List<String> fileNames) =>
+  Future<UploadResult> uploadStudy(List<String> fileNames) =>
       uploadStudyResult?.resolve() ?? _unconfigured('uploadStudy');
 }
 

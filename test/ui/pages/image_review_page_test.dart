@@ -69,9 +69,9 @@ class _FailingReviewRepository implements ImageReviewRepository {
       throw UnimplementedError();
 }
 
-const _technologist = UserProfile(
+const _admin = UserProfile(
   name: 'T. Lee',
-  role: 'Technologist',
+  roles: ['admin'],
   email: 't@hospital.org',
   initials: 'TL',
 );
@@ -220,7 +220,7 @@ void main() {
   });
 
   testWidgets('anyone but a radiologist sees it read-only', (tester) async {
-    await tester.pumpWidget(wrap('review-01', user: _technologist));
+    await tester.pumpWidget(wrap('review-01', user: _admin));
     await tester.pumpAndSettle();
 
     final panel =

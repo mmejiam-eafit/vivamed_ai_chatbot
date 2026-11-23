@@ -8,6 +8,7 @@ import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/status_banner.dart';
 import 'package:radiologist_helper/ui/molecules/upload_zone.dart';
 import 'package:radiologist_helper/ui/organisms/status_bar.dart';
+import 'package:radiologist_helper/ui/pages/processing_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/upload_template.dart';
 
@@ -58,19 +59,20 @@ class _UploadPageState extends ConsumerState<UploadPage> {
     });
 
     try {
-      // A fixed choreography, not a real progress signal -- there's no
-      // backend yet to report one, only the one mocked repository call.
-      await Future<void>.delayed(const Duration(milliseconds: 400));
+      final result = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
       if (!mounted) return;
-      setState(() => _status = UploadZoneStatus.analyzing);
-
-      final detail = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
-      if (!mounted) return;
-      // Straight to the study once analysis resolves -- no manual "View
-      // Study" tap in between.
+      // A new study now exists: the review queue's list of studies must know
+      // it. The worklist needs nothing: it reads again whenever it is shown.
+      ref.invalidate(casesProvider);
+      // Straight on once the files are stored -- no manual tap in between: to
+      // the run that now processes them, or to the study when every file was
+      // already in it and there is nothing to process.
+      final runId = result.runId;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => StudyReviewPage(caseId: detail.caseSummary.id),
+          builder: (_) => runId == null
+              ? StudyReviewPage(caseId: result.caseId)
+              : ProcessingPage(caseId: result.caseId, runId: runId),
         ),
       );
     } catch (_) {

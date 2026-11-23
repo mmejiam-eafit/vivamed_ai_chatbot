@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:radiologist_helper/data/mocks/settings_mocks.dart';
+import 'package:radiologist_helper/data/user.dart';
 import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
@@ -69,7 +70,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 MetadataField(label: 'Name', value: user.name),
-                MetadataField(label: 'Role', value: user.role),
+                MetadataField(
+                  label: 'Role',
+                  value: user.roles.map(roleLabel).join(', '),
+                ),
                 MetadataField(label: 'Email', value: user.email),
               ],
             ),

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/data/mocks/case_mocks.dart';
+import 'package:radiologist_helper/repositories/case_repository.dart';
+import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/theme_controller.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
+import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/organisms/case_worklist_table.dart';
 import 'package:radiologist_helper/ui/organisms/study_info_card.dart';
@@ -14,6 +18,37 @@ import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// One study, always processing, and a count of the worklist's reads.
+class _CountingCaseRepository implements CaseRepository {
+  var reads = 0;
+
+  @override
+  Future<List<CaseSummary>> getCases() async {
+    reads++;
+    return [
+      CaseSummary(
+        id: 'case-1',
+        title: 'Chest X-Ray',
+        patient: 'Anonymous 1',
+        modality: 'CXR',
+        date: DateTime(2026, 11, 1),
+        confidence: 0.9,
+        severity: SeverityLevel.mild,
+        status: StudyStatus.processing,
+        activeRunId: 'run-1',
+      ),
+    ];
+  }
+
+  @override
+  Future<CaseDetail> getCaseDetail(String caseId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<SimilarCases> getSimilarCases(String caseId) =>
+      throw UnimplementedError();
+}
 
 void main() {
   Widget wrap(Widget child) => ProviderScope(
@@ -185,26 +220,27 @@ void main() {
       expect(find.byType(ListView), findsNothing);
     });
 
-    // ── Images held back for review (DL D-022) ───────────────────────────
+    // ── Status (DL D-024) ────────────────────────────────────────────
 
-    testWidgets('cards say which studies have images held back',
-        (tester) async {
+    testWidgets('cards say where each study stands', (tester) async {
       await tester.pumpWidget(wrap(const CaseListPage()));
       await tester.pumpAndSettle();
 
-      // case-7 and case-8 each have one awaiting review; case-6 is processing.
-      expect(find.text('1 awaiting review'), findsNWidgets(2));
-      expect(find.text('1 processing'), findsOneWidget);
+      // case-6 has a decision being applied and three open failures;
+      // case-7 and case-8 each have an image awaiting review.
+      expect(find.text('Processing · 3 failed items'), findsOneWidget);
+      expect(find.text('Needs review'), findsNWidgets(2));
+      expect(find.text('Ready'), findsNWidgets(5));
       expect(
         find.descendant(
           of: find.byType(StudyInfoCard),
-          matching: find.text('Review'),
+          matching: find.text('Status'),
         ),
-        findsNWidgets(3),
+        findsNWidgets(mockCases.length),
       );
     });
 
-    testWidgets('the worklist passes each study its held-back reviews',
+    testWidgets('the worklist shows each study with its status',
         (tester) async {
       tester.view.physicalSize =
           const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
@@ -217,8 +253,87 @@ void main() {
 
       final table =
           tester.widget<CaseWorklistTable>(find.byType(CaseWorklistTable));
-      expect(table.heldBack.keys,
-          unorderedEquals(['case-6', 'case-7', 'case-8']));
+      final case6 = table.cases.singleWhere((c) => c.id == 'case-6');
+      expect(case6.status, StudyStatus.processing);
+      expect(case6.openFailures, 3);
+      expect(find.text('Processing · 3 failed items'), findsOneWidget);
+    });
+
+    // ── Reading again only while visible ───────────────────────────────
+
+    group('while a study is in progress', () {
+      late _CountingCaseRepository repository;
+      final navigatorKey = GlobalKey<NavigatorState>();
+
+      Widget app() => ProviderScope(
+            overrides: [caseRepositoryProvider.overrideWithValue(repository)],
+            child: MaterialApp(
+              navigatorKey: navigatorKey,
+              theme: buildAppTheme(),
+              home: const CaseListPage(),
+            ),
+          );
+
+      setUp(() => repository = _CountingCaseRepository());
+
+      testWidgets('reads again every 5 seconds', (tester) async {
+        await tester.pumpWidget(app());
+        await tester.pump();
+        expect(repository.reads, 1);
+
+        await tester.pump(const Duration(seconds: 5));
+        expect(repository.reads, 2);
+      });
+
+      testWidgets('stops reading while another page covers it, and reads at '
+          'once when it is back', (tester) async {
+        await tester.pumpWidget(app());
+        await tester.pump();
+
+        navigatorKey.currentState!.push(MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('cover')),
+        ));
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(seconds: 30));
+        expect(repository.reads, 1);
+
+        navigatorKey.currentState!.pop();
+        await tester.pumpAndSettle();
+        expect(repository.reads, 2);
+      });
+
+      testWidgets('stops reading while the app is hidden, and reads at once '
+          'when it is shown', (tester) async {
+        await tester.pumpWidget(app());
+        await tester.pump();
+
+        tester.binding
+          ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+          ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 30));
+        expect(repository.reads, 1);
+
+        tester.binding
+          ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+          ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        await tester.pump();
+        expect(repository.reads, 2);
+      });
+
+      testWidgets('keeps reading while the app is shown but unfocused',
+          (tester) async {
+        await tester.pumpWidget(app());
+        await tester.pump();
+
+        tester.binding
+            .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        await tester.pump(const Duration(seconds: 5));
+        expect(repository.reads, 2);
+
+        tester.binding
+            .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      });
     });
 
     // ── Nav bar (own index 2) ────────────────────────────────────────────
@@ -256,7 +371,7 @@ void main() {
       await tester.pumpWidget(await wrapWithNav(const CaseListPage()));
       await tester.pumpAndSettle();
 
-      // The cards carry a "Review" row too; tap the bar's destination.
+      // Scoped to the bar, so the tap can only reach its destination.
       await tester.tap(find.descendant(
         of: find.byType(NavigationBar),
         matching: find.text('Review'),

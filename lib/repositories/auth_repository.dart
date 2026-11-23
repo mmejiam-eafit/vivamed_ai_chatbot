@@ -2,13 +2,16 @@ import 'package:radiologist_helper/data/mocks/user_mocks.dart';
 import 'package:radiologist_helper/data/user.dart';
 
 abstract class AuthRepository {
-  Future<UserProfile> signIn({required String email, required String password});
+  Future<UserProfile> signIn({
+    required String username,
+    required String password,
+  });
 }
 
 class MockAuthRepository implements AuthRepository {
   @override
   Future<UserProfile> signIn({
-    required String email,
+    required String username,
     required String password,
   }) async {
     // Nothing to validate against yet -- any credentials "succeed."

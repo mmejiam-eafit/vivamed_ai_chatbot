@@ -58,7 +58,7 @@ void main() {
 
   const radiologist = UserProfile(
     name: 'Dr. Fixture',
-    role: 'Radiologist',
+    roles: ['radiologist'],
     email: 'fixture@hospital.org',
     initials: 'DF',
   );

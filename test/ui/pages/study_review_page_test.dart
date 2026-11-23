@@ -6,6 +6,7 @@ import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/data/conversation.dart';
 import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/data/mocks/conversation_mocks.dart';
+import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/repositories/case_repository.dart';
 import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
 import 'package:radiologist_helper/repositories/conversation_repository.dart';
@@ -24,6 +25,7 @@ import 'package:radiologist_helper/ui/organisms/status_bar.dart';
 import 'package:radiologist_helper/ui/pages/chat_page.dart';
 import 'package:radiologist_helper/ui/pages/heatmap_viewer_page.dart';
 import 'package:radiologist_helper/ui/pages/image_review_page.dart';
+import 'package:radiologist_helper/ui/pages/processing_page.dart';
 import 'package:radiologist_helper/ui/pages/settings_page.dart';
 import 'package:radiologist_helper/ui/pages/similar_cases_page.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
@@ -32,6 +34,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_chat_stream_repository.dart';
 import '../../support/fake_image_review_repository.dart';
+import '../../support/fake_processing_repository.dart';
 
 class _FailingCaseRepository implements CaseRepository {
   @override
@@ -141,7 +144,15 @@ void main() {
 
     testWidgets('an image only processing after review is a note',
         (tester) async {
-      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-6')));
+      await tester.pumpWidget(wrap(
+        const StudyReviewPage(caseId: 'case-6'),
+        // Only the held-back image: case-6's mock failures have a bar of
+        // their own, tested below.
+        overrides: [
+          processingRepositoryProvider
+              .overrideWithValue(FakeProcessingRepository()),
+        ],
+      ));
       await tester.pumpAndSettle();
 
       final bar = tester.widget<StatusBar>(find.byType(StatusBar));
@@ -173,6 +184,92 @@ void main() {
 
       final bar = tester.widget<StatusBar>(find.byType(StatusBar));
       expect(bar.message, '2 images of this study are awaiting review.');
+    });
+
+    // ── Failed processing ────────────────────────────────────────────────
+
+    ProcessingFailure failure(String stepId) => ProcessingFailure(
+          stepId: stepId,
+          stage: ProcessingStage.prediction,
+          internalName: 'img-$stepId',
+          code: ProcessingErrorCode.modelUnavailable,
+          attempts: 4,
+          failedAt: DateTime.utc(2026, 11, 22, 10, 15),
+          canRetry: true,
+        );
+
+    Widget withFailures(String caseId, List<ProcessingFailure> failures) =>
+        wrap(
+          StudyReviewPage(caseId: caseId),
+          overrides: [
+            processingRepositoryProvider.overrideWithValue(
+              FakeProcessingRepository(failures: [
+                (caseId: caseId, failures: failures),
+              ]),
+            ),
+          ],
+        );
+
+    testWidgets('open failures are an error that links to the Processing page',
+        (tester) async {
+      await tester.pumpWidget(
+        withFailures('case-1', [failure('a'), failure('b')]),
+      );
+      await tester.pumpAndSettle();
+
+      final bar = tester.widget<StatusBar>(find.byType(StatusBar));
+      expect(bar.variant, StatusBannerVariant.error);
+      expect(bar.message, '2 items of this study failed processing.');
+      expect(bar.actionLabel, 'Review');
+
+      await tester.tap(find.text('Review'));
+      await tester.pumpAndSettle();
+
+      final page = tester.widget<ProcessingPage>(find.byType(ProcessingPage));
+      expect(page.caseId, 'case-1');
+      // Opened from the study, not from an upload: no run to follow.
+      expect(page.runId, isNull);
+    });
+
+    testWidgets('a single failure is counted in the singular', (tester) async {
+      await tester.pumpWidget(withFailures('case-1', [failure('a')]));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<StatusBar>(find.byType(StatusBar)).message,
+        '1 item of this study failed processing.',
+      );
+    });
+
+    testWidgets('another study\'s failures show no bar here', (tester) async {
+      await tester.pumpWidget(wrap(
+        const StudyReviewPage(caseId: 'case-1'),
+        overrides: [
+          processingRepositoryProvider.overrideWithValue(
+            FakeProcessingRepository(failures: [
+              (caseId: 'case-2', failures: [failure('a')]),
+            ]),
+          ),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StatusBar), findsNothing);
+    });
+
+    testWidgets('images held back and failed items show both bars, stacked',
+        (tester) async {
+      // case-6's mocks have both: an image processing after review, and
+      // three failed items.
+      await tester.pumpWidget(wrap(const StudyReviewPage(caseId: 'case-6')));
+      await tester.pumpAndSettle();
+
+      final bars = tester.widgetList<StatusBar>(find.byType(StatusBar)).toList();
+      expect(bars.map((b) => b.variant), [
+        StatusBannerVariant.info,
+        StatusBannerVariant.error,
+      ]);
+      expect(bars.last.message, '3 items of this study failed processing.');
     });
 
     testWidgets('renders Study Review in app bar', (tester) async {

@@ -10,7 +10,7 @@ class StudyReviewTemplate extends StatelessWidget {
     required this.imageViewer,
     required this.findingsPanel,
     required this.chatPanel,
-    this.statusBar,
+    this.statusBars = const [],
     this.drawer,
     this.drawerWide,
     this.primaryNavDrawer,
@@ -27,8 +27,10 @@ class StudyReviewTemplate extends StatelessWidget {
   /// ChatPanel organism for the AI conversation.
   final Widget chatPanel;
 
-  /// Optional full-width StatusBar organism shown above the main content.
-  final Widget? statusBar;
+  /// Full-width StatusBar organisms shown above the main content, stacked
+  /// in order: a study can have images awaiting review and failed items at
+  /// once, and each bar leads somewhere different.
+  final List<Widget> statusBars;
 
   /// ConversationDrawer organism, compact/medium only.
   /// Narrow: passed to Scaffold.drawer as a slide-over.
@@ -126,7 +128,7 @@ class StudyReviewTemplate extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ?statusBar,
+                ...statusBars,
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
@@ -155,7 +157,7 @@ class StudyReviewTemplate extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ?statusBar,
+          ...statusBars,
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -189,7 +191,7 @@ class StudyReviewTemplate extends StatelessWidget {
       drawer: drawer,
       body: Column(
         children: [
-          ?statusBar,
+          ...statusBars,
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {

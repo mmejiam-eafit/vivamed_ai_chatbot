@@ -66,15 +66,6 @@ void main() {
     expect(find.text('Uploading…'), findsOneWidget);
   });
 
-  testWidgets('analyzing: shows a loading indicator and label', (tester) async {
-    await tester.pumpWidget(wrap(
-      UploadZone(status: UploadZoneStatus.analyzing, onTap: () {}),
-    ));
-
-    expect(find.byType(AppLoadingIndicator), findsOneWidget);
-    expect(find.text('Analyzing…'), findsOneWidget);
-  });
-
   // ── onTap ──────────────────────────────────────────────────────────────────
 
   testWidgets('onTap fires when idle', (tester) async {
@@ -97,15 +88,6 @@ void main() {
     final inkWell = tester.widget<InkWell>(find.byType(InkWell));
     expect(inkWell.onTap, isNull);
     expect(called, isFalse);
-  });
-
-  testWidgets('onTap does not fire while analyzing', (tester) async {
-    await tester.pumpWidget(wrap(
-      UploadZone(status: UploadZoneStatus.analyzing, onTap: () {}),
-    ));
-
-    final inkWell = tester.widget<InkWell>(find.byType(InkWell));
-    expect(inkWell.onTap, isNull);
   });
 
   // ── Focus ring (DL §8.4) ───────────────────────────────────────────────

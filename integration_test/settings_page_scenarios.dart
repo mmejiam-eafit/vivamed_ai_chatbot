@@ -37,7 +37,7 @@ void main() {
     final fixture = UserRepositoryFixture(
       getCurrentUserResult: const FixtureSuccess(UserProfile(
         name: 'Dr. Fixture Name',
-        role: 'Fixture Role',
+        roles: ['admin'],
         email: 'fixture@example.invalid',
         initials: 'FN',
       )),
@@ -49,7 +49,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Dr. Fixture Name'), findsOneWidget);
-    expect(find.text('Fixture Role'), findsOneWidget);
+    expect(find.text('Administrator'), findsOneWidget);
     expect(find.text('fixture@example.invalid'), findsOneWidget);
   });
 

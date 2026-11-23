@@ -27,9 +27,9 @@ class ImageReviewService {
   }) =>
       _repository.decide(reviewId, outcome: outcome, view: view, note: note);
 
-  /// Only radiologists decide; anyone else sees the review read-only. Until
-  /// sign-in carries a real role, this reads the role the profile shows.
-  bool canDecide(UserProfile user) => user.role == 'Radiologist';
+  /// Only radiologists decide; anyone else sees the review read-only. The
+  /// backend names the role `radiologist`, lowercase, among the user's roles.
+  bool canDecide(UserProfile user) => user.roles.contains('radiologist');
 
   int pendingCount(List<ImageReview> reviews) =>
       reviews.where((r) => r.status == ReviewStatus.pending).length;

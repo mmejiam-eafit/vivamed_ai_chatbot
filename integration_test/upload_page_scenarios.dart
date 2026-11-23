@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:radiologist_helper/data/case.dart';
+import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_loading_indicator.dart';
-import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/pages/study_review_page.dart';
 import 'package:radiologist_helper/ui/pages/upload_page.dart';
@@ -32,18 +31,9 @@ void main() {
   testWidgets('upload success navigates to Study Review with the fixture case',
       (tester) async {
     final fixture = UploadRepositoryFixture(
-      uploadStudyResult: FixtureSuccess(CaseDetail(
-        caseSummary: CaseSummary(
-          id: 'fixture-case-upload',
-          title: 'Fixture Uploaded Study',
-          patient: 'Fixture Patient',
-          modality: 'CXR',
-          date: DateTime(2026, 1, 1),
-          confidence: 0.9,
-          severity: SeverityLevel.normal,
-        ),
-        imageUrl: 'https://example.invalid/fixture.png',
-      )),
+      uploadStudyResult: const FixtureSuccess(
+        UploadResult(caseId: 'fixture-case-upload'),
+      ),
     );
     await tester.pumpWidget(wrap(
       UploadPage(pickFiles: threeFiles),
@@ -78,18 +68,9 @@ void main() {
     expect(find.text('Upload failed. Please try again.'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
 
-    fixture.uploadStudyResult = FixtureSuccess(CaseDetail(
-      caseSummary: CaseSummary(
-        id: 'fixture-case-retry',
-        title: 'Fixture Retried Study',
-        patient: 'Fixture Patient',
-        modality: 'CXR',
-        date: DateTime(2026, 1, 1),
-        confidence: 0.9,
-        severity: SeverityLevel.normal,
-      ),
-      imageUrl: 'https://example.invalid/fixture.png',
-    ));
+    fixture.uploadStudyResult = const FixtureSuccess(
+      UploadResult(caseId: 'fixture-case-retry'),
+    );
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
 
@@ -112,8 +93,6 @@ void main() {
     // Not pumpAndSettle -- the fixture's Future never resolves, so settling
     // would hang; a single pump is enough to reach the busy state.
     await tester.pump();
-    await tester.pump(const Duration(
-        milliseconds: 500)); // past the internal 400ms choreography delay
 
     expect(find.byType(AppLoadingIndicator), findsOneWidget);
     final popScope = tester.widget<PopScope>(find.byType(PopScope));

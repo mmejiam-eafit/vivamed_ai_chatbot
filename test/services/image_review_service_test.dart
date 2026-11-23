@@ -90,13 +90,24 @@ void main() {
 
     test('another role cannot decide', () {
       final service = ImageReviewService(FakeImageReviewRepository());
-      const technologist = UserProfile(
+      const admin = UserProfile(
         name: 'T. Lee',
-        role: 'Technologist',
+        roles: ['admin'],
         email: 't@hospital.org',
         initials: 'TL',
       );
-      expect(service.canDecide(technologist), isFalse);
+      expect(service.canDecide(admin), isFalse);
+    });
+
+    test('a radiologist with other roles too can decide', () {
+      final service = ImageReviewService(FakeImageReviewRepository());
+      const both = UserProfile(
+        name: 'T. Lee',
+        roles: ['admin', 'radiologist'],
+        email: 't@hospital.org',
+        initials: 'TL',
+      );
+      expect(service.canDecide(both), isTrue);
     });
 
     test('pendingCount counts only reviews that need review', () {

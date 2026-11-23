@@ -40,15 +40,17 @@ void main() {
       expect(find.byType(AppTextField), findsNWidgets(2));
     });
 
-    testWidgets('email field uses email keyboard type', (tester) async {
+    testWidgets('asks for the username, not an email', (tester) async {
       await tester.pumpWidget(
         MaterialApp(theme: buildAppTheme(), home: const LoginPage()),
       );
 
+      expect(find.text('Username'), findsOneWidget);
+      expect(find.text('Email'), findsNothing);
       final fields = tester.widgetList<AppTextField>(find.byType(AppTextField));
       expect(
         fields.any((f) => f.keyboardType == TextInputType.emailAddress),
-        isTrue,
+        isFalse,
       );
     });
 

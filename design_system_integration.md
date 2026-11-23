@@ -35,6 +35,7 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 | `AppAvatar` | `AppColors.surfaceBrandSecondary` default background, `AppColors.textOnBrand` initials text |
 | `AppBadge` | `AppColors.statusError` or `AppColors.interactivePrimary` background depending on context, `AppColors.interactivePrimaryForeground` text, `AppRadius.borderInput` |
 | `AppChip` | `AppColors.surfaceAccent` fill, `AppColors.textOnAccent` text, `AppRadius.borderButton` |
+| `AppCheckbox` | `interactivePrimary` fill with `interactivePrimaryForeground` check, `border` outline (meaningful, not `borderSubdued`), `AppInteraction.minTouchTarget` target, focus ring `AppRadius.inlineElement` + `focusRingOffset` |
 | `SeverityDot` | `SeverityTokens.normal` / `mild` / `moderate` / `critical` — one of the four foreground colors |
 
 ### Molecules
@@ -51,6 +52,9 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 | `ImageThumbnail` | `AppRadius.borderCard` clip, `AppElevation.card` shadow, `diagnosticCanvasGround` letterbox (`BoxFit.contain`, DL D-020), `AppColors.surfaceSubdued` loading placeholder |
 | `ReviewStatusChip` | `statusWarning` / `statusInfo` / `statusSuccess` foreground on the matching `status*Subdued` background (Needs review / Processing / Applied, DL D-021), `AppRadius.borderInput`, `AppIconSize.sm` icon, `AppTypography.labelMd` |
 | `CaptionedImage` | `AppImage` with `BoxFit.contain`; caption `AppTypography.labelMd` in `textSecondary` below the pixels, `AppSpacing.xs` gap — read on the Image Review canvas's forced dark theme |
+| `ProcessingStatusChip` | `statusInfo` (Queued, Processing) / `statusSuccess` (Ready) / `statusError` (Failed) foreground on the matching `status*Subdued` background (DL D-023), `AppRadius.borderInput`, `AppIconSize.sm` icon, `AppTypography.labelMd` |
+| `StageProgressRow` | `AppTypography.bodyMd` / `textPrimary` stage, `numeric` / `textSecondary` count, `bodySm` / `textSecondary` details, `AppSpacing.sm` between name and count |
+| `FailureRow` | No status color (DL D-023): `AppTypography.mono` / `textPrimary` name, `bodyMd` / `textPrimary` stage and message, `bodySm` / `textSecondary` meta; `AppSpacing.sm` beside the checkbox, hover at `AppInteraction.hoverOverlayOpacity` |
 
 ### Organisms
 
@@ -65,6 +69,9 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 | `StatusBar` | Full-width, no border radius, `AppSpacing.md` vertical padding |
 | `ImageReviewPanel` | `SectionCard` sections, `AppTypography.bodyMd` in `textPrimary` for the reason and decision, `bodySm` / `textSecondary` for choice tags, `interactivePrimary` radio, `AppSpacing.md`–`lg` between sections |
 | `ImageReviewTable` | As `CaseWorklistTable`: `AppTypography.labelMd` / `textSecondary` headings on `surfaceSubdued`, `numeric` dates, `mono` recorded labels, `borderSubdued` dividers |
+| `RunProgressCard` | `SectionCard` chrome, `AppSpacing.md` between stage rows, `bodyMd` / `textPrimary` open-failure count, `bodySm` / `textSecondary` refresh note |
+| `FailureList` | `surface` card, `AppElevation.card`, `AppRadius.borderCard`, `AppSpacing.lg` padding, `AppTypography.headingSm` / `textPrimary` count heading |
+| `FailureActionBar` | Full-width `surface` strip, `AppElevation.raised`, `AppSpacing.lg` / `md` padding, `bodyMd` / `textPrimary` prompt, `bodySm` / `textSecondary` hint |
 
 ### Templates
 
@@ -72,6 +79,7 @@ This table maps specific widgets from `atomic_design.md` to the token classes an
 |---|---|
 | `ChatTemplate` | `AppColors.surfacePage` scaffold background, `AppSpacing.lg` zone padding on wide screens; side panel gated on `AppLayout.threePaneMinWidth` (see `design_tokens.md` §9) |
 | `StudyReviewTemplate` | Same scaffold background, `AppSpacing.xl` between top and bottom zones |
+| `ProcessingTemplate` | `surfacePage` scaffold background, `AppSpacing.lg` screen margin and gap between progress and failed items, column capped at `AppLayout.contentMaxWidth` |
 | `ImageReviewTemplate` | `surfacePage` scaffold background; the canvas is `diagnosticCanvasGround` under a forced dark theme, `AppSpacing.sm` between images, details column `AppLayout.panelMaxWidth` from `twoPaneMinWidth` with `AppSpacing.lg` padding |
 | `SettingsTemplate` | `AppSpacing.lg` horizontal padding, `AppSpacing.xxl` between setting sections |
 | `OnboardingTemplate` | No page-level padding (full-bleed), `AppSpacing.xl` bottom action area padding |

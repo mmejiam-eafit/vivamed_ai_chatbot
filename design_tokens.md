@@ -104,12 +104,12 @@ Each token names the text's **role**, not its appearance.
 
 | Pair | Use for |
 |---|---|
-| `statusSuccess` / `statusSuccessSubdued` | Upload complete, study processed, image review applied ("Applied", review queue only) |
+| `statusSuccess` / `statusSuccessSubdued` | Upload complete, study processed, image review applied ("Applied", review queue only), processing run ready ("Ready") |
 | `statusWarning` / `statusWarningSubdued` | Low-confidence result, connection issue, stale data, image awaiting review ("Needs review", and the Review destination's count) |
-| `statusError` / `statusErrorSubdued` | Failed upload, invalid input, server error |
-| `statusInfo` / `statusInfoSubdued` | Informational banners, non-actionable notices, image review decided and being applied ("Processing") |
+| `statusError` / `statusErrorSubdued` | Failed upload, invalid input, server error, processing run failed ("Failed"), a study's open processing failures (its link on Study Review) |
+| `statusInfo` / `statusInfoSubdued` | Informational banners, non-actionable notices, image review decided and being applied ("Processing"), processing run waiting or under way ("Queued", "Processing") |
 
-Image-review state always pairs its status color with a text label and an icon, and never appears inside a component that renders severity (**DL D-021**).
+Image-review state always pairs its status color with a text label and an icon, and never appears inside a component that renders severity (**DL D-021**). Processing state follows the same rule, and the failed items it lists carry no status color at all: the row's words say why it failed (**DL D-023**).
 
 ### 2.6 Severity — clinical findings only
 
@@ -476,10 +476,11 @@ Six breakpoints (five unused) become three tier boundaries and two pane minimums
 | **Onboarding** | Full-bleed carousel; image top, copy below | Content capped 560 | Two columns — image left, copy right, capped `contentMaxWidth` | Generous |
 | **Chat** | Conversations in overlay drawer; findings in draggable bottom sheet | Conversations collapse to 64px rail; findings slide over above `twoPaneMinWidth` | Three panes: nav │ chat │ findings, gated at `threePaneMinWidth` | Comfortable chat, compact findings |
 | **Study Review** | Viewer 4:3 on top, `Findings │ Chat` tabs below | Viewer left / tabs right above `twoPaneMinWidth`, else viewer top | Three zones, gated at `threePaneMinWidth`. **Ultrawide: viewer and findings side by side, viewer absorbs the extra width** | Comfortable → compact |
-| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity, and review (images held back, neutral text, **D-022**), gated at `threePaneMinWidth`. The same columns at ultrawide; capped at 1440 (`worklistMaxWidth`) and centered from `threePaneMinWidth` up, which binds from ≈1504px with the 64px menu rail (**D-019**) | Comfortable → compact → dense |
+| **Case List** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense sortable table** — patient, modality, date, confidence, severity, and status (the study's processing and review state with its open failures, neutral text, **D-024**), gated at `threePaneMinWidth`. The same columns at ultrawide; capped at 1440 (`worklistMaxWidth`) and centered from `threePaneMinWidth` up, which binds from ≈1504px with the 64px menu rail (**D-019**) | Comfortable → compact → dense |
 | **Heatmap Viewer** | Full-screen canvas showing the whole image, letterboxed on the canvas ground and never cropped, with the overlay sharing the image's frame (**D-020**); controls in bottom bar over scrim | As compact, 56px control bar | Canvas centered, controls in a 280px right rail | 44px touch to `expanded`, then 32px |
 | **Review** | Single-column card list | Two-column grid capped `contentMaxWidth` | **Dense table** — status, patient, date, reason, recorded labels, decision, gated at `threePaneMinWidth` and capped like Case List. Not sortable: rows keep the queue's priority order, needs review → processing → applied | Comfortable → compact → dense |
 | **Image Review** | Canvas on top at 45% of the height, the flagged image (two thirds) beside the study's other images (one third), whole and never cropped (**D-020**); reason, decision and report scroll below | From `twoPaneMinWidth`: canvas left, a `panelMaxWidth` column right holding reason, decision and report | As medium | Generous: a deciding task (**DL §7.1**) |
+| **Processing** | Single column, top-aligned: the run's progress, then the study's failed items; while items are selected, the action bar is pinned full width to the bottom (**D-023**) | As compact, the column capped at `contentMaxWidth` and centered | As medium. A drill-down page, so the app bar stays at every tier | Generous: a deciding task (**DL §7.1**) |
 | **Settings** | Single-column section list | Single column capped 640 | Two columns — 200px index left, content right capped 720, gated at `threePaneMinWidth` | Generous |
 
 Case List switching from grid to table is deliberate: a worklist is a scanning task, and scanning tasks want tables (**DL §7.1**).

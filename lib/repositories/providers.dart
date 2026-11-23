@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:radiologist_helper/data/mocks/processing_mocks.dart';
 import 'package:radiologist_helper/repositories/auth_repository.dart';
 import 'package:radiologist_helper/repositories/case_repository.dart';
 import 'package:radiologist_helper/repositories/chat_stream_repository.dart';
@@ -7,6 +8,7 @@ import 'package:radiologist_helper/repositories/findings_repository.dart';
 import 'package:radiologist_helper/repositories/heatmap_repository.dart';
 import 'package:radiologist_helper/repositories/image_review_repository.dart';
 import 'package:radiologist_helper/repositories/onboarding_repository.dart';
+import 'package:radiologist_helper/repositories/processing_repository.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
 import 'package:radiologist_helper/repositories/user_repository.dart';
 
@@ -19,8 +21,12 @@ final authRepositoryProvider =
 final userRepositoryProvider =
     Provider<UserRepository>((ref) => MockUserRepository());
 
-final caseRepositoryProvider =
-    Provider<CaseRepository>((ref) => MockCaseRepository());
+final caseRepositoryProvider = Provider<CaseRepository>(
+  (ref) => MockCaseRepository(
+    ref.watch(mockPipelineProvider),
+    ref.watch(imageReviewRepositoryProvider),
+  ),
+);
 
 final findingsRepositoryProvider =
     Provider<FindingsRepository>((ref) => MockFindingsRepository());
@@ -42,8 +48,18 @@ final chatStreamRepositoryProvider =
 final heatmapRepositoryProvider =
     Provider<HeatmapRepository>((ref) => MockHeatmapRepository());
 
-final uploadRepositoryProvider =
-    Provider<UploadRepository>((ref) => MockUploadRepository());
+/// The mock pipeline behind the upload and processing repositories, one per
+/// `ProviderScope` so an upload's run, retries and discards never leak
+/// between tests.
+final mockPipelineProvider = Provider<MockPipeline>((ref) => MockPipeline());
+
+final processingRepositoryProvider = Provider<ProcessingRepository>(
+  (ref) => MockProcessingRepository(ref.watch(mockPipelineProvider)),
+);
+
+final uploadRepositoryProvider = Provider<UploadRepository>(
+  (ref) => MockUploadRepository(ref.watch(mockPipelineProvider)),
+);
 
 final onboardingRepositoryProvider = Provider<OnboardingRepository>(
   (ref) => SharedPreferencesOnboardingRepository(),

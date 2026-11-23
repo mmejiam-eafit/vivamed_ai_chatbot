@@ -12,6 +12,17 @@ void main() {
 
   // ── Structure ──────────────────────────────────────────────────────────────
 
+  testWidgets('is a live region, so screen readers announce it',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(wrap(const StatusBar(message: 'Retrying 1 item.')));
+    expect(
+      tester.getSemantics(find.byType(StatusBar)),
+      isSemantics(isLiveRegion: true),
+    );
+    handle.dispose();
+  });
+
   testWidgets('renders the message', (tester) async {
     await tester.pumpWidget(wrap(const StatusBar(message: 'AI analysis is running…')));
     expect(find.text('AI analysis is running…'), findsOneWidget);

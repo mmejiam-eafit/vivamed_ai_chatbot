@@ -7,11 +7,12 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/focus_ring.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 
-enum UploadZoneStatus { idle, uploading, analyzing }
+enum UploadZoneStatus { idle, uploading }
 
 /// The one interactive area of the Upload screen — a tappable zone that
-/// carries all three of its pre-terminal states (idle/uploading/analyzing)
-/// in one place. Success/failure is a separate `StatusBar`, not this widget.
+/// carries both of its pre-terminal states (idle/uploading) in one place.
+/// Failure is a separate `StatusBar`, not this widget; what happens to the
+/// files after they are stored is the Processing page's to show.
 class UploadZone extends StatelessWidget {
   const UploadZone({
     super.key,
@@ -39,7 +40,6 @@ class UploadZone extends StatelessWidget {
               '${files.length} file${files.length == 1 ? '' : 's'} selected',
           },
         UploadZoneStatus.uploading => 'Uploading…',
-        UploadZoneStatus.analyzing => 'Analyzing…',
       };
 
   @override
@@ -107,7 +107,3 @@ Widget previewUploadZoneSelected() => UploadZone(
 @Preview(name: 'uploading', size: Size(280, 200), wrapper: previewWrapper)
 Widget previewUploadZoneUploading() =>
     UploadZone(status: UploadZoneStatus.uploading, onTap: () {});
-
-@Preview(name: 'analyzing', size: Size(280, 200), wrapper: previewWrapper)
-Widget previewUploadZoneAnalyzing() =>
-    UploadZone(status: UploadZoneStatus.analyzing, onTap: () {});

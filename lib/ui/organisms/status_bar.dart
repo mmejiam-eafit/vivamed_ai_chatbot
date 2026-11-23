@@ -4,6 +4,10 @@ import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/status_banner.dart';
 
+/// A status message across the top of a page. A live region: a screen
+/// reader announces it when it appears or changes, since it usually reports
+/// the outcome of something the user just did (an upload, a retry) and is
+/// otherwise easy to miss away from the focus.
 class StatusBar extends StatelessWidget {
   const StatusBar({
     super.key,
@@ -20,16 +24,20 @@ class StatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        boxShadow: AppElevation.raised,
-      ),
-      child: StatusBanner(
-        message: message,
-        variant: variant,
-        actionLabel: actionLabel,
-        onAction: onAction,
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          boxShadow: AppElevation.raised,
+        ),
+        child: StatusBanner(
+          message: message,
+          variant: variant,
+          actionLabel: actionLabel,
+          onAction: onAction,
+        ),
       ),
     );
   }
