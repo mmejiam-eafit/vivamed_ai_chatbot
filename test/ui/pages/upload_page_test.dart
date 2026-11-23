@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/mocks/processing_mocks.dart';
 import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
@@ -32,12 +33,12 @@ class _DuplicateUploadRepository implements UploadRepository {
 }
 
 void main() {
-  // The mock upload's first run in a fresh pipeline is run-1; answered as
+  // The mock upload's first run in a fresh pipeline; answered as
   // finished, so the Processing page it leads to reads it once and settles.
   List<Override> finishedRun() => [
         processingRepositoryProvider.overrideWithValue(
           FakeProcessingRepository(runs: {
-            'run-1': [
+            MockPipeline.uploadRunId(1): [
               const ProcessingRun(
                 status: RunStatus.ready,
                 openFailures: 0,
@@ -96,7 +97,7 @@ void main() {
     // No manual step: navigation happens as soon as the files are stored,
     // with no intervening "View Study" banner/button to tap.
     final page = tester.widget<ProcessingPage>(find.byType(ProcessingPage));
-    expect(page.runId, 'run-1');
+    expect(page.runId, MockPipeline.uploadRunId(1));
     expect(page.caseId, startsWith('case-upload-'));
     expect(find.byType(UploadPage), findsNothing);
     expect(find.text('View Study'), findsNothing);

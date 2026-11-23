@@ -10,7 +10,7 @@ void main() {
   group('MockPipeline', () {
     test('case-6 starts ready with three open failures', () {
       final pipeline = MockPipeline();
-      final run = pipeline.run('run-case-6');
+      final run = pipeline.run(MockPipeline.case6RunId);
       expect(run.status, RunStatus.ready);
       expect(run.openFailures, 3);
 
@@ -63,8 +63,10 @@ void main() {
         pipeline.advance(runId);
       }
       final names = _failuresOf(pipeline, 'case-new').map((f) => f.internalName);
-      expect(names.toSet(), hasLength(2));
-      expect(names, everyElement(startsWith('img-')));
+      // The second file's labels and the third file's reading failed: each
+      // named by the run id's first 8 hex characters and its position.
+      final prefix = runId.substring(0, 8);
+      expect(names, unorderedEquals(['$prefix-002', '$prefix-003']));
     });
 
     test('a retried step runs again and succeeds, reopening the run', () {
@@ -72,11 +74,11 @@ void main() {
       final labels = _failuresOf(pipeline, 'case-6').first;
 
       expect(pipeline.retry([labels.stepId]), isEmpty);
-      expect(pipeline.run('run-case-6').status, RunStatus.processing);
+      expect(pipeline.run(MockPipeline.case6RunId).status, RunStatus.processing);
       expect(_failuresOf(pipeline, 'case-6'), hasLength(2));
 
-      pipeline.advance('run-case-6');
-      final run = pipeline.run('run-case-6');
+      pipeline.advance(MockPipeline.case6RunId);
+      final run = pipeline.run(MockPipeline.case6RunId);
       expect(run.status, RunStatus.ready);
       expect(run.openFailures, 2);
     });
@@ -87,9 +89,9 @@ void main() {
 
       pipeline
         ..retry([file.stepId])
-        ..advance('run-case-6');
+        ..advance(MockPipeline.case6RunId);
       final viewChecks = pipeline
-          .run('run-case-6')
+          .run(MockPipeline.case6RunId)
           .steps
           .where((s) => s.stage == ProcessingStage.viewCheck);
       expect(viewChecks.where((s) => s.state == ProcessingStepState.pending),
@@ -115,7 +117,7 @@ void main() {
       final unreadable = _failuresOf(pipeline, 'case-6').last.stepId;
 
       expect(pipeline.discard([unreadable]), isEmpty);
-      final run = pipeline.run('run-case-6');
+      final run = pipeline.run(MockPipeline.case6RunId);
       expect(run.openFailures, 2);
       expect(
         run.steps.where((s) => s.state == ProcessingStepState.discarded),

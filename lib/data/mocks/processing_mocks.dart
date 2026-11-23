@@ -15,11 +15,20 @@ class MockPipeline {
     _seedCase6();
   }
 
+  /// The run seeded for case-6, a finished upload with failures still open.
+  static const case6RunId = '4c1e08a2-6b1d-4f3e-9a07-2d5c8e1f0b36';
+
+  /// The id of the [n]th run [startRun] creates in a fresh pipeline: a UUID,
+  /// as the pipeline writes one, so its first 8 hex characters start each
+  /// of its items' internal names.
+  static String uploadRunId(int n) =>
+      '${(0x7f3a2100 + n).toRadixString(16)}-0000-4000-8000-'
+      '${n.toRadixString(16).padLeft(12, '0')}';
+
   final _caseOfRun = <String, String>{};
   final _steps = <_Step>[];
   var _lastRun = 0;
   var _lastStep = 0;
-  var _lastName = 0x7f3a20;
 
   static const _transient = {
     ProcessingErrorCode.modelUnavailable,
@@ -32,14 +41,13 @@ class MockPipeline {
 
   /// Starts a run with one step per uploaded file and returns its id.
   String startRun(String caseId, int fileCount) {
-    final runId = 'run-${++_lastRun}';
+    final runId = uploadRunId(++_lastRun);
     _caseOfRun[runId] = caseId;
     for (var position = 1; position <= fileCount; position++) {
       _steps.add(_Step(
         id: _nextStepId(),
         runId: runId,
         stage: ProcessingStage.intake,
-        internalName: 'img-${(++_lastName).toRadixString(16)}',
         position: position,
         failWith:
             position == 3 ? ProcessingErrorCode.unsupportedPixelData : null,
@@ -148,7 +156,6 @@ class MockPipeline {
         id: _nextStepId(),
         runId: step.runId,
         stage: stage,
-        internalName: step.internalName,
         position: step.position,
         failWith: stage == ProcessingStage.prediction && step.position == 2
             ? ProcessingErrorCode.modelUnavailable
@@ -190,11 +197,11 @@ class MockPipeline {
   /// could not be read (nothing stored, so it can only be discarded), and one
   /// image's labels, whose model could not be loaded.
   void _seedCase6() {
-    const runId = 'run-case-6';
+    const runId = case6RunId;
     _caseOfRun[runId] = 'case-6';
     void add(
       ProcessingStage stage,
-      String internalName,
+      int position,
       ProcessingStepState state, {
       ProcessingErrorCode? code,
       int attempts = 1,
@@ -205,8 +212,7 @@ class MockPipeline {
           id: _nextStepId(),
           runId: runId,
           stage: stage,
-          internalName: internalName,
-          position: 0,
+          position: position,
           state: state,
           code: code,
           attempts: attempts,
@@ -214,15 +220,15 @@ class MockPipeline {
           canRetry: canRetry,
         ));
 
-    for (final name in ['img-4c1e07', 'img-4c1e08']) {
-      add(ProcessingStage.intake, name, ProcessingStepState.done);
-      add(ProcessingStage.viewCheck, name, ProcessingStepState.done);
-      add(ProcessingStage.embedding, name, ProcessingStepState.done);
+    for (final position in [1, 2]) {
+      add(ProcessingStage.intake, position, ProcessingStepState.done);
+      add(ProcessingStage.viewCheck, position, ProcessingStepState.done);
+      add(ProcessingStage.embedding, position, ProcessingStepState.done);
     }
-    add(ProcessingStage.prediction, 'img-4c1e07', ProcessingStepState.done);
+    add(ProcessingStage.prediction, 1, ProcessingStepState.done);
     add(
       ProcessingStage.prediction,
-      'img-4c1e08',
+      2,
       ProcessingStepState.failed,
       code: ProcessingErrorCode.modelUnavailable,
       attempts: _automaticAttempts,
@@ -230,7 +236,7 @@ class MockPipeline {
     );
     add(
       ProcessingStage.intake,
-      'img-4c1e09',
+      3,
       ProcessingStepState.failed,
       code: ProcessingErrorCode.unsupportedPixelData,
       failedAt: DateTime.utc(2026, 11, 22, 10, 14, 3),
@@ -238,7 +244,7 @@ class MockPipeline {
     // Failed inside the upload request, before any worker started it.
     add(
       ProcessingStage.intake,
-      'img-4c1e0a',
+      4,
       ProcessingStepState.failed,
       code: ProcessingErrorCode.unreadableHeader,
       attempts: 0,
@@ -253,7 +259,6 @@ class _Step {
     required this.id,
     required this.runId,
     required this.stage,
-    required this.internalName,
     required this.position,
     this.state = ProcessingStepState.pending,
     this.code,
@@ -266,11 +271,16 @@ class _Step {
   final String id;
   final String runId;
   final ProcessingStage stage;
-  final String internalName;
 
-  /// The file's position in its upload, carried to the image's steps; 0 for
-  /// seeded steps, which no rule reads.
+  /// The file's position in its upload, carried to the image's steps.
   final int position;
+
+  /// The pipeline's internal name for the file, derived from stored values
+  /// as the pipeline derives it: the run id's first 8 hex characters and the
+  /// file's 3-digit position, such as `7f3a2101-003`. An image keeps the name
+  /// of the file it came from.
+  String get internalName =>
+      '${runId.substring(0, 8)}-${position.toString().padLeft(3, '0')}';
   ProcessingStepState state;
   ProcessingErrorCode? code;
 
