@@ -2,7 +2,10 @@ import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/data/finding.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
 
-final mockCases = <CaseSummary>[
+/// Unmodifiable: an uploaded study belongs to the `MockPipeline` of its
+/// `ProviderScope`, never to this shared list, so it cannot leak between
+/// tests.
+final mockCases = List<CaseSummary>.unmodifiable(<CaseSummary>[
   CaseSummary(
     id: 'case-1',
     title: 'Chest X-Ray',
@@ -78,7 +81,7 @@ final mockCases = <CaseSummary>[
     confidence: 0.69,
     severity: SeverityLevel.normal,
   ),
-];
+]);
 
 /// Thumbnail (list views) and full-size (case detail) images, both seeded by
 /// case id so the same case always resolves to the same picture.
@@ -123,10 +126,6 @@ const _similarCasesBasis = {
   String caseId,
 ) =>
     _similarCasesBasis[caseId] ?? (used: 1, total: 1, heldBack: 0);
-
-/// Appends a newly "uploaded" case so it also shows up back in the Studies
-/// worklist afterward -- a stand-in for a real backend persisting it.
-void addMockCase(CaseSummary newCase) => mockCases.add(newCase);
 
 // Sequential across every case, not per-case, so each finding has a globally
 // unique id -- the first 3 pick up heatmap_mocks.dart's existing distinct

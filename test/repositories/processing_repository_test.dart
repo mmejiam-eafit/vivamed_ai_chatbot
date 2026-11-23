@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:radiologist_helper/data/case.dart';
 import 'package:radiologist_helper/data/mocks/processing_mocks.dart';
 import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/repositories/processing_repository.dart';
@@ -175,6 +176,108 @@ void main() {
       final failures =
           await MockProcessingRepository(MockPipeline()).getFailures();
       expect(failures.single.failures, hasLength(3));
+    });
+  });
+
+  group('MockPipeline.studyFacts', () {
+    test('a seeded study has a finished run through its view check', () {
+      final facts = MockPipeline().studyFacts('case-1');
+      expect(facts.runs, 1);
+      expect(facts.activeRuns, 0);
+      expect(facts.checked, isTrue);
+      expect(facts.openFailures, 0);
+      expect(facts.activeRunId, isNull);
+    });
+
+    test('case-6 counts its open failures across its runs', () {
+      final facts = MockPipeline().studyFacts('case-6');
+      expect(facts.runs, 2);
+      expect(facts.openFailures, 3);
+      expect(facts.activeRunId, isNull);
+    });
+
+    test('a new run is active, and started once a worker tries a step', () {
+      final pipeline = MockPipeline();
+      final runId = pipeline.startRun('case-1', 2);
+      final before = pipeline.studyFacts('case-1');
+      expect(before.activeRuns, 1);
+      expect(before.started, isFalse);
+      expect(before.activeRunId, runId);
+
+      pipeline.advanceActive();
+      expect(pipeline.studyFacts('case-1').started, isTrue);
+    });
+
+    test('with two active runs, the one to follow is the latest created', () {
+      final pipeline = MockPipeline()..startRun('case-1', 1);
+      final latest = pipeline.startRun('case-1', 1);
+      expect(pipeline.studyFacts('case-1').activeRunId, latest);
+    });
+
+    test('a study the pipeline never ran has no runs', () {
+      expect(MockPipeline().studyFacts('case-unknown').runs, 0);
+    });
+  });
+
+  group('deriveStudyStatus', () {
+    StudyFacts facts({
+      int runs = 1,
+      int activeRuns = 0,
+      bool started = false,
+      bool checked = true,
+      int openFailures = 0,
+    }) =>
+        (
+          runs: runs,
+          activeRuns: activeRuns,
+          started: started,
+          checked: checked,
+          openFailures: openFailures,
+          activeRunId: activeRuns > 0 ? 'run' : null,
+        );
+
+    StudyStatus derive(StudyFacts facts, {int pending = 0, int decided = 0}) =>
+        deriveStudyStatus(
+          facts,
+          pendingReviews: pending,
+          decidedReviews: decided,
+        );
+
+    test('an active run that has started reads processing, over the rest', () {
+      expect(
+        derive(
+          facts(activeRuns: 1, started: true, checked: false),
+          pending: 1,
+          decided: 1,
+        ),
+        StudyStatus.processing,
+      );
+    });
+
+    test('an active run no worker has started reads queued', () {
+      expect(derive(facts(activeRuns: 1), pending: 1), StudyStatus.queued);
+    });
+
+    test('a study with no runs reads queued', () {
+      expect(derive(facts(runs: 0, checked: false)), StudyStatus.queued);
+    });
+
+    test('no image through its view check reads failed, even with its '
+        'failures discarded', () {
+      expect(derive(facts(checked: false)), StudyStatus.failed);
+    });
+
+    test('a decision being applied reads processing, over a pending review',
+        () {
+      expect(derive(facts(), pending: 1, decided: 1), StudyStatus.processing);
+    });
+
+    test('a pending review reads needs review', () {
+      expect(derive(facts(), pending: 1), StudyStatus.needsReview);
+    });
+
+    test('anything else reads ready, open failures or not', () {
+      expect(derive(facts(openFailures: 2)), StudyStatus.ready);
     });
   });
 }

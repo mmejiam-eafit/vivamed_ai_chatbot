@@ -6,22 +6,24 @@ import 'package:radiologist_helper/repositories/upload_repository.dart';
 
 void main() {
   group('MockUploadRepository', () {
-    test('creates a case titled with the number of files', () async {
-      final result = await MockUploadRepository(MockPipeline())
+    test('creates a study titled with the number of files', () async {
+      final pipeline = MockPipeline();
+      final result = await MockUploadRepository(pipeline)
           .uploadStudy(['1.dcm', '2.dcm', '3.dcm']);
 
-      final created = mockCases.firstWhere((c) => c.id == result.caseId);
+      final created = pipeline.studies.single;
+      expect(created.id, result.caseId);
       expect(created.title, contains('3'));
     });
 
-    test('appends the new case to the shared mock case list', () async {
-      final repository = MockUploadRepository(MockPipeline());
+    test('records the study in its own pipeline, never the shared mocks',
+        () async {
       final before = mockCases.length;
 
-      final result = await repository.uploadStudy(['1.dcm']);
+      await MockUploadRepository(MockPipeline()).uploadStudy(['1.dcm']);
 
-      expect(mockCases.length, before + 1);
-      expect(mockCases.last.id, result.caseId);
+      expect(mockCases, hasLength(before));
+      expect(MockPipeline().studies, isEmpty);
     });
 
     test('starts a queued run with one step per file', () async {

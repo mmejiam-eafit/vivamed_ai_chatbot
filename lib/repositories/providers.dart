@@ -21,8 +21,12 @@ final authRepositoryProvider =
 final userRepositoryProvider =
     Provider<UserRepository>((ref) => MockUserRepository());
 
-final caseRepositoryProvider =
-    Provider<CaseRepository>((ref) => MockCaseRepository());
+final caseRepositoryProvider = Provider<CaseRepository>(
+  (ref) => MockCaseRepository(
+    ref.watch(mockPipelineProvider),
+    ref.watch(imageReviewRepositoryProvider),
+  ),
+);
 
 final findingsRepositoryProvider =
     Provider<FindingsRepository>((ref) => MockFindingsRepository());

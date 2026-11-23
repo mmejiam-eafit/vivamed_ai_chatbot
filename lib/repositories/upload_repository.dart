@@ -1,5 +1,4 @@
 import 'package:radiologist_helper/data/case.dart';
-import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 import 'package:radiologist_helper/data/mocks/processing_mocks.dart';
 import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/ui/atoms/severity_dot.dart';
@@ -20,7 +19,7 @@ class MockUploadRepository implements UploadRepository {
   Future<UploadResult> uploadStudy(List<String> fileNames) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final id = 'case-upload-${DateTime.now().millisecondsSinceEpoch}';
-    addMockCase(CaseSummary(
+    _pipeline.addStudy(CaseSummary(
       id: id,
       title: 'Uploaded Study (${fileNames.length} images)',
       patient: 'New Patient',

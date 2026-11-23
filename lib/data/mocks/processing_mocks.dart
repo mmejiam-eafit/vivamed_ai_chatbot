@@ -1,10 +1,45 @@
+import 'package:radiologist_helper/data/case.dart';
+import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 import 'package:radiologist_helper/data/processing.dart';
 
+/// What a study's status is derived from, read the way the backend reads it
+/// from the pipeline's tables. A run is active while a step of it is pending
+/// or running; [started] means an active run has tried a step; [checked]
+/// means an image got through its view check (done or held back).
+typedef StudyFacts = ({
+  int runs,
+  int activeRuns,
+  bool started,
+  bool checked,
+  int openFailures,
+  String? activeRunId,
+});
+
+/// The backend's rule for a study's status, in its order of precedence (its
+/// `derive_study_status`, data contract §9). The app itself never derives a
+/// status; only the mocks stand in for the backend here.
+StudyStatus deriveStudyStatus(
+  StudyFacts facts, {
+  required int pendingReviews,
+  required int decidedReviews,
+}) {
+  if (facts.started) return StudyStatus.processing;
+  if (facts.activeRuns > 0 || facts.runs == 0) return StudyStatus.queued;
+  if (!facts.checked) return StudyStatus.failed;
+  if (decidedReviews > 0) return StudyStatus.processing;
+  if (pendingReviews > 0) return StudyStatus.needsReview;
+  return StudyStatus.ready;
+}
+
 /// A stand-in for the pipeline: its runs and their steps, advanced one wave
-/// at a time. One instance is shared by the mock upload and processing
-/// repositories, so an upload starts a run the processing page can follow.
-/// Each `ProviderScope` gets its own, so a retry or discard in one test never
-/// leaks into the next.
+/// at a time, and the studies uploaded through it. One instance is shared by
+/// the mock upload, processing and case repositories, so an upload starts a
+/// run the processing page can follow and the worklist can show. Each
+/// `ProviderScope` gets its own, so an upload, a retry or a discard in one
+/// test never leaks into the next.
+///
+/// Every mock study gets a finished backfill run, as the pipeline creates
+/// every study together with a run.
 ///
 /// An uploaded run is deterministic: the third file fails to be read
 /// (unsupported pixel data), and the second file's labels fail on a model
@@ -12,6 +47,9 @@ import 'package:radiologist_helper/data/processing.dart';
 /// retried step succeeds.
 class MockPipeline {
   MockPipeline() {
+    for (final study in mockCases) {
+      _seedBackfill(study.id);
+    }
     _seedCase6();
   }
 
@@ -25,9 +63,13 @@ class MockPipeline {
       '${(0x7f3a2100 + n).toRadixString(16)}-0000-4000-8000-'
       '${n.toRadixString(16).padLeft(12, '0')}';
 
+  /// Each run's study, in the order the runs were created (a map literal
+  /// keeps insertion order), so the latest active run is the last one found.
   final _caseOfRun = <String, String>{};
   final _steps = <_Step>[];
+  final _studies = <CaseSummary>[];
   var _lastRun = 0;
+  var _lastBackfill = 0;
   var _lastStep = 0;
 
   static const _transient = {
@@ -38,6 +80,51 @@ class MockPipeline {
 
   /// What a transient failure costs in attempts before it stays failed.
   static const _automaticAttempts = 4;
+
+  /// The studies uploaded through the pipeline, in upload order.
+  List<CaseSummary> get studies => List.unmodifiable(_studies);
+
+  /// Records a study an upload created. The pipeline creates a study
+  /// together with its run, so [startRun] follows.
+  void addStudy(CaseSummary study) => _studies.add(study);
+
+  /// What [caseId]'s status is derived from (see [StudyFacts]).
+  StudyFacts studyFacts(String caseId) {
+    final runIds = [
+      for (final entry in _caseOfRun.entries)
+        if (entry.value == caseId) entry.key,
+    ];
+    final steps = _steps.where((s) => runIds.contains(s.runId)).toList();
+    final activeRunIds = [
+      for (final runId in runIds)
+        if (steps.any((s) =>
+            s.runId == runId &&
+            (s.state == ProcessingStepState.pending ||
+                s.state == ProcessingStepState.running)))
+          runId,
+    ];
+    return (
+      runs: runIds.length,
+      activeRuns: activeRunIds.length,
+      started: steps
+          .any((s) => activeRunIds.contains(s.runId) && s.attempts > 0),
+      checked: steps.any((s) =>
+          s.stage == ProcessingStage.viewCheck &&
+          (s.state == ProcessingStepState.done ||
+              s.state == ProcessingStepState.heldBack)),
+      openFailures:
+          steps.where((s) => s.state == ProcessingStepState.failed).length,
+      activeRunId: activeRunIds.lastOrNull,
+    );
+  }
+
+  /// Moves every run with waiting steps on one wave, as the workers would
+  /// have done meanwhile.
+  void advanceActive() {
+    for (final runId in [..._caseOfRun.keys]) {
+      advance(runId);
+    }
+  }
 
   /// Starts a run with one step per uploaded file and returns its id.
   String startRun(String caseId, int fileCount) {
@@ -190,6 +277,25 @@ class MockPipeline {
           s.state == ProcessingStepState.done,
     );
     return anyChecked ? RunStatus.ready : RunStatus.failed;
+  }
+
+  /// A finished backfill run for a study loaded before any upload: one image,
+  /// read and through its view check.
+  void _seedBackfill(String caseId) {
+    final n = ++_lastBackfill;
+    final runId = '${(0x0bf11000 + n).toRadixString(16).padLeft(8, '0')}'
+        '-0000-4000-8000-${n.toRadixString(16).padLeft(12, '0')}';
+    _caseOfRun[runId] = caseId;
+    for (final stage in [ProcessingStage.intake, ProcessingStage.viewCheck]) {
+      _steps.add(_Step(
+        id: _nextStepId(),
+        runId: runId,
+        stage: stage,
+        position: 1,
+        state: ProcessingStepState.done,
+        attempts: 1,
+      ));
+    }
   }
 
   /// A finished upload of four files to case-6, with three failures still
