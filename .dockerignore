@@ -1,0 +1,23 @@
+# What the web build needs: pubspec.*, .metadata, the Makefile, analysis_options.yaml, lib/ (with any local mock
+# images) and assets/. Generated folders are left out, web/ included: the build generates it fresh.
+.git
+build
+.dart_tool
+.flutter-plugins-dependencies
+android
+ios
+linux
+macos
+windows
+web
+coverage
+test
+integration_test
+design
+tool
+.idea
+.vscode
+.claude
+*.iml
+Dockerfile
+.dockerignore

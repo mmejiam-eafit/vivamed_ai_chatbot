@@ -1,0 +1,64 @@
+# Rendered by the nginx image at start-up: ${BACKEND_UPSTREAM}, ${PIPELINE_UPSTREAM} and ${NGINX_RESOLVER} come from the
+# environment (defaults in the Dockerfile). nginx's own $variables are left alone.
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+
+    # The upstreams are looked up per request (Docker's DNS by default), so a backend or pipeline that is recreated at
+    # a new address is found again without restarting this server.
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+
+    gzip on;
+    gzip_types application/javascript application/json application/wasm text/css image/svg+xml;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # The files that name the current build are always revalidated, so a rebuilt app is picked up on the next load.
+    location ~ ^/(index\.html|flutter_bootstrap\.js|flutter_service_worker\.js|version\.json|manifest\.json)$ {
+        add_header Cache-Control "no-cache";
+        try_files $uri =404;
+    }
+
+    # The backend, without the /api prefix.
+    location /api/ {
+        set $backend_upstream "${BACKEND_UPSTREAM}";
+        rewrite ^/api/(.*)$ /$1 break;
+        proxy_pass $backend_upstream;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Prefix /api;
+
+        # Chat replies and notifications are server-sent events: each one is passed on as it arrives. A notification
+        # stream stays open up to 15 minutes.
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+    }
+
+    # The pipeline, without the /pipeline prefix.
+    location /pipeline/ {
+        set $pipeline_upstream "${PIPELINE_UPSTREAM}";
+        rewrite ^/pipeline/(.*)$ /$1 break;
+        proxy_pass $pipeline_upstream;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Prefix /pipeline;
+
+        # A study's DICOM files can be large: no size cap, and they stream to the pipeline as they arrive.
+        client_max_body_size 0;
+        proxy_request_buffering off;
+        proxy_read_timeout 600s;
+    }
+}
