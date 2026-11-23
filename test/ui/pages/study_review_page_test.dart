@@ -191,7 +191,7 @@ void main() {
     ProcessingFailure failure(String stepId) => ProcessingFailure(
           stepId: stepId,
           stage: ProcessingStage.prediction,
-          itemName: 'img-$stepId',
+          internalName: 'img-$stepId',
           code: ProcessingErrorCode.modelUnavailable,
           attempts: 4,
           failedAt: DateTime.utc(2026, 11, 22, 10, 15),

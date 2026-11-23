@@ -15,7 +15,7 @@ ProcessingFailure _failure(
     ProcessingFailure(
       stepId: stepId,
       stage: stage,
-      itemName: 'img-$stepId',
+      internalName: 'img-$stepId',
       code: code,
       attempts: attempts,
       failedAt: DateTime.utc(2026, 11, 22, 10, 14, 3),
@@ -58,7 +58,7 @@ void main() {
     expect(find.text('2 failed items'), findsOneWidget);
     final rows =
         tester.widgetList<FailureRow>(find.byType(FailureRow)).toList();
-    expect(rows.map((r) => r.itemName), ['img-a', 'img-b']);
+    expect(rows.map((r) => r.internalName), ['img-a', 'img-b']);
     expect(rows.first.stageLabel, 'Labels');
     expect(rows.first.message, ProcessingErrorCode.modelUnavailable.message);
   });

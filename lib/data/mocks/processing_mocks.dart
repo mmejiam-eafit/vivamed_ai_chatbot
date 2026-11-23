@@ -39,7 +39,7 @@ class MockPipeline {
         id: _nextStepId(),
         runId: runId,
         stage: ProcessingStage.intake,
-        itemName: 'img-${(++_lastName).toRadixString(16)}',
+        internalName: 'img-${(++_lastName).toRadixString(16)}',
         position: position,
         failWith:
             position == 3 ? ProcessingErrorCode.unsupportedPixelData : null,
@@ -148,7 +148,7 @@ class MockPipeline {
         id: _nextStepId(),
         runId: step.runId,
         stage: stage,
-        itemName: step.itemName,
+        internalName: step.internalName,
         position: step.position,
         failWith: stage == ProcessingStage.prediction && step.position == 2
             ? ProcessingErrorCode.modelUnavailable
@@ -194,7 +194,7 @@ class MockPipeline {
     _caseOfRun[runId] = 'case-6';
     void add(
       ProcessingStage stage,
-      String itemName,
+      String internalName,
       ProcessingStepState state, {
       ProcessingErrorCode? code,
       int attempts = 1,
@@ -205,7 +205,7 @@ class MockPipeline {
           id: _nextStepId(),
           runId: runId,
           stage: stage,
-          itemName: itemName,
+          internalName: internalName,
           position: 0,
           state: state,
           code: code,
@@ -253,7 +253,7 @@ class _Step {
     required this.id,
     required this.runId,
     required this.stage,
-    required this.itemName,
+    required this.internalName,
     required this.position,
     this.state = ProcessingStepState.pending,
     this.code,
@@ -266,7 +266,7 @@ class _Step {
   final String id;
   final String runId;
   final ProcessingStage stage;
-  final String itemName;
+  final String internalName;
 
   /// The file's position in its upload, carried to the image's steps; 0 for
   /// seeded steps, which no rule reads.
@@ -283,7 +283,7 @@ class _Step {
   ProcessingFailure toFailure() => ProcessingFailure(
         stepId: id,
         stage: stage,
-        itemName: itemName,
+        internalName: internalName,
         code: code!,
         attempts: attempts,
         failedAt: failedAt!,

@@ -13,7 +13,7 @@ ProcessingRun _run(RunStatus status) =>
 ProcessingFailure _failure(String stepId) => ProcessingFailure(
       stepId: stepId,
       stage: ProcessingStage.intake,
-      itemName: 'img-$stepId',
+      internalName: 'img-$stepId',
       code: ProcessingErrorCode.unsupportedPixelData,
       attempts: 1,
       failedAt: DateTime.utc(2026, 11, 22, 10, 14),

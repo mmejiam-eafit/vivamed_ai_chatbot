@@ -62,7 +62,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         pipeline.advance(runId);
       }
-      final names = _failuresOf(pipeline, 'case-new').map((f) => f.itemName);
+      final names = _failuresOf(pipeline, 'case-new').map((f) => f.internalName);
       expect(names.toSet(), hasLength(2));
       expect(names, everyElement(startsWith('img-')));
     });

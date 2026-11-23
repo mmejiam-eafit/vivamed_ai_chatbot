@@ -19,7 +19,7 @@ void main() {
     ValueChanged<bool>? onSelectedChanged,
   }) =>
       FailureRow(
-        itemName: 'img-7f3a23',
+        internalName: 'img-7f3a23',
         stageLabel: 'Labels',
         message: 'A model could not be loaded. Try again later.',
         meta: 'Tried 4 times · 2026-11-22 10:15 UTC',

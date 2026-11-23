@@ -15,7 +15,7 @@ import 'package:radiologist_helper/ui/core/preview_utils.dart';
 class FailureRow extends StatelessWidget {
   const FailureRow({
     super.key,
-    required this.itemName,
+    required this.internalName,
     required this.stageLabel,
     required this.message,
     required this.meta,
@@ -25,7 +25,7 @@ class FailureRow extends StatelessWidget {
 
   /// The pipeline's name for the element: an identifier, so it never
   /// truncates (DL D-009).
-  final String itemName;
+  final String internalName;
   final String stageLabel;
   final String message;
 
@@ -65,7 +65,7 @@ class FailureRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        itemName,
+                        internalName,
                         style: AppTypography.mono,
                         color: colors.textPrimary,
                       ),
@@ -97,7 +97,7 @@ class FailureRow extends StatelessWidget {
 
 @Preview(name: 'unselected', size: Size(390, 120), wrapper: previewWrapper)
 Widget previewFailureRow() => FailureRow(
-      itemName: 'img-7f3a23',
+      internalName: 'img-7f3a23',
       stageLabel: 'Labels',
       message: 'A model could not be loaded. Try again later.',
       meta: 'Tried 4 times · 2026-11-22 10:15 UTC',
@@ -107,7 +107,7 @@ Widget previewFailureRow() => FailureRow(
 
 @Preview(name: 'selected', size: Size(390, 120), wrapper: previewWrapper)
 Widget previewFailureRowSelected() => FailureRow(
-      itemName: 'img-7f3a23',
+      internalName: 'img-7f3a23',
       stageLabel: 'Reading the file',
       message: 'The image is in a format the pipeline cannot read yet.',
       meta: '2026-11-22 10:14 UTC',

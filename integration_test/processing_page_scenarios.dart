@@ -40,7 +40,7 @@ void main() {
   final labels = ProcessingFailure(
     stepId: 'fixture-step',
     stage: ProcessingStage.prediction,
-    itemName: 'img-fixture',
+    internalName: 'img-fixture',
     code: ProcessingErrorCode.modelUnavailable,
     attempts: 4,
     failedAt: DateTime.utc(2026, 11, 22, 10, 15),

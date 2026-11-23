@@ -75,7 +75,7 @@ ProcessingFailure _failure(String stepId, {bool canRetry = true}) =>
     ProcessingFailure(
       stepId: stepId,
       stage: ProcessingStage.intake,
-      itemName: 'img-$stepId',
+      internalName: 'img-$stepId',
       code: canRetry
           ? ProcessingErrorCode.unsupportedPixelData
           : ProcessingErrorCode.unreadableHeader,

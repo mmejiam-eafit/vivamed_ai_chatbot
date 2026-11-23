@@ -91,7 +91,7 @@ class FailureList extends StatelessWidget {
                 ),
                 for (final failure in failures)
                   FailureRow(
-                    itemName: failure.itemName,
+                    internalName: failure.internalName,
                     stageLabel: failure.stage.label,
                     message: failure.code.message,
                     meta: _meta(failure),
@@ -114,7 +114,7 @@ final _previewFailures = [
   ProcessingFailure(
     stepId: 's1',
     stage: ProcessingStage.prediction,
-    itemName: 'img-7f3a22',
+    internalName: 'img-7f3a22',
     code: ProcessingErrorCode.modelUnavailable,
     attempts: 4,
     failedAt: DateTime.utc(2026, 11, 22, 10, 15, 40),
@@ -123,7 +123,7 @@ final _previewFailures = [
   ProcessingFailure(
     stepId: 's2',
     stage: ProcessingStage.intake,
-    itemName: 'img-7f3a23',
+    internalName: 'img-7f3a23',
     code: ProcessingErrorCode.unsupportedPixelData,
     attempts: 1,
     failedAt: DateTime.utc(2026, 11, 22, 10, 14, 3),

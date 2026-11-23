@@ -143,7 +143,7 @@ class ProcessingFailure {
   const ProcessingFailure({
     required this.stepId,
     required this.stage,
-    required this.itemName,
+    required this.internalName,
     required this.code,
     required this.attempts,
     required this.failedAt,
@@ -153,9 +153,10 @@ class ProcessingFailure {
   final String stepId;
   final ProcessingStage stage;
 
-  /// The name the pipeline gave the uploaded file when it read it, never the
-  /// file's original name. An image keeps the name of the file it came from.
-  final String itemName;
+  /// The pipeline's internal name for the uploaded file (its contract's
+  /// `internal_name`), given when it read the file and never the file's
+  /// original name. An image keeps the name of the file it came from.
+  final String internalName;
   final ProcessingErrorCode code;
 
   /// How many times a worker has started the step, automatic retries
