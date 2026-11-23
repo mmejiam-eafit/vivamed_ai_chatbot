@@ -20,7 +20,10 @@ Login ──(returning)───────────────────
 
 Home Hub ──Upload a study──> Upload ──(files stored)──> Processing (the upload's run) ──Open study──> Study Review (new case)
 Upload ──(every file already in the study: no run)──> Study Review (that case)
-Home Hub ──View studies────> Case List ──tap a case────────> Study Review (that case)
+Home Hub ──View studies────> Case List ──tap a case──> by the study's state (DL D-024):
+                                          a run under way ──────────────> Processing (that run)
+                                          failed, with open failures ───> Processing (its failed items, no run)
+                                          anything else ────────────────> Study Review (that case)
 Home Hub ──Chat─────────────> Chat (standalone, general)
 Home Hub ──(gear icon)──────> Settings
 
@@ -32,7 +35,7 @@ Chat ──tap a case referenced in a reply──> Study Review (that case, SAME
 Chat/Study Review ──drawer: gear icon──> Settings (ConversationDrawer's own entry point, distinct from the Hub's gear icon and AppNavBar's Settings destination above)
 
 Study Review ──select a finding──> Heatmap Viewer
-Study Review ──view similar studies──> Similar Cases ──tap a case──> Study Review (that case, recurses)
+Study Review ──view similar studies──> Similar Cases ──tap a case──> as Case List (Processing or Study Review; recurses)
 
 Chat/Case List/Review/Settings ──AppNavBar: Review──> Review queue ──tap an image──> Image Review
 Study Review ──status bar: Review (an image awaiting review)──> Image Review
@@ -179,5 +182,7 @@ Implemented, in sequenced chunks:
 12. A fifth destination, Review, between Studies and Settings (Settings moves from index 3 to 4), carrying the count of images needing a radiologist on both `AppNavBar` and `PrimaryNavDrawer`. The six per-page copies of the index-to-page switch became one shared `openPrimaryDestination` in `lib/ui/pages/primary_destinations.dart` first, so adding the destination changed one mapping. The review queue (`ReviewQueuePage`) is itself a destination page; `ImageReviewPage` is a drill-down reached from it and from Study Review's status bar. Home Hub still has no bar at compact/medium, so the count is not visible there.
 
 13. `ProcessingPage`, after the upload action: Upload replaces itself with it once the files are stored (no longer straight to Study Review), and it follows the run until it ends, then lists the study's failed items to retry or discard; Open study replaces it with Study Review. Study Review's status bars stack, and one of them links back to the same page while the study has open failures, since steps can fail after the radiologist has left. Not a destination and not counted on the Review badge: failed items are reached from their study. Leaving mid-run leaves nothing that leads back to its progress; a study's run status in the worklist would.
+
+14. Each study's status in the worklist, which closes item 13's gap. The backend's `GET /cases` gives every study its status (queued, processing, failed, needs review or ready), its open failures and the run still under way, and the worklist's Review column becomes a Status column (DL D-024). A tap opens the study where its state is, through `openCase` (`lib/ui/pages/open_case.dart`), from Studies and Similar Cases alike: a run under way opens the Processing page following it, a failed study with open failures opens its failed items, and any other study, a failed one whose failures were all discarded included, opens Study Review. While a study is queued or processing, the worklist reads `GET /cases` again every 5 seconds, the backend's accepted interval, and only while it is on screen: Riverpod pauses `worklistProvider` while another page covers Studies, and the page turns its `TickerMode` off while the app is hidden. Showing the page again reads at once, so the list a radiologist comes back to is current. The backend's notification stream (D-05) is not used yet: it reports only the uploader's finished runs, and the app has no HTTP client yet.
 
 Every navigation path described in Chunks 1-11 is wired and tested (`flutter test`, plus `integration_test/app_flow_test.dart` driving the real compiled app end-to-end for Chunks 1-8; Chunks 9-11's own tests, listed in the Verification section above, pass — `integration_test/app_flow_test.dart` not yet extended to cover any of them).
