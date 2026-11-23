@@ -69,8 +69,17 @@ final currentUserProvider = FutureProvider<UserProfile>(
   (ref) => ref.watch(authServiceProvider).getCurrentUser(),
 );
 
+// Every study, read once: what the review queue matches its reviews to.
 final casesProvider = FutureProvider<List<CaseSummary>>(
   (ref) => ref.watch(caseServiceProvider).getCases(),
+);
+
+// The Studies worklist, read again while any study is queued or processing.
+// Not auto-disposed, so going back to the page shows the last list at once:
+// Riverpod pauses the stream, and with it the reads, whenever no visible
+// widget watches it, and resuming reads again at once.
+final worklistProvider = StreamProvider<List<CaseSummary>>(
+  (ref) => ref.watch(caseServiceProvider).watchCases(),
 );
 
 final caseDetailProvider = FutureProvider.family<
