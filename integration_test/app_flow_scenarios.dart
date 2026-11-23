@@ -263,7 +263,9 @@ void main() {
     await tester.tap(find.text('View studies'));
     await tester.pumpAndSettle();
     // case-6, "Chest X-Ray — Follow-up": one image processing after review
-    // and three failed items in the mock pipeline, so both bars show.
+    // and three failed items in the mock pipeline. No run is under way, so
+    // the worklist opens Study Review, where both bars show.
+    expect(find.text('Processing · 3 failed items'), findsOneWidget);
     await tester.tap(find.text('Anonymous 6'));
     await tester.pumpAndSettle();
     expect(find.byType(StudyReviewPage), findsOneWidget);
