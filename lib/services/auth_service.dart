@@ -8,8 +8,13 @@ class AuthService {
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
 
-  Future<UserProfile> signIn({required String email, required String password}) =>
-      _authRepository.signIn(email: email, password: password);
+  /// Signs in with the username, the name the user signs in with: the
+  /// backend refuses an email until real users are decided.
+  Future<UserProfile> signIn({
+    required String username,
+    required String password,
+  }) =>
+      _authRepository.signIn(username: username, password: password);
 
   Future<UserProfile> getCurrentUser() => _userRepository.getCurrentUser();
 }

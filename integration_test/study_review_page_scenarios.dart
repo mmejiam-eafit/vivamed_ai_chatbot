@@ -57,7 +57,7 @@ void main() {
         userRepositoryProvider.overrideWithValue(UserRepositoryFixture(
           getCurrentUserResult: const FixtureSuccess(UserProfile(
             name: 'Fixture User',
-            role: 'Fixture Role',
+            roles: ['radiologist'],
             email: 'fixture@example.invalid',
             initials: 'FU',
           )),

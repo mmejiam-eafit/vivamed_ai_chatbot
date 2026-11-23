@@ -54,7 +54,7 @@ void main() {
     final userFixture = UserRepositoryFixture(
       getCurrentUserResult: const FixtureSuccess(UserProfile(
         name: 'Fixture User',
-        role: 'Fixture Role',
+        roles: ['radiologist'],
         email: 'fixture@example.invalid',
         initials: 'FU',
       )),
@@ -87,7 +87,7 @@ void main() {
     final userFixture = UserRepositoryFixture(
       getCurrentUserResult: const FixtureSuccess(UserProfile(
         name: 'Fixture User',
-        role: 'Fixture Role',
+        roles: ['radiologist'],
         email: 'fixture@example.invalid',
         initials: 'FU',
       )),

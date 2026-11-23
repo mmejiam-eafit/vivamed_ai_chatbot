@@ -18,13 +18,13 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSigningIn = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -32,7 +32,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _signIn() async {
     setState(() => _isSigningIn = true);
     await ref.read(authServiceProvider).signIn(
-          email: _emailController.text,
+          username: _usernameController.text,
           password: _passwordController.text,
         );
     if (!mounted) return;
@@ -55,9 +55,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           const Center(child: AppLogo()),
           const AppText('Sign In'),
           AppTextField(
-            controller: _emailController,
-            hintText: 'Email',
-            keyboardType: TextInputType.emailAddress,
+            controller: _usernameController,
+            // The backend signs in by username, not email.
+            hintText: 'Username',
           ),
           AppTextField(
             controller: _passwordController,
