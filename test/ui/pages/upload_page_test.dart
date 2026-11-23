@@ -7,6 +7,7 @@ import 'package:radiologist_helper/data/processing.dart';
 import 'package:radiologist_helper/data/upload.dart';
 import 'package:radiologist_helper/repositories/providers.dart';
 import 'package:radiologist_helper/repositories/upload_repository.dart';
+import 'package:radiologist_helper/services/providers.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/pages/processing_page.dart';
@@ -101,6 +102,29 @@ void main() {
     expect(page.caseId, startsWith('case-upload-'));
     expect(find.byType(UploadPage), findsNothing);
     expect(find.text('View Study'), findsNothing);
+  });
+
+  testWidgets('an upload refreshes the studies the review queue matches its '
+      'reviews to', (tester) async {
+    await tester.pumpWidget(wrap(UploadPage(pickFiles: threeFiles)));
+    final container =
+        ProviderScope.containerOf(tester.element(find.byType(UploadPage)));
+    Iterable<String> studyIds() =>
+        container.read(casesProvider).value!.map((c) => c.id);
+
+    // Read once, as the review queue would have before the upload.
+    container.read(casesProvider);
+    await tester.pump(const Duration(seconds: 1));
+    expect(studyIds(), isNot(anyElement(startsWith('case-upload-'))));
+
+    await tester.tap(find.byType(InkWell).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Upload'));
+    await tester.pumpAndSettle();
+
+    container.read(casesProvider);
+    await tester.pump(const Duration(seconds: 1));
+    expect(studyIds(), anyElement(startsWith('case-upload-')));
   });
 
   testWidgets('an upload with nothing to process goes straight to the study',

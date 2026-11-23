@@ -61,6 +61,9 @@ class _UploadPageState extends ConsumerState<UploadPage> {
     try {
       final result = await ref.read(uploadServiceProvider).uploadStudy(fileNames);
       if (!mounted) return;
+      // A new study now exists: the review queue's list of studies must know
+      // it. The worklist needs nothing: it reads again whenever it is shown.
+      ref.invalidate(casesProvider);
       // Straight on once the files are stored -- no manual tap in between: to
       // the run that now processes them, or to the study when every file was
       // already in it and there is nothing to process.
