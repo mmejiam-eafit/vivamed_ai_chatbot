@@ -167,7 +167,7 @@ void main() {
             ProcessingFailure(
               stepId: 'step-1',
               stage: ProcessingStage.intake,
-              internalName: '0f1a2b3c-001',
+              internalName: '0f1a2b3c-00001',
               code: ProcessingErrorCode.unsupportedPixelData,
               attempts: 1,
               failedAt: DateTime.utc(2026, 11, 23, 9, 30),
@@ -193,6 +193,6 @@ void main() {
     final page = tester.widget<ProcessingPage>(find.byType(ProcessingPage));
     expect(page.caseId, 'fixture-1');
     expect(page.runId, isNull);
-    expect(find.text('0f1a2b3c-001'), findsOneWidget);
+    expect(find.text('0f1a2b3c-00001'), findsOneWidget);
   });
 }

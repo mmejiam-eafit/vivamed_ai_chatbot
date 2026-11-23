@@ -383,10 +383,11 @@ class _Step {
 
   /// The pipeline's internal name for the file, derived from stored values
   /// as the pipeline derives it: the run id's first 8 hex characters and the
-  /// file's 3-digit position, such as `7f3a2101-003`. An image keeps the name
-  /// of the file it came from.
+  /// file's 5-digit position, such as `7f3a2101-00003`. Fixed width up to
+  /// 99,999 files; past that the position widens rather than being cut, so
+  /// names stay unique. An image keeps the name of the file it came from.
   String get internalName =>
-      '${runId.substring(0, 8)}-${position.toString().padLeft(3, '0')}';
+      '${runId.substring(0, 8)}-${position.toString().padLeft(5, '0')}';
   ProcessingStepState state;
   ProcessingErrorCode? code;
 

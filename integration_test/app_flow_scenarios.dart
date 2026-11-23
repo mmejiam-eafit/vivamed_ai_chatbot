@@ -283,7 +283,7 @@ void main() {
     expect(find.byType(ProcessingPage), findsOneWidget);
     expect(find.text('3 failed items'), findsOneWidget);
     // The file whose header could not be read can only be discarded.
-    await tester.tap(find.text('4c1e08a2-004'));
+    await tester.tap(find.text('4c1e08a2-00004'));
     await tester.pumpAndSettle();
     expect(
       find.text("1 selected item can't be retried. Upload its file again."),

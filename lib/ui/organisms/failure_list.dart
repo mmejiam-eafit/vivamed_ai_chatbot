@@ -114,7 +114,7 @@ final _previewFailures = [
   ProcessingFailure(
     stepId: 's1',
     stage: ProcessingStage.prediction,
-    internalName: '7f3a2101-002',
+    internalName: '7f3a2101-00002',
     code: ProcessingErrorCode.modelUnavailable,
     attempts: 4,
     failedAt: DateTime.utc(2026, 11, 22, 10, 15, 40),
@@ -123,7 +123,7 @@ final _previewFailures = [
   ProcessingFailure(
     stepId: 's2',
     stage: ProcessingStage.intake,
-    internalName: '7f3a2101-003',
+    internalName: '7f3a2101-00003',
     code: ProcessingErrorCode.unsupportedPixelData,
     attempts: 1,
     failedAt: DateTime.utc(2026, 11, 22, 10, 14, 3),

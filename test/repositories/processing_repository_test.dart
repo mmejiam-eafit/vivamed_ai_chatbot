@@ -67,7 +67,7 @@ void main() {
       // The second file's labels and the third file's reading failed: each
       // named by the run id's first 8 hex characters and its position.
       final prefix = runId.substring(0, 8);
-      expect(names, unorderedEquals(['$prefix-002', '$prefix-003']));
+      expect(names, unorderedEquals(['$prefix-00002', '$prefix-00003']));
     });
 
     test('a retried step runs again and succeeds, reopening the run', () {

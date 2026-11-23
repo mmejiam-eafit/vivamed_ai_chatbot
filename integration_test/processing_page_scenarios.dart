@@ -181,22 +181,22 @@ void main() {
 
     // The mock run fails the third file and the second file's labels.
     await pumpUntilFound(tester, find.text('Ready'));
-    await pumpUntilFound(tester, find.text('7f3a2101-002'));
+    await pumpUntilFound(tester, find.text('7f3a2101-00002'));
     expect(find.text('2 open failures'), findsOneWidget);
-    expect(find.text('7f3a2101-003'), findsOneWidget);
+    expect(find.text('7f3a2101-00003'), findsOneWidget);
 
     // Retrying the labels reopens the run; this time they succeed.
-    await tester.tap(find.text('7f3a2101-002'));
+    await tester.tap(find.text('7f3a2101-00002'));
     await tester.pumpAndSettle();
     await tester.tap(button('Retry 1'));
     await tester.pumpAndSettle();
     expect(find.text('Retrying 1 item.'), findsOneWidget);
     await pumpUntilFound(tester, find.text('1 open failure'));
     await pumpUntilFound(tester, find.text('Ready'));
-    expect(find.text('7f3a2101-002'), findsNothing);
+    expect(find.text('7f3a2101-00002'), findsNothing);
 
     // The file in a format the pipeline can't read is discarded.
-    await tester.tap(find.text('7f3a2101-003'));
+    await tester.tap(find.text('7f3a2101-00003'));
     await tester.pumpAndSettle();
     await tester.tap(button('Discard 1'));
     await tester.pumpAndSettle();

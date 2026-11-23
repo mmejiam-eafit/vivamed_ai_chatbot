@@ -19,7 +19,7 @@ void main() {
     ValueChanged<bool>? onSelectedChanged,
   }) =>
       FailureRow(
-        internalName: '7f3a2101-003',
+        internalName: '7f3a2101-00003',
         stageLabel: 'Labels',
         message: 'A model could not be loaded. Try again later.',
         meta: 'Tried 4 times · 2026-11-22 10:15 UTC',
@@ -31,7 +31,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(wrap(row(onSelectedChanged: (_) {})));
 
-    expect(find.text('7f3a2101-003'), findsOneWidget);
+    expect(find.text('7f3a2101-00003'), findsOneWidget);
     expect(
       find.text('Labels: A model could not be loaded. Try again later.'),
       findsOneWidget,
@@ -42,7 +42,7 @@ void main() {
   testWidgets('the name is an identifier, set in mono', (tester) async {
     await tester.pumpWidget(wrap(row(onSelectedChanged: (_) {})));
     final name =
-        tester.widget<AppText>(find.widgetWithText(AppText, '7f3a2101-003'));
+        tester.widget<AppText>(find.widgetWithText(AppText, '7f3a2101-00003'));
     expect(name.style!.fontFamily, AppTypography.mono.fontFamily);
     expect(name.maxLines, isNull);
     expect(name.overflow, isNull);
@@ -75,7 +75,7 @@ void main() {
         selected: selected,
         onSelectedChanged: (v) => changedTo = v,
       )));
-      await tester.tap(find.text('7f3a2101-003'));
+      await tester.tap(find.text('7f3a2101-00003'));
       expect(changedTo, !selected);
     });
   }
@@ -107,7 +107,7 @@ void main() {
       isSemantics(
         hasCheckedState: true,
         isChecked: true,
-        label: '7f3a2101-003\n'
+        label: '7f3a2101-00003\n'
             'Labels: A model could not be loaded. Try again later.\n'
             'Tried 4 times · 2026-11-22 10:15 UTC',
       ),
