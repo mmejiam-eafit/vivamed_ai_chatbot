@@ -26,12 +26,16 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   bool _saving = false;
   String? _error;
 
-  /// The image's recorded labels, as a caption under it.
+  /// The image's recorded labels, as a caption under it. When the header
+  /// records no view, the image's view is the view model's call, so the
+  /// caption names it as the model's, never as the header's.
   static String _caption(StudyImage image, {bool flagged = false}) {
     final recorded = image.recorded;
     return [
       if (flagged) 'Flagged',
       'Header ${recorded.viewPosition?.code ?? 'not recorded'}',
+      if (image.modelCall case final call? when recorded.viewPosition == null)
+        'View model ${call.displayName}',
       'Dataset ${recorded.orientation?.label ?? 'not recorded'}',
     ].join(' · ');
   }

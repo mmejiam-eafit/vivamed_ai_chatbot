@@ -149,6 +149,56 @@ void main() {
     expect(find.text('Header LL · Dataset Lateral'), findsOneWidget);
   });
 
+  testWidgets(
+      'an image whose file recorded no view is captioned with the view '
+      'model\'s call, never as the header\'s', (tester) async {
+    const flagged = StudyImage(
+      id: 'no-view-1',
+      url: 'u1',
+      recorded: RecordedLabels(),
+      modelCall: (view: ImageView.lateral, probability: 0.75),
+    );
+    // A file with no view whose call cleared the threshold, so not flagged.
+    const unflagged = StudyImage(
+      id: 'no-view-2',
+      url: 'u2',
+      recorded: RecordedLabels(),
+      modelCall: (view: ImageView.frontal, probability: 0.97),
+    );
+    // A header view stands on its own; the call is not repeated.
+    const withHeader = StudyImage(
+      id: 'header-pa',
+      url: 'u3',
+      recorded: RecordedLabels(viewPosition: ImageView.pa),
+      modelCall: (view: ImageView.frontal, probability: 0.99),
+    );
+    await tester.pumpWidget(wrap(
+      'review-no-view',
+      reviews: FakeImageReviewRepository(reviews: const [
+        ImageReview(
+          id: 'review-no-view',
+          status: ReviewStatus.pending,
+          reason: ReviewReason.viewNotRecorded,
+          image: flagged,
+          caseId: 'case-1',
+          otherImages: [unflagged, withHeader],
+          report: [],
+        ),
+      ]),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.text('Flagged · Header not recorded · View model Lateral, 75% · '
+            'Dataset not recorded'),
+        findsOneWidget);
+    expect(
+        find.text('Header not recorded · View model Frontal, 97% · '
+            'Dataset not recorded'),
+        findsOneWidget);
+    expect(find.text('Header PA · Dataset not recorded'), findsOneWidget);
+  });
+
   testWidgets('shows the study\'s report', (tester) async {
     await tester.pumpWidget(wrap('review-01'));
     await tester.pumpAndSettle();
