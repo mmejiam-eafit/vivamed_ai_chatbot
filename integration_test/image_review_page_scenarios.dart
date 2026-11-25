@@ -34,13 +34,11 @@ void main() {
     ),
     caseId: 'fixture-case',
     otherImages: [
+      // As the API sends an image whose dataset class agrees: none kept.
       StudyImage(
         id: 'fixture-pa',
         url: 'fixture-missing.png',
-        recorded: RecordedLabels(
-          viewPosition: ImageView.pa,
-          orientation: ImageOrientation.frontal,
-        ),
+        recorded: RecordedLabels(viewPosition: ImageView.pa),
       ),
     ],
     report: [ReportSection(title: 'Technique', text: 'Fixture technique.')],
@@ -100,7 +98,7 @@ void main() {
 
     expect(find.text('Needs review'), findsOneWidget);
     expect(find.text('Flagged · Header LL · Dataset Frontal'), findsOneWidget);
-    expect(find.text('Header PA · Dataset Frontal'), findsOneWidget);
+    expect(find.text('Header PA'), findsOneWidget);
   });
 
   testWidgets('a decision turns the review to Processing', (tester) async {

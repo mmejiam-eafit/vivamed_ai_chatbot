@@ -145,8 +145,10 @@ void main() {
 
     expect(find.byType(CaptionedImage), findsNWidgets(3));
     expect(find.text('Flagged · Header LL · Dataset Frontal'), findsOneWidget);
-    expect(find.text('Header PA · Dataset Frontal'), findsOneWidget);
-    expect(find.text('Header LL · Dataset Lateral'), findsOneWidget);
+    // Only the flagged image's class contradicts its header, so only it
+    // has one.
+    expect(find.text('Header PA'), findsOneWidget);
+    expect(find.text('Header LL'), findsOneWidget);
   });
 
   testWidgets(

@@ -3,8 +3,9 @@ import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 
 // Four reviews, one for each state worth seeing. case-7 and case-8 are
 // CheXpert Plus studies whose PNGs `make mock-images` converts locally (they
-// are research-use data and never committed). Every recorded label below is
-// what that image's file header and dataset entry actually say. The report
+// are research-use data and never committed). Every header view below is
+// what that image's file records, and a dataset class is kept, as the
+// backend keeps it, only where it contradicts the header. The report
 // text is written for these mocks, not copied from the dataset, and is not a
 // reading of the images. Of the view model's calls, the blank image's is what
 // the pipeline's view check found for CheXpert Plus's blank images (Lateral,
@@ -17,10 +18,7 @@ const _chexpert = 'lib/data/mocks/images/chexpert';
 const _case7Pa = StudyImage(
   id: 'case-7-image-1',
   url: '$_chexpert/case-7-view1.png',
-  recorded: RecordedLabels(
-    viewPosition: ImageView.pa,
-    orientation: ImageOrientation.frontal,
-  ),
+  recorded: RecordedLabels(viewPosition: ImageView.pa),
 );
 const _case7Flagged = StudyImage(
   id: 'case-7-image-2',
@@ -34,10 +32,7 @@ const _case7Flagged = StudyImage(
 const _case7Lateral = StudyImage(
   id: 'case-7-image-3',
   url: '$_chexpert/case-7-view3.png',
-  recorded: RecordedLabels(
-    viewPosition: ImageView.ll,
-    orientation: ImageOrientation.lateral,
-  ),
+  recorded: RecordedLabels(viewPosition: ImageView.ll),
 );
 const _case7Report = [
   ReportSection(title: 'Technique', text: 'PA and lateral views of the chest.'),
@@ -57,18 +52,12 @@ const _case8Blank = StudyImage(
 const _case8Ap = StudyImage(
   id: 'case-8-image-2',
   url: '$_chexpert/case-8-view2.png',
-  recorded: RecordedLabels(
-    viewPosition: ImageView.ap,
-    orientation: ImageOrientation.frontal,
-  ),
+  recorded: RecordedLabels(viewPosition: ImageView.ap),
 );
 const _case8Lateral = StudyImage(
   id: 'case-8-image-3',
   url: '$_chexpert/case-8-view3.png',
-  recorded: RecordedLabels(
-    viewPosition: ImageView.ll,
-    orientation: ImageOrientation.lateral,
-  ),
+  recorded: RecordedLabels(viewPosition: ImageView.ll),
 );
 const _case8Report = [
   ReportSection(
@@ -102,8 +91,8 @@ final mockImageReviews = <ImageReview>[
     report: _case8Report,
   ),
   // NIH ChestX-ray14 records this image as PA, and every NIH image is
-  // frontal, so its labels agree. It is the study's only image, and it has
-  // no report.
+  // frontal, so its class agrees and none is kept. It is the study's only
+  // image, and it has no report.
   ImageReview(
     id: 'review-03',
     status: ReviewStatus.decided,
@@ -111,10 +100,7 @@ final mockImageReviews = <ImageReview>[
     image: StudyImage(
       id: 'case-6-image-1',
       url: mockCaseImageUrlFor('case-6'),
-      recorded: const RecordedLabels(
-        viewPosition: ImageView.pa,
-        orientation: ImageOrientation.frontal,
-      ),
+      recorded: const RecordedLabels(viewPosition: ImageView.pa),
     ),
     caseId: 'case-6',
     otherImages: const [],
