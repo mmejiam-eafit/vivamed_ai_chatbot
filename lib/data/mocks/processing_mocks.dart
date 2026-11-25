@@ -42,9 +42,10 @@ StudyStatus deriveStudyStatus(
 /// every study together with a run.
 ///
 /// An uploaded run is deterministic: the third file fails to be read
-/// (unsupported pixel data), and the second file's labels fail on a model
-/// that could not be loaded, after the pipeline's own automatic retries. A
-/// retried step succeeds.
+/// (unsupported pixel data), the fourth is skipped at upload as not a chest
+/// image, and the second file's labels fail on a model that could not be
+/// loaded, after the pipeline's own automatic retries. A retried step
+/// succeeds.
 class MockPipeline {
   MockPipeline() {
     for (final study in mockCases) {
@@ -136,11 +137,18 @@ class MockPipeline {
     final runId = uploadRunId(++_lastRun);
     _caseOfRun[runId] = caseId;
     for (var position = 1; position <= fileCount; position++) {
+      // The pipeline skips a file inside the upload request, before any
+      // worker sees it.
+      final notChest = position == 4;
       _steps.add(_Step(
         id: _nextStepId(),
         runId: runId,
         stage: ProcessingStage.intake,
         position: position,
+        state: notChest
+            ? ProcessingStepState.skipped
+            : ProcessingStepState.pending,
+        skipCode: notChest ? ProcessingSkipCode.notChest : null,
         failWith:
             position == 3 ? ProcessingErrorCode.unsupportedPixelData : null,
       ));
@@ -170,7 +178,8 @@ class MockPipeline {
       openFailures:
           steps.where((s) => s.state == ProcessingStepState.failed).length,
       steps: [
-        for (final s in steps) ProcessingStep(stage: s.stage, state: s.state),
+        for (final s in steps)
+          ProcessingStep(stage: s.stage, state: s.state, skipCode: s.skipCode),
       ],
     );
   }
@@ -267,8 +276,10 @@ class MockPipeline {
       };
 
   static RunStatus _statusOf(List<_Step> steps) {
-    if (steps.every(
-        (s) => s.state == ProcessingStepState.pending && s.attempts == 0)) {
+    // Queued until a worker has tried a step, as the contract derives it: a
+    // file skipped at upload never ran, so it does not start the run.
+    if (steps.every((s) => s.attempts == 0) &&
+        steps.any((s) => s.state == ProcessingStepState.pending)) {
       return RunStatus.queued;
     }
     if (steps.any((s) =>
@@ -372,6 +383,7 @@ class _Step {
     required this.stage,
     required this.position,
     this.state = ProcessingStepState.pending,
+    this.skipCode,
     this.code,
     this.failWith,
     this.attempts = 0,
@@ -394,6 +406,9 @@ class _Step {
   String get internalName =>
       '${runId.substring(0, 8)}-${position.toString().padLeft(5, '0')}';
   ProcessingStepState state;
+
+  /// Why the step was skipped at upload; null for any other step.
+  final ProcessingSkipCode? skipCode;
   ProcessingErrorCode? code;
 
   /// The failure this step's next attempt ends in; null to succeed.

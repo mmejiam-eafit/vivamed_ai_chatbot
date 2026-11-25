@@ -57,6 +57,31 @@ void main() {
       expect(failures.first.attempts, 1);
     });
 
+    test(
+        'a fourth file is skipped at upload as not chest, and the run stays '
+        'queued until a step runs', () {
+      final pipeline = MockPipeline();
+      final runId = pipeline.startRun('case-new', 4);
+      final queued = pipeline.run(runId);
+      expect(queued.status, RunStatus.queued);
+      expect(queued.steps.map((s) => (s.state, s.skipCode)), [
+        (ProcessingStepState.pending, null),
+        (ProcessingStepState.pending, null),
+        (ProcessingStepState.pending, null),
+        (ProcessingStepState.skipped, ProcessingSkipCode.notChest),
+      ]);
+
+      pipeline
+        ..advance(runId)
+        ..advance(runId)
+        ..advance(runId);
+      final intake = pipeline.run(runId).progress.first;
+      expect(intake.total, 4);
+      expect(intake.done, 2);
+      expect(intake.failed, 1);
+      expect(intake.skipped, {ProcessingSkipCode.notChest: 1});
+    });
+
     test('an image keeps the name of the file it came from', () {
       final pipeline = MockPipeline();
       final runId = pipeline.startRun('case-new', 3);
