@@ -76,8 +76,8 @@ void main() {
     await goViaMenu(tester, 'Settings');
     expect(find.byType(SettingsPage), findsOneWidget);
 
-    // Every Settings section is visible at once (50c312d) -- no need to pick
-    // Appearance from the index rail first.
+    // Every Settings section is in one column (DL D-025), so Appearance's
+    // choices are tappable straight away.
     await tester.tap(find.text('Light'));
     await tester.pumpAndSettle();
     var app = tester.widget<MaterialApp>(find.byType(MaterialApp));

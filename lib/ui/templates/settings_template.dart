@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:radiologist_helper/ui/atoms/app_divider.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
 import 'package:radiologist_helper/ui/core/preview_utils.dart';
 import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/molecules/section_card.dart';
-import 'package:radiologist_helper/ui/molecules/section_index_tile.dart';
 import 'package:radiologist_helper/ui/organisms/app_nav_bar.dart';
 
 /// One titled block of settings content, rendered in a [SectionCard] —
@@ -22,8 +20,6 @@ class SettingsTemplate extends StatelessWidget {
     super.key,
     required this.appBar,
     required this.sections,
-    this.selectedIndex = 0,
-    this.onSectionSelected,
     this.navBar,
     this.primaryNavDrawer,
     this.menuRail,
@@ -31,11 +27,6 @@ class SettingsTemplate extends StatelessWidget {
 
   final PreferredSizeWidget appBar;
   final List<SettingsSection> sections;
-
-  /// Which section shows in the content pane at expanded and up (DT §9.5).
-  /// Ignored below that tier, where every section renders in one column.
-  final int selectedIndex;
-  final ValueChanged<int>? onSectionSelected;
   final Widget? navBar;
 
   /// Primary app navigation (Home/Chat/Studies/Review/Settings) at expanded/
@@ -64,23 +55,27 @@ class SettingsTemplate extends StatelessWidget {
           bottomNavigationBar: isWide ? null : navBar,
           drawer: isWide ? primaryNavDrawer : null,
           body: isWide
-              ? _buildTwoColumn(context)
+              ? _buildWide()
               : _buildSingleColumn(isCompact: tier == AppLayoutTier.compact),
         );
       },
     );
   }
 
+  Widget _sectionList(EdgeInsets padding) => ListView.separated(
+        padding: padding,
+        itemCount: sections.length,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xxl),
+        itemBuilder: (_, i) =>
+            SectionCard(title: sections[i].title, child: sections[i].child),
+      );
+
   Widget _buildSingleColumn({required bool isCompact}) {
-    final list = ListView.separated(
-      padding: const EdgeInsets.symmetric(
+    final list = _sectionList(
+      const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.xl,
       ),
-      itemCount: sections.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xxl),
-      itemBuilder: (_, i) =>
-          SectionCard(title: sections[i].title, child: sections[i].child),
     );
     if (isCompact) return list;
     // Medium: capped, not full-bleed, like every other single-column page
@@ -93,64 +88,21 @@ class SettingsTemplate extends StatelessWidget {
     );
   }
 
-  // Every section renders together in one continuous scroll -- the index
-  // rail highlights and jumps to a section, it no longer hides the other two
-  // (Settings should keep a continuous feel, not read as three separate
-  // pages). Section titles are literal strings, so a
-  // GlobalObjectKey built from one is stable (equal) across rebuilds without
-  // any extra state -- unlike a fresh GlobalKey(), which would be a new
-  // identity every time this method reruns and would break the very next
-  // tap's ensureVisible call.
-  Widget _buildTwoColumn(BuildContext context) {
-    if (sections.isEmpty) return const SizedBox.shrink();
-    final index = selectedIndex.clamp(0, sections.length - 1);
-    final sectionKeys = [
-      for (final section in sections) GlobalObjectKey(section.title),
-    ];
-    return Row(
-      children: [
-        ?menuRail,
-        SizedBox(
-          width: 200,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-            itemCount: sections.length,
-            itemBuilder: (context, i) => SectionIndexTile(
-              title: sections[i].title,
-              isSelected: i == index,
-              onTap: () {
-                onSectionSelected?.call(i);
-                Scrollable.ensureVisible(
-                  sectionKeys[i].currentContext!,
-                  duration: AppMotion.transition,
-                  curve: AppMotion.standard,
-                );
-              },
-            ),
-          ),
-        ),
-        const AppDivider(axis: Axis.vertical, width: 1),
-        Expanded(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: ListView.separated(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                itemCount: sections.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(height: AppSpacing.xxl),
-                itemBuilder: (context, i) => SectionCard(
-                  key: sectionKeys[i],
-                  title: sections[i].title,
-                  child: sections[i].child,
-                ),
+  // One column beside the menu rail, with no section index: every section
+  // fits within about one screen here (DL D-025).
+  Widget _buildWide() => Row(
+        children: [
+          ?menuRail,
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: _sectionList(const EdgeInsets.all(AppSpacing.xl)),
               ),
             ),
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      );
 }
 
 // ── Previews ──────────────────────────────────────────────────────────────────
@@ -204,5 +156,4 @@ Widget previewSettingsTemplate() => SettingsTemplate(
 Widget previewSettingsTemplateExpanded() => SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
       sections: _previewSections(),
-      selectedIndex: 1,
     );

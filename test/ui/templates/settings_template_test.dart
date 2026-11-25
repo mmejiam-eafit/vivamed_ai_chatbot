@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
-import 'package:radiologist_helper/ui/molecules/section_index_tile.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 
 void main() {
@@ -147,14 +146,10 @@ void main() {
       });
     });
 
-    // ── Expanded and up: index + content (DT §9.5) ───────────────────────────
+    // ── Expanded and up: one column beside the menu rail (DL D-025) ─────────
 
     group('expanded and up (>= threePaneMinWidth)', () {
-      Future<void> pumpExpanded(
-        WidgetTester tester, {
-        int selectedIndex = 0,
-        ValueChanged<int>? onSectionSelected,
-      }) async {
+      Future<void> pumpExpanded(WidgetTester tester) async {
         tester.view.physicalSize =
             const Size(AppLayout.threePaneMinWidth * 3, 800 * 3);
         tester.view.devicePixelRatio = 3.0;
@@ -164,81 +159,38 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: buildAppTheme(),
-            home: SettingsTemplate(
-              appBar: AppBar(),
-              sections: threeSections,
-              selectedIndex: selectedIndex,
-              onSectionSelected: onSectionSelected,
-            ),
+            home: SettingsTemplate(appBar: AppBar(), sections: threeSections),
           ),
         );
       }
 
-      testWidgets('shows every title and every section\'s content at once',
+      testWidgets('shows every title once and every section\'s content',
           (tester) async {
         await pumpExpanded(tester);
-        // Each title appears twice: once in the index rail, once as its own
-        // SectionCard's heading -- all three sections render together now,
-        // not just the selected one (Settings should keep a continuous feel,
-        // not three separate pages).
-        expect(find.text('Account'), findsNWidgets(2));
-        expect(find.text('Display'), findsNWidgets(2));
-        expect(find.text('About'), findsNWidgets(2));
+        // Once each: the section card's own heading, with no index beside it.
+        expect(find.text('Account'), findsOneWidget);
+        expect(find.text('Display'), findsOneWidget);
+        expect(find.text('About'), findsOneWidget);
         expect(find.text('account-content'), findsOneWidget);
         expect(find.text('display-content'), findsOneWidget);
         expect(find.text('about-content'), findsOneWidget);
       });
 
-      testWidgets('selectedIndex controls which index tile is highlighted',
-          (tester) async {
-        await pumpExpanded(tester, selectedIndex: 1);
-        final tiles =
-            tester.widgetList<SectionIndexTile>(find.byType(SectionIndexTile));
-        expect(tiles.firstWhere((t) => t.title == 'Display').isSelected, isTrue);
-        expect(tiles.firstWhere((t) => t.title == 'Account').isSelected, isFalse);
-        expect(tiles.firstWhere((t) => t.title == 'About').isSelected, isFalse);
-        // Still all present -- selection only changes the highlight now.
-        expect(find.text('account-content'), findsOneWidget);
-        expect(find.text('display-content'), findsOneWidget);
-      });
-
-      testWidgets('index is 200 wide', (tester) async {
+      testWidgets('content is capped at 720', (tester) async {
         await pumpExpanded(tester);
         expect(
-          find.byWidgetPredicate((w) => w is SizedBox && w.width == 200.0),
+          find.byWidgetPredicate(
+            (w) => w is ConstrainedBox && w.constraints.maxWidth == 720,
+          ),
           findsOneWidget,
         );
-      });
-
-      testWidgets('tapping an index title calls onSectionSelected', (tester) async {
-        // 'Display' now appears twice (rail + its own SectionCard heading,
-        // since all sections render) -- target the rail tile specifically.
-        int? tapped;
-        await pumpExpanded(tester, onSectionSelected: (i) => tapped = i);
-        await tester.tap(find.widgetWithText(SectionIndexTile, 'Display'));
-        // pumpAndSettle, not pump: the tap also kicks off ensureVisible's
-        // (possibly animated) scroll -- let it finish before the test ends.
-        await tester.pumpAndSettle();
-        expect(tapped, 1);
-      });
-
-      testWidgets('out-of-range selectedIndex clamps instead of crashing',
-          (tester) async {
-        await pumpExpanded(tester, selectedIndex: 99);
-        expect(tester.takeException(), isNull);
-        // Clamps to the last section for highlighting purposes; all three
-        // still render regardless (they always do now).
-        final tiles =
-            tester.widgetList<SectionIndexTile>(find.byType(SectionIndexTile));
-        expect(tiles.firstWhere((t) => t.title == 'About').isSelected, isTrue);
-        expect(find.text('about-content'), findsOneWidget);
       });
     });
 
     testWidgets(
-        'expandedMinWidth (below threePaneMinWidth): still single-column, '
-        'each title once -- the exact gap this boundary alignment closes',
-        (tester) async {
+        'expandedMinWidth (below threePaneMinWidth): still the medium column, '
+        'capped at 640, not the wide one -- the exact gap this boundary '
+        'alignment closes', (tester) async {
       tester.view.physicalSize =
           const Size(AppLayout.expandedMinWidth * 3, 800 * 3);
       tester.view.devicePixelRatio = 3.0;
@@ -251,8 +203,18 @@ void main() {
           home: SettingsTemplate(appBar: AppBar(), sections: threeSections),
         ),
       );
-      expect(find.text('Account'), findsOneWidget);
-      expect(find.byType(SectionIndexTile), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is ConstrainedBox && w.constraints.maxWidth == 640,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is ConstrainedBox && w.constraints.maxWidth == 720,
+        ),
+        findsNothing,
+      );
     });
 
     // ── Dark theme ─────────────────────────────────────────────────────────

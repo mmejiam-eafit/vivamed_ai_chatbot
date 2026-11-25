@@ -16,30 +16,24 @@ import 'package:radiologist_helper/ui/organisms/primary_nav_drawer.dart';
 import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/templates/settings_template.dart';
 
-class SettingsPage extends ConsumerStatefulWidget {
+class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
-
-  @override
-  ConsumerState<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends ConsumerState<SettingsPage> {
-  int _selectedIndex = 0;
 
   static const _destination = 4;
 
-  Widget _navBar(BuildContext context) => AppNavBar(
+  Widget _navBar(BuildContext context, int pendingReviewCount) => AppNavBar(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
-        pendingReviewCount: ref.watch(pendingReviewCountProvider),
+        pendingReviewCount: pendingReviewCount,
       );
 
-  Widget _primaryNavDrawer(BuildContext context) => PrimaryNavDrawer(
+  Widget _primaryNavDrawer(BuildContext context, int pendingReviewCount) =>
+      PrimaryNavDrawer(
         selectedIndex: _destination,
         onDestinationSelected: (i) =>
             openPrimaryDestination(context, i, current: _destination),
-        pendingReviewCount: ref.watch(pendingReviewCountProvider),
+        pendingReviewCount: pendingReviewCount,
       );
 
   /// Builder-wrapped so Scaffold.of(context) resolves to the Scaffold this
@@ -52,15 +46,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final themeController = ThemeControllerScope.of(context);
     final userAsync = ref.watch(currentUserProvider);
+    final pendingReviewCount = ref.watch(pendingReviewCountProvider);
     return SettingsTemplate(
       appBar: AppBar(title: const Text('Settings')),
-      selectedIndex: _selectedIndex,
-      onSectionSelected: (i) => setState(() => _selectedIndex = i),
-      navBar: _navBar(context),
-      primaryNavDrawer: _primaryNavDrawer(context),
+      navBar: _navBar(context, pendingReviewCount),
+      primaryNavDrawer: _primaryNavDrawer(context, pendingReviewCount),
       menuRail: _menuRail(context),
       sections: [
         SettingsSection(

@@ -128,7 +128,7 @@ void main() {
     },
   );
 
-  testWidgets('SettingsTemplate two-column layout matches golden', (
+  testWidgets('SettingsTemplate wide layout matches golden', (
     tester,
   ) async {
     setWideSize(tester);

@@ -11,7 +11,8 @@ import 'package:radiologist_helper/ui/templates/study_review_template.dart';
 /// Golden-image regression coverage for the nav-shell chrome that moved out
 /// of the templates and into their organisms (a template may only use
 /// `surfacePage` and `AppSpacing`): `ConversationDrawer`'s rendered width as
-/// `drawerWide`, and the Settings divider's footprint.
+/// `drawerWide`. Also pins Settings' wide layout, one column with no section
+/// index (DL D-025).
 /// Goldens were captured from the pre-fix code first (`--update-goldens`),
 /// specifically so a passing re-run after the fix proves pixel parity, not
 /// just "looks right" by eye.
@@ -125,7 +126,7 @@ void main() {
     },
   );
 
-  testWidgets('SettingsTemplate two-column layout matches golden', (
+  testWidgets('SettingsTemplate wide layout matches golden', (
     tester,
   ) async {
     setWideSize(tester);
