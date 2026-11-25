@@ -15,7 +15,20 @@ enum ReviewReason {
   viewLabelsDisagree('The two view labels disagree'),
 
   /// The picture looks empty.
-  imageBlank('The image looks blank');
+  imageBlank('The image looks blank'),
+
+  /// The view model's call has a different orientation from the view in the
+  /// file's header.
+  viewModelDisagrees('The view model disagrees with the file header'),
+
+  /// The view model's call is below the pipeline's threshold.
+  viewModelUncertain('The view model is unsure of the view'),
+
+  /// The file records no view, so the view model's call became the image's
+  /// view, and that call is below the pipeline's stricter threshold for it.
+  viewNotRecorded(
+    'The file records no view, and the view model is not certain of it',
+  );
 
   const ReviewReason(this.label);
 

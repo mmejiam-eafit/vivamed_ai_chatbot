@@ -22,6 +22,7 @@ ReviewQueueItem _item(
   String id,
   ReviewStatus status, {
   ReviewDecision? decision,
+  ReviewReason reason = ReviewReason.viewLabelsDisagree,
   RecordedLabels recorded = const RecordedLabels(
     viewPosition: ImageView.ll,
     orientation: ImageOrientation.frontal,
@@ -31,7 +32,7 @@ ReviewQueueItem _item(
       review: ImageReview(
         id: id,
         status: status,
-        reason: ReviewReason.viewLabelsDisagree,
+        reason: reason,
         image: StudyImage(id: 'image-$id', url: 'u', recorded: recorded),
         caseId: 'case-7',
         otherImages: const [],
@@ -98,6 +99,16 @@ void main() {
     expect(find.text('The two view labels disagree'), findsOneWidget);
     expect(find.text('LL · Frontal'), findsOneWidget);
   });
+
+  for (final reason in ReviewReason.values) {
+    testWidgets('shows the reason ${reason.name}', (tester) async {
+      setWide(tester);
+      await tester.pumpWidget(wrap(ImageReviewTable(items: [
+        _item('a', ReviewStatus.pending, reason: reason),
+      ])));
+      expect(find.text(reason.label), findsOneWidget);
+    });
+  }
 
   testWidgets('the date is numeric and the labels mono', (tester) async {
     setWide(tester);
@@ -199,7 +210,9 @@ void main() {
     setWide(tester);
     await tester.pumpWidget(wrap(
       ImageReviewTable(items: [
-        _item('a', ReviewStatus.pending),
+        // The longest reason, so its wrapping is exercised too.
+        _item('a', ReviewStatus.pending,
+            reason: ReviewReason.viewNotRecorded),
         _item('b', ReviewStatus.applied,
             decision: _decided(ReviewOutcome.setView, view: ImageView.rl)),
       ]),
