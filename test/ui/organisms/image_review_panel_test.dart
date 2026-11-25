@@ -20,18 +20,27 @@ ImageReview _review({
   ReviewStatus status = ReviewStatus.pending,
   ReviewReason reason = ReviewReason.viewLabelsDisagree,
   RecordedLabels recorded = _disagreeing,
+  ViewModelCall? modelCall,
   ReviewDecision? decision,
 }) =>
     ImageReview(
       id: 'review-1',
       status: status,
       reason: reason,
-      image: StudyImage(id: 'image-1', url: 'u', recorded: recorded),
+      image: StudyImage(
+        id: 'image-1',
+        url: 'u',
+        recorded: recorded,
+        modelCall: modelCall,
+      ),
       caseId: 'case-1',
       otherImages: const [],
       report: const [],
       decision: decision,
     );
+
+/// The view model's call on a file that recorded no view.
+const ViewModelCall _lateralCall = (view: ImageView.lateral, probability: 0.75);
 
 final _confirmedDecision = ReviewDecision(
   outcome: ReviewOutcome.confirmed,
@@ -116,6 +125,25 @@ void main() {
       )));
       expect(find.text('Not recorded'), findsNWidgets(2));
     });
+
+    testWidgets("shows the view model's call", (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(modelCall: _lateralCall),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(find.text('View model'), findsWidgets);
+      expect(find.text('Lateral, 75%'), findsOneWidget);
+    });
+
+    testWidgets('no view model row without a call', (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(find.text('View model'), findsNothing);
+    });
   });
 
   group('deciding', () {
@@ -169,6 +197,25 @@ void main() {
       );
     });
 
+    testWidgets("marks the choice matching the view model's call",
+        (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(modelCall: _lateralCall),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(
+        find.descendant(
+          of: find.ancestor(
+            of: option('Lateral'),
+            matching: find.byWidgetPredicate((w) => w is RadioListTile),
+          ),
+          matching: find.text('View model'),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('no "recorded view is correct" when the labels disagree',
         (tester) async {
       await tester.pumpWidget(wrap(ImageReviewPanel(
@@ -214,7 +261,44 @@ void main() {
         onSave: (_) {},
       )));
       expect(find.textContaining('Recorded view is correct'), findsNothing);
+      expect(find.textContaining("View model's call"), findsNothing);
       expect(radioTiles(), findsNWidgets(7));
+    });
+
+    testWidgets("with no header view, Confirm keeps the view model's call",
+        (tester) async {
+      ReviewDecisionDraft? saved;
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(
+          reason: ReviewReason.viewNotRecorded,
+          recorded: const RecordedLabels(),
+          modelCall: _lateralCall,
+        ),
+        canDecide: true,
+        onSave: (draft) => saved = draft,
+      )));
+
+      await choose(tester, "View model's call is correct (Lateral)");
+      await tester.ensureVisible(saveButton());
+      await tester.tap(saveButton());
+
+      expect(saved!.outcome, ReviewOutcome.confirmed);
+      expect(saved!.view, isNull);
+    });
+
+    testWidgets('with a header view, Confirm keeps it, whatever the model says',
+        (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(
+          reason: ReviewReason.viewModelDisagrees,
+          recorded: const RecordedLabels(viewPosition: ImageView.pa),
+          modelCall: _lateralCall,
+        ),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(option('Recorded view is correct (PA)'), findsOneWidget);
+      expect(find.textContaining("View model's call"), findsNothing);
     });
 
     testWidgets('Save is disabled until a choice is made', (tester) async {
@@ -340,6 +424,23 @@ void main() {
       expect(find.text('2026-10-26 15:40 UTC'), findsOneWidget);
       expect(find.text('Applied at'), findsNothing);
       expect(radioTiles(), findsNothing);
+    });
+
+    testWidgets("a confirmed file with no view reads as the model's call",
+        (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(
+          status: ReviewStatus.decided,
+          reason: ReviewReason.viewNotRecorded,
+          recorded: const RecordedLabels(),
+          modelCall: _lateralCall,
+          decision: _confirmedDecision,
+        ),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(find.text("View model's call confirmed"), findsOneWidget);
+      expect(find.text('Recorded view confirmed'), findsNothing);
     });
 
     testWidgets('a set view and a note read in full', (tester) async {

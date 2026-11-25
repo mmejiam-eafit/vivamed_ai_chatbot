@@ -15,9 +15,9 @@ import 'package:radiologist_helper/ui/molecules/status_banner.dart';
 /// outcome and view are equal -- what `RadioGroup` compares.
 typedef _Choice = ({ReviewOutcome outcome, ImageView? view});
 
-/// Why an image was flagged, what its two labels say, and the radiologist's
-/// decision about it: a form while there is none (or while it is being
-/// changed), otherwise who decided what and when.
+/// Why an image was flagged, what its two labels and the view model say,
+/// and the radiologist's decision about it: a form while there is none (or
+/// while it is being changed), otherwise who decided what and when.
 ///
 /// Local state only -- the choice, the note, and whether the form is open.
 /// The page resets it once a saved decision comes back, by keying it on that
@@ -70,11 +70,15 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
     super.dispose();
   }
 
-  static String _outcomeText(ReviewDecision decision) =>
+  static String _outcomeText(ImageReview review, ReviewDecision decision) =>
       switch (decision.outcome) {
         ReviewOutcome.setView => 'View set to ${decision.view!.displayName}',
         ReviewOutcome.unusable => 'Marked unusable',
-        ReviewOutcome.confirmed => 'Recorded view confirmed',
+        // For a file that recorded no view, Confirm kept the model's call.
+        ReviewOutcome.confirmed =>
+          review.reason == ReviewReason.viewNotRecorded
+              ? "View model's call confirmed"
+              : 'Recorded view confirmed',
       };
 
   static String _timestamp(DateTime time) {
@@ -84,9 +88,11 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
         '${two(t.hour)}:${two(t.minute)} UTC';
   }
 
-  /// Which recorded label a view choice matches, so either one is a single
-  /// tap away: the header's exact view, or the dataset's orientation.
-  static String? _sourceOf(ImageView view, RecordedLabels recorded) {
+  /// Which recorded label, or the view model's call, a view choice matches,
+  /// so each is a single tap away: the header's exact view, the dataset's
+  /// orientation, or the view the model called.
+  static String? _sourceOf(ImageView view, StudyImage image) {
+    final recorded = image.recorded;
     final sources = [
       if (recorded.viewPosition == view) 'File header',
       if ((view == ImageView.frontal &&
@@ -94,8 +100,24 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
           (view == ImageView.lateral &&
               recorded.orientation == ImageOrientation.lateral))
         'Dataset',
+      if (image.modelCall?.view == view) 'View model',
     ];
     return sources.isEmpty ? null : sources.join(' · ');
+  }
+
+  /// The Confirm choice, named by what it keeps: the view the recorded
+  /// labels name, or, for a file that recorded no view, the view model's
+  /// call, which became the image's view. Null when there is nothing the
+  /// radiologist could see to confirm; picking a view does the same then.
+  static String? _confirmText(ImageReview review) {
+    if (review.image.recorded.namedView case final view?) {
+      return 'Recorded view is correct (${view.displayName})';
+    }
+    return switch ((review.reason, review.image.modelCall)) {
+      (ReviewReason.viewNotRecorded, final call?) =>
+        "View model's call is correct (${call.view.displayName})",
+      _ => null,
+    };
   }
 
   void _save() {
@@ -151,13 +173,21 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                 value: recorded.orientation?.label ?? 'Not recorded',
                 valueKind: MetadataValueKind.identifier,
               ),
+              // The model's opinion of the picture, beside the labels it is
+              // checked against and never in place of them.
+              if (review.image.modelCall case final call?)
+                MetadataField(
+                  label: 'View model',
+                  value: call.displayName,
+                  valueKind: MetadataValueKind.numeric,
+                ),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
         SectionCard(
           title: 'Decision',
-          child: _showForm ? _form(colors, recorded) : _summary(colors),
+          child: _showForm ? _form(colors) : _summary(colors),
         ),
       ],
     );
@@ -189,8 +219,9 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
     );
   }
 
-  Widget _form(AppColorsData colors, RecordedLabels recorded) {
-    final hasDecision = widget.review.decision != null;
+  Widget _form(AppColorsData colors) {
+    final review = widget.review;
+    final hasDecision = review.decision != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -209,7 +240,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                     colors,
                     (outcome: ReviewOutcome.setView, view: view),
                     view.displayName,
-                    subtitle: _sourceOf(view, recorded),
+                    subtitle: _sourceOf(view, review.image),
                   ),
                 _option(
                   colors,
@@ -217,13 +248,11 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                   'Unusable',
                   subtitle: 'Left out of findings and similar cases',
                 ),
-                // Only when the labels name one view does "recorded" say
-                // which; otherwise the radiologist picks the view itself.
-                if (recorded.namedView case final view?)
+                if (_confirmText(review) case final text?)
                   _option(
                     colors,
                     (outcome: ReviewOutcome.confirmed, view: null),
-                    'Recorded view is correct (${view.displayName})',
+                    text,
                   ),
               ],
             ),
@@ -280,7 +309,7 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppText(
-          _outcomeText(decision),
+          _outcomeText(widget.review, decision),
           style: AppTypography.bodyMd,
           color: colors.textPrimary,
         ),
@@ -390,6 +419,57 @@ Widget previewImageReviewPanelReadOnly() => SingleChildScrollView(
       child: ImageReviewPanel(
         review: _previewPending,
         canDecide: false,
+        onSave: (_) {},
+      ),
+    );
+
+const _previewModelDisagrees = ImageReview(
+  id: 'preview-3',
+  status: ReviewStatus.pending,
+  reason: ReviewReason.viewModelDisagrees,
+  image: StudyImage(
+    id: 'preview-image-3',
+    url: 'https://picsum.photos/seed/preview-review-3/800/800',
+    // An uploaded DICOM file: the header is its only label.
+    recorded: RecordedLabels(viewPosition: ImageView.pa),
+    modelCall: (view: ImageView.lateral, probability: 0.82),
+  ),
+  caseId: 'preview-case',
+  otherImages: [],
+  report: [],
+);
+
+const _previewViewNotRecorded = ImageReview(
+  id: 'preview-4',
+  status: ReviewStatus.pending,
+  reason: ReviewReason.viewNotRecorded,
+  image: StudyImage(
+    id: 'preview-image-4',
+    url: 'https://picsum.photos/seed/preview-review-4/800/800',
+    recorded: RecordedLabels(),
+    modelCall: (view: ImageView.lateral, probability: 0.75),
+  ),
+  caseId: 'preview-case',
+  otherImages: [],
+  report: [],
+);
+
+@Preview(
+    name: 'model disagrees', size: Size(360, 1000), wrapper: previewWrapper)
+Widget previewImageReviewPanelModelDisagrees() => SingleChildScrollView(
+      child: ImageReviewPanel(
+        review: _previewModelDisagrees,
+        canDecide: true,
+        onSave: (_) {},
+      ),
+    );
+
+@Preview(
+    name: 'no view recorded', size: Size(360, 1000), wrapper: previewWrapper)
+Widget previewImageReviewPanelViewNotRecorded() => SingleChildScrollView(
+      child: ImageReviewPanel(
+        review: _previewViewNotRecorded,
+        canDecide: true,
         onSave: (_) {},
       ),
     );

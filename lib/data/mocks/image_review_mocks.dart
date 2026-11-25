@@ -6,7 +6,9 @@ import 'package:radiologist_helper/data/mocks/case_mocks.dart';
 // are research-use data and never committed). Every recorded label below is
 // what that image's file header and dataset entry actually say. The report
 // text is written for these mocks, not copied from the dataset, and is not a
-// reading of the images.
+// reading of the images. Of the view model's calls, the blank image's is what
+// the pipeline's view check found for CheXpert Plus's blank images (Lateral,
+// at 0.95 or more); the frontal film's is written for these mocks.
 
 const _chexpert = 'lib/data/mocks/images/chexpert';
 
@@ -27,6 +29,7 @@ const _case7Flagged = StudyImage(
     viewPosition: ImageView.ll,
     orientation: ImageOrientation.frontal,
   ),
+  modelCall: (view: ImageView.frontal, probability: 0.97),
 );
 const _case7Lateral = StudyImage(
   id: 'case-7-image-3',
@@ -49,6 +52,7 @@ const _case8Blank = StudyImage(
     viewPosition: ImageView.ll,
     orientation: ImageOrientation.frontal,
   ),
+  modelCall: (view: ImageView.lateral, probability: 0.95),
 );
 const _case8Ap = StudyImage(
   id: 'case-8-image-2',
@@ -76,7 +80,8 @@ const _case8Report = [
 /// Seeds `MockImageReviewRepository`. review-01 and review-02 are two of the
 /// real flagged images. review-03 and review-04 flag images that are not
 /// blank, so the decided and applied states, and a study held back entirely,
-/// have something to show.
+/// have something to show. Their images have no view model call, like an
+/// image loaded before the view check existed.
 final mockImageReviews = <ImageReview>[
   const ImageReview(
     id: 'review-01',

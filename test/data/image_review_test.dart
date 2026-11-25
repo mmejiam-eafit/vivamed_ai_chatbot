@@ -63,6 +63,24 @@ void main() {
     }
   });
 
+  group('ViewModelCall.displayName', () {
+    final expected = {
+      0.75: 'Lateral, 75%',
+      // Rounded down, so a call just under a threshold never reads as on it.
+      0.899: 'Lateral, 89%',
+      // Just under 57 once multiplied in floating point.
+      0.57: 'Lateral, 57%',
+      1.0: 'Lateral, 100%',
+    };
+    for (final MapEntry(key: probability, value: text) in expected.entries) {
+      test('$probability reads "$text"', () {
+        final ViewModelCall call =
+            (view: ImageView.lateral, probability: probability);
+        expect(call.displayName, text);
+      });
+    }
+  });
+
   group('ImageReview.copyWith', () {
     const pending = ImageReview(
       id: 'r1',

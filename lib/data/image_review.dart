@@ -80,7 +80,9 @@ enum ImageView {
 class RecordedLabels {
   const RecordedLabels({this.viewPosition, this.orientation});
 
-  /// The view stored in the image file's header.
+  /// The view stored in the image file's header. Null when the file
+  /// records none; the image's view is then the view model's call
+  /// ([StudyImage.modelCall]), which is never shown as the header's.
   final ImageView? viewPosition;
 
   /// The dataset's frontal/lateral class.
@@ -100,16 +102,35 @@ class RecordedLabels {
   }
 }
 
+/// What the view model said about an image: the view it scored highest,
+/// and that view's probability, from 0 to 1. The model's opinion of the
+/// picture, never the truth about the view.
+typedef ViewModelCall = ({ImageView view, double probability});
+
+extension ViewModelCallText on ViewModelCall {
+  /// "Lateral, 75%". The percentage is rounded down, not to the nearest:
+  /// the pipeline flags a call below 0.6, or below 0.9 for a file with no
+  /// view, and a 0.895 call shown as "90%" would read as clearing the
+  /// threshold that flagged it. The epsilon keeps 0.57, which is just under
+  /// 57 once multiplied in floating point, at 57%.
+  String get displayName =>
+      '${view.displayName}, ${(probability * 100 + 1e-9).floor()}%';
+}
+
 class StudyImage {
   const StudyImage({
     required this.id,
     required this.url,
     required this.recorded,
+    this.modelCall,
   });
 
   final String id;
   final String url;
   final RecordedLabels recorded;
+
+  /// Null when the view model has not scored the image.
+  final ViewModelCall? modelCall;
 }
 
 /// One section of a study's report, in display order.
