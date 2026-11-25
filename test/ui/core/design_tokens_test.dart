@@ -83,6 +83,51 @@ void main() {
     });
   });
 
+  group('textPlaceholder text floor (D-026)', () {
+    double contrastRatio(Color a, Color b) {
+      final la = a.computeLuminance();
+      final lb = b.computeLuminance();
+      final lighter = la > lb ? la : lb;
+      final darker = la > lb ? lb : la;
+      return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    test('light placeholder reuses textMuted (gray550), not gray400', () {
+      expect(AppColorsData.light.textPlaceholder, const Color(0xFF6E6E6E));
+      expect(
+        AppColorsData.light.textPlaceholder,
+        AppColorsData.light.textMuted,
+      );
+    });
+
+    for (final (mode, colors) in [
+      ('light', AppColorsData.light),
+      ('dark', AppColorsData.dark),
+    ]) {
+      test('$mode: clears 4.5:1 on both input fills (surface, surfaceAccent)',
+          () {
+        expect(
+          contrastRatio(colors.textPlaceholder, colors.surface),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
+          contrastRatio(colors.textPlaceholder, colors.surfaceAccent),
+          greaterThanOrEqualTo(4.5),
+        );
+      });
+    }
+
+    test('disabled text and icons keep their WCAG exemption at gray400', () {
+      expect(AppColorsData.light.textDisabled, const Color(0xFFA0A0A0));
+      expect(AppColorsData.light.iconDisabled, const Color(0xFFA0A0A0));
+    });
+
+    test('the deprecated AppColors.textPlaceholder alias did not drift', () {
+      // ignore: deprecated_member_use_from_same_package
+      expect(AppColors.textPlaceholder, AppColorsData.light.textPlaceholder);
+    });
+  });
+
   group('buildAppTheme colorScheme.onError (§10.5)', () {
     test('dark mode resolves to a genuinely dark-toned color', () {
       // Regression guard: this used to resolve to textPrimary, which is

@@ -161,7 +161,7 @@ abstract final class AppColors {
   @Deprecated('Use context.colors.textTertiary')
   static const Color textTertiary = _Palette.gray600;
   @Deprecated('Use context.colors.textPlaceholder')
-  static const Color textPlaceholder = _Palette.gray400;
+  static const Color textPlaceholder = _Palette.gray550;
   @Deprecated('Use context.colors.textDisabled')
   static const Color textDisabled = _Palette.gray400;
   @Deprecated('Use context.colors.textMuted')
@@ -397,7 +397,9 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     textPrimary: _Palette.gray900,
     textSecondary: _Palette.gray700,
     textTertiary: _Palette.gray600,
-    textPlaceholder: _Palette.gray400,
+    // Placeholders carry the 4.5:1 text floor; only disabled is exempt
+    // (DL D-026).
+    textPlaceholder: _Palette.gray550,
     textDisabled: _Palette.gray400,
     textMuted: _Palette.gray550,
     textOnBrand: _Palette.offWhite,
@@ -454,7 +456,8 @@ class AppColorsData extends ThemeExtension<AppColorsData> {
     textPrimary: _Palette.darkTextPrimary,
     textSecondary: _Palette.darkTextSecondary,
     textTertiary: _Palette.darkTextTertiary,
-    // WCAG-exempt; no independent dark spec, so reuses textMuted's value.
+    // Placeholder is textMuted, as in light (DL D-026). Disabled is
+    // WCAG-exempt with no independent dark spec, so it reuses the same value.
     textPlaceholder: _Palette.darkTextMuted,
     textDisabled: _Palette.darkTextMuted,
     textMuted: _Palette.darkTextMuted,
