@@ -2,31 +2,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/image_review.dart';
 
 void main() {
-  group('RecordedLabels.agree', () {
-    test('header and dataset name the same orientation', () {
+  group('RecordedLabels.namedView', () {
+    test('header and dataset naming the same orientation name the header',
+        () {
       const labels = RecordedLabels(
         viewPosition: ImageView.pa,
         orientation: ImageOrientation.frontal,
       );
-      expect(labels.agree, isTrue);
+      expect(labels.namedView, ImageView.pa);
     });
 
-    test('a lateral header on a frontal dataset class disagrees', () {
+    test('a lateral header on a frontal dataset class names none', () {
       const labels = RecordedLabels(
         viewPosition: ImageView.ll,
         orientation: ImageOrientation.frontal,
       );
-      expect(labels.agree, isFalse);
+      expect(labels.namedView, isNull);
     });
 
-    test('a missing header view does not agree', () {
+    test('a missing header view names none', () {
       const labels = RecordedLabels(orientation: ImageOrientation.frontal);
-      expect(labels.agree, isFalse);
+      expect(labels.namedView, isNull);
     });
 
-    test('a missing dataset class does not agree', () {
+    test('a header with no dataset class names the header', () {
+      // Every uploaded DICOM file: the header is its only label.
       const labels = RecordedLabels(viewPosition: ImageView.pa);
-      expect(labels.agree, isFalse);
+      expect(labels.namedView, ImageView.pa);
     });
   });
 

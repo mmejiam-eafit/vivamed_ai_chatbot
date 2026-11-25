@@ -217,14 +217,13 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                   'Unusable',
                   subtitle: 'Left out of findings and similar cases',
                 ),
-                // Only when the labels agree does "recorded" name one view;
-                // otherwise the radiologist picks the view itself.
-                if (recorded.agree)
+                // Only when the labels name one view does "recorded" say
+                // which; otherwise the radiologist picks the view itself.
+                if (recorded.namedView case final view?)
                   _option(
                     colors,
                     (outcome: ReviewOutcome.confirmed, view: null),
-                    'Recorded view is correct '
-                    '(${recorded.viewPosition!.displayName})',
+                    'Recorded view is correct (${view.displayName})',
                   ),
               ],
             ),

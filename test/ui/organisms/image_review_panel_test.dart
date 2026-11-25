@@ -190,6 +190,33 @@ void main() {
       expect(radioTiles(), findsNWidgets(8));
     });
 
+    testWidgets('"recorded view is correct" names the header with no dataset '
+        'class', (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(
+          reason: ReviewReason.viewModelDisagrees,
+          recorded: const RecordedLabels(viewPosition: ImageView.pa),
+        ),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(option('Recorded view is correct (PA)'), findsOneWidget);
+    });
+
+    testWidgets('no "recorded view is correct" without a header view',
+        (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(
+          reason: ReviewReason.viewNotRecorded,
+          recorded: const RecordedLabels(),
+        ),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(find.textContaining('Recorded view is correct'), findsNothing);
+      expect(radioTiles(), findsNWidgets(7));
+    });
+
     testWidgets('Save is disabled until a choice is made', (tester) async {
       await tester.pumpWidget(wrap(ImageReviewPanel(
         review: _review(),

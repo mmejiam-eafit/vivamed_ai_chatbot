@@ -86,12 +86,18 @@ class RecordedLabels {
   /// The dataset's frontal/lateral class.
   final ImageOrientation? orientation;
 
-  /// Both labels are present and say the same thing. Only then does "the
-  /// recorded view is correct" name a single view.
-  bool get agree =>
-      viewPosition != null &&
-      orientation != null &&
-      viewPosition!.orientation == orientation;
+  /// The one view the labels name, which "the recorded view is correct"
+  /// confirms: the header's, unless the dataset's class contradicts it. Null
+  /// when the header records none, or when the two labels disagree, where
+  /// confirming would not say which of them is right. A file uploaded as
+  /// DICOM has no dataset class, so its header's view stands alone.
+  ImageView? get namedView {
+    final view = viewPosition;
+    if (view == null) return null;
+    return orientation == null || view.orientation == orientation
+        ? view
+        : null;
+  }
 }
 
 class StudyImage {
