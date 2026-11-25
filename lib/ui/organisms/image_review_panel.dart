@@ -168,11 +168,14 @@ class _ImageReviewPanelState extends State<ImageReviewPanel> {
                 valueKind: MetadataValueKind.identifier,
               ),
               // Both labels are transcribed, so neither may truncate (DL §4.6).
-              MetadataField(
-                label: 'Dataset',
-                value: recorded.orientation?.label ?? 'Not recorded',
-                valueKind: MetadataValueKind.identifier,
-              ),
+              // A missing header view means something; a missing dataset
+              // class is simply every image but one whose labels disagree.
+              if (recorded.orientation case final orientation?)
+                MetadataField(
+                  label: 'Dataset',
+                  value: orientation.label,
+                  valueKind: MetadataValueKind.identifier,
+                ),
               // The model's opinion of the picture, beside the labels it is
               // checked against and never in place of them.
               if (review.image.modelCall case final call?)

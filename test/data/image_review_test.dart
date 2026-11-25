@@ -2,6 +2,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/image_review.dart';
 
 void main() {
+  group('RecordedLabels.summary', () {
+    test('the header, then a dataset class that contradicts it', () {
+      const labels = RecordedLabels(
+        viewPosition: ImageView.ll,
+        orientation: ImageOrientation.frontal,
+      );
+      expect(labels.summary, 'LL · Frontal');
+    });
+
+    test('the header alone when there is no dataset class', () {
+      expect(const RecordedLabels(viewPosition: ImageView.pa).summary, 'PA');
+    });
+
+    test('a dash when the header records no view', () {
+      expect(const RecordedLabels().summary, '—');
+    });
+  });
+
   group('RecordedLabels.namedView', () {
     test('header and dataset naming the same orientation name the header',
         () {

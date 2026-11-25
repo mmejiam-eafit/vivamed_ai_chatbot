@@ -12,12 +12,6 @@ String _formatDate(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
 
-/// The two recorded labels side by side, as transcribed: header view, then
-/// the dataset's class.
-String _recorded(RecordedLabels recorded) =>
-    '${recorded.viewPosition?.code ?? '—'} · '
-    '${recorded.orientation?.label ?? '—'}';
-
 String _decision(ReviewDecision? decision) => switch (decision?.outcome) {
       null => '',
       ReviewOutcome.setView => decision!.view!.displayName,
@@ -98,7 +92,7 @@ class ImageReviewTable extends StatelessWidget {
                   DataCell(cellText(_formatDate(item.caseSummary.date),
                       style: AppTypography.numeric)),
                   DataCell(cellText(item.review.reason.label)),
-                  DataCell(cellText(_recorded(item.review.image.recorded),
+                  DataCell(cellText(item.review.image.recorded.summary,
                       style: AppTypography.mono)),
                   DataCell(cellText(_decision(item.review.decision))),
                 ],

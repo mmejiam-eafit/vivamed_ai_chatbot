@@ -188,15 +188,11 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    expect(
-        find.text('Flagged · Header not recorded · View model Lateral, 75% · '
-            'Dataset not recorded'),
+    expect(find.text('Flagged · Header not recorded · View model Lateral, 75%'),
         findsOneWidget);
-    expect(
-        find.text('Header not recorded · View model Frontal, 97% · '
-            'Dataset not recorded'),
+    expect(find.text('Header not recorded · View model Frontal, 97%'),
         findsOneWidget);
-    expect(find.text('Header PA · Dataset not recorded'), findsOneWidget);
+    expect(find.text('Header PA'), findsOneWidget);
   });
 
   testWidgets('shows the study\'s report', (tester) async {

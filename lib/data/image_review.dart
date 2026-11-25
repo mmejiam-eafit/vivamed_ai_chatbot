@@ -85,14 +85,25 @@ class RecordedLabels {
   /// ([StudyImage.modelCall]), which is never shown as the header's.
   final ImageView? viewPosition;
 
-  /// The dataset's frontal/lateral class.
+  /// The dataset's frontal/lateral class. The backend keeps it only where it
+  /// contradicts the header's view, so only a flagged image can have one,
+  /// and a DICOM file never does.
   final ImageOrientation? orientation;
+
+  /// The labels in one line, as the review queue transcribes them: the
+  /// header's code, then the dataset's class when there is one ("LL ·
+  /// Frontal", "PA"), or a dash when the header records no view.
+  String get summary => [
+        viewPosition?.code ?? '—',
+        if (orientation case final orientation?) orientation.label,
+      ].join(' · ');
 
   /// The one view the labels name, which "the recorded view is correct"
   /// confirms: the header's, unless the dataset's class contradicts it. Null
   /// when the header records none, or when the two labels disagree, where
-  /// confirming would not say which of them is right. A file uploaded as
-  /// DICOM has no dataset class, so its header's view stands alone.
+  /// confirming would not say which of them is right. The agreement is
+  /// checked here rather than trusting that the backend keeps no class that
+  /// agrees.
   ImageView? get namedView {
     final view = viewPosition;
     if (view == null) return null;

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:radiologist_helper/data/image_review.dart';
 import 'package:radiologist_helper/ui/atoms/app_button.dart';
 import 'package:radiologist_helper/ui/core/design_tokens.dart';
+import 'package:radiologist_helper/ui/molecules/metadata_field.dart';
 import 'package:radiologist_helper/ui/molecules/review_status_chip.dart';
 import 'package:radiologist_helper/ui/molecules/status_banner.dart';
 import 'package:radiologist_helper/ui/organisms/image_review_panel.dart';
@@ -117,13 +118,39 @@ void main() {
       });
     }
 
-    testWidgets('a missing label reads "Not recorded"', (tester) async {
+    testWidgets('a missing header view reads "Not recorded"', (tester) async {
       await tester.pumpWidget(wrap(ImageReviewPanel(
         review: _review(recorded: const RecordedLabels()),
         canDecide: true,
         onSave: (_) {},
       )));
-      expect(find.text('Not recorded'), findsNWidgets(2));
+      expect(find.text('Not recorded'), findsOneWidget);
+    });
+
+    testWidgets('a dataset class that contradicts the header has its row',
+        (tester) async {
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      final row = tester.widget<MetadataField>(find.byWidgetPredicate(
+          (w) => w is MetadataField && w.label == 'Dataset'));
+      expect(row.value, 'Frontal');
+    });
+
+    testWidgets('no Dataset row without a dataset class', (tester) async {
+      // Every image but one whose labels disagree: the backend keeps a
+      // class only where it contradicts the header.
+      await tester.pumpWidget(wrap(ImageReviewPanel(
+        review: _review(
+          reason: ReviewReason.viewModelDisagrees,
+          recorded: const RecordedLabels(viewPosition: ImageView.pa),
+        ),
+        canDecide: true,
+        onSave: (_) {},
+      )));
+      expect(find.text('Dataset'), findsNothing);
     });
 
     testWidgets("shows the view model's call", (tester) async {

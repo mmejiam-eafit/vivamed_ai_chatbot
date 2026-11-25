@@ -36,7 +36,8 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       'Header ${recorded.viewPosition?.code ?? 'not recorded'}',
       if (image.modelCall case final call? when recorded.viewPosition == null)
         'View model ${call.displayName}',
-      'Dataset ${recorded.orientation?.label ?? 'not recorded'}',
+      if (recorded.orientation case final orientation?)
+        'Dataset ${orientation.label}',
     ].join(' · ');
   }
 

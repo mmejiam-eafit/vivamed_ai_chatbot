@@ -17,23 +17,19 @@ import 'package:radiologist_helper/ui/pages/image_review_page.dart';
 import 'package:radiologist_helper/ui/pages/primary_destinations.dart';
 import 'package:radiologist_helper/ui/templates/case_list_template.dart';
 
-List<StudyMetadataField> _cardFields(ReviewQueueItem item) {
-  final recorded = item.review.image.recorded;
-  return [
-    StudyMetadataField(
-      label: 'Status',
-      value: ReviewStatusChip.labelFor(item.review.status),
-    ),
-    StudyMetadataField(label: 'Patient', value: item.caseSummary.patient),
-    StudyMetadataField(label: 'Reason', value: item.review.reason.label),
-    StudyMetadataField(
-      label: 'Recorded',
-      value: '${recorded.viewPosition?.code ?? '—'} · '
-          '${recorded.orientation?.label ?? '—'}',
-      valueKind: MetadataValueKind.identifier,
-    ),
-  ];
-}
+List<StudyMetadataField> _cardFields(ReviewQueueItem item) => [
+      StudyMetadataField(
+        label: 'Status',
+        value: ReviewStatusChip.labelFor(item.review.status),
+      ),
+      StudyMetadataField(label: 'Patient', value: item.caseSummary.patient),
+      StudyMetadataField(label: 'Reason', value: item.review.reason.label),
+      StudyMetadataField(
+        label: 'Recorded',
+        value: item.review.image.recorded.summary,
+        valueKind: MetadataValueKind.identifier,
+      ),
+    ];
 
 /// The images the pipeline flagged, needs review first -- the Review
 /// primary destination. Composes `CaseListTemplate` as Similar Cases does:

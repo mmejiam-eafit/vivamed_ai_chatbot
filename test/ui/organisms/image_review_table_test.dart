@@ -121,12 +121,22 @@ void main() {
     expect(labels.style?.fontFamily, AppTypography.mono.fontFamily);
   });
 
-  testWidgets('a missing label shows a dash', (tester) async {
+  testWidgets('a missing header view shows a dash', (tester) async {
     setWide(tester);
     await tester.pumpWidget(wrap(ImageReviewTable(items: [
       _item('a', ReviewStatus.pending, recorded: const RecordedLabels()),
     ])));
-    expect(find.text('— · —'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+  });
+
+  testWidgets('without a dataset class, only the header shows',
+      (tester) async {
+    setWide(tester);
+    await tester.pumpWidget(wrap(ImageReviewTable(items: [
+      _item('a', ReviewStatus.pending,
+          recorded: const RecordedLabels(viewPosition: ImageView.pa)),
+    ])));
+    expect(find.text('PA'), findsOneWidget);
   });
 
   group('the decision column', () {
