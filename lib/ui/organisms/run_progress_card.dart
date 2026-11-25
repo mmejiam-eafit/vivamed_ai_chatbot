@@ -35,7 +35,8 @@ class RunProgressCard extends StatelessWidget {
 
   static List<String> _details(StageProgress p) => [
         if (p.failed > 0) '${p.failed} failed',
-        if (p.skipped > 0) '${p.skipped} skipped',
+        for (final MapEntry(key: code, value: count) in p.skipped.entries)
+          code == null ? '$count skipped' : '$count skipped (${code.label})',
         if (p.heldBack > 0) '${p.heldBack} held back for review',
         if (p.discarded > 0) '${p.discarded} discarded',
       ];

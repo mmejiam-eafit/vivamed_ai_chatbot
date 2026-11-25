@@ -80,11 +80,39 @@ enum ProcessingErrorCode {
   final String message;
 }
 
+/// Why the pipeline skipped an uploaded file: there was nothing to do with
+/// it, so it is neither an image nor a failure. The pipeline and the app
+/// share this vocabulary. The label reads after a count: "2 skipped (not
+/// chest)".
+enum ProcessingSkipCode {
+  notDicom('not DICOM'),
+
+  /// A DICOM file without an image, such as a report object.
+  noPixelData('no image'),
+  alreadyIngested('already in the study'),
+
+  /// The file's `BodyPartExamined` names another body part. The product
+  /// reads chest images only, and a file without the tag counts as chest.
+  notChest('not chest');
+
+  const ProcessingSkipCode(this.label);
+
+  final String label;
+}
+
 class ProcessingStep {
-  const ProcessingStep({required this.stage, required this.state});
+  const ProcessingStep({
+    required this.stage,
+    required this.state,
+    this.skipCode,
+  });
 
   final ProcessingStage stage;
   final ProcessingStepState state;
+
+  /// Why a skipped step was skipped. Null in any other state, and for a code
+  /// the app does not know, which then reads as a plain skip.
+  final ProcessingSkipCode? skipCode;
 }
 
 /// How far one stage of a run has got.
@@ -93,7 +121,10 @@ typedef StageProgress = ({
   int total,
   int done,
   int failed,
-  int skipped,
+
+  /// How many steps were skipped, by why, in [ProcessingSkipCode] order; the
+  /// null key, last, counts skips without a known code.
+  Map<ProcessingSkipCode?, int> skipped,
   int heldBack,
   int discarded,
 });
@@ -120,18 +151,27 @@ class ProcessingRun {
       ];
 
   StageProgress _progressOf(ProcessingStage stage) {
-    final states = [
+    final ofStage = [
       for (final s in steps)
-        if (s.stage == stage) s.state,
+        if (s.stage == stage) s,
     ];
+    final states = [for (final s in ofStage) s.state];
     int count(ProcessingStepState state) =>
         states.where((s) => s == state).length;
+    final skips = [
+      for (final s in ofStage)
+        if (s.state == ProcessingStepState.skipped) s.skipCode,
+    ];
     return (
       stage: stage,
       total: states.length,
       done: count(ProcessingStepState.done),
       failed: count(ProcessingStepState.failed),
-      skipped: count(ProcessingStepState.skipped),
+      skipped: {
+        for (final code in [...ProcessingSkipCode.values, null])
+          if (skips.contains(code))
+            code: skips.where((c) => c == code).length,
+      },
       heldBack: count(ProcessingStepState.heldBack),
       discarded: count(ProcessingStepState.discarded),
     );

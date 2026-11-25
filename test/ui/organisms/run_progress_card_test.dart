@@ -74,6 +74,29 @@ void main() {
     expect(rows.last.details, ['1 held back for review', '1 discarded']);
   });
 
+  testWidgets('says why files were skipped', (tester) async {
+    await tester.pumpWidget(wrap(RunProgressCard(
+      run: _run(steps: [
+        _step(ProcessingStage.intake, ProcessingStepState.done),
+        for (final code in [
+          ProcessingSkipCode.notChest,
+          ProcessingSkipCode.notChest,
+          ProcessingSkipCode.alreadyIngested,
+        ])
+          ProcessingStep(
+            stage: ProcessingStage.intake,
+            state: ProcessingStepState.skipped,
+            skipCode: code,
+          ),
+      ]),
+    )));
+    final row = tester.widget<StageProgressRow>(find.byType(StageProgressRow));
+    expect(row.details, [
+      '1 skipped (already in the study)',
+      '2 skipped (not chest)',
+    ]);
+  });
+
   testWidgets('Open study shows only when given, and fires', (tester) async {
     await tester.pumpWidget(wrap(RunProgressCard(run: _run())));
     expect(find.text('Open study'), findsNothing);

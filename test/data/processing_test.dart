@@ -28,6 +28,13 @@ void main() {
     );
   });
 
+  test('every skip code reads after a count', () {
+    expect(
+      ProcessingSkipCode.values.map((c) => c.label),
+      ['not DICOM', 'no image', 'already in the study', 'not chest'],
+    );
+  });
+
   test('every error code has a message', () {
     for (final code in ProcessingErrorCode.values) {
       expect(code.message, isNotEmpty, reason: code.name);
@@ -68,7 +75,7 @@ void main() {
       expect(intake.total, 5);
       expect(intake.done, 2);
       expect(intake.failed, 1);
-      expect(intake.skipped, 1);
+      expect(intake.skipped, {null: 1});
       expect(intake.discarded, 1);
       expect(intake.heldBack, 0);
 
@@ -76,6 +83,38 @@ void main() {
       expect(viewCheck.total, 2);
       expect(viewCheck.done, 0);
       expect(viewCheck.heldBack, 1);
+    });
+
+    test('counts skips by why, in code order, unknown ones last', () {
+      final run = ProcessingRun(
+        status: RunStatus.ready,
+        openFailures: 0,
+        steps: [
+          for (final code in [
+            ProcessingSkipCode.notChest,
+            null,
+            ProcessingSkipCode.notChest,
+            ProcessingSkipCode.notDicom,
+          ])
+            ProcessingStep(
+              stage: ProcessingStage.intake,
+              state: ProcessingStepState.skipped,
+              skipCode: code,
+            ),
+          _step(ProcessingStage.intake, ProcessingStepState.done),
+        ],
+      );
+      final skipped = run.progress.single.skipped;
+      expect(skipped, {
+        ProcessingSkipCode.notDicom: 1,
+        ProcessingSkipCode.notChest: 2,
+        null: 1,
+      });
+      expect(skipped.keys, [
+        ProcessingSkipCode.notDicom,
+        ProcessingSkipCode.notChest,
+        null,
+      ]);
     });
 
     test('is empty for a run with no steps', () {
