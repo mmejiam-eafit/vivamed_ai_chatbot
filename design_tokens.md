@@ -162,7 +162,8 @@ Normative — companion to §10.4's dark values, same discipline: every ratio be
 | `textSecondary` | `#4A4A4A` | 8.06 · 8.86 |
 | `textTertiary` | `#636363` | 5.46 · 6.01 — AA only, not clinical strings |
 | `textMuted` | `#6E6E6E` | 4.64 on page · 5.10 on surface — remediated per DL §8.7, D-014 (was `#7D7D7D`, 3.74 · 4.12, failing AA) |
-| `textPlaceholder` / `textDisabled` | `#A0A0A0` | 2.38 · 2.61 — WCAG exempts inactive/placeholder text from the 4.5:1 floor, so this is by design, not a defect |
+| `textPlaceholder` | `#6E6E6E` | 5.10 on surface · 4.52 on surfaceAccent, the two input fills — placeholder text carries the 4.5:1 floor, per DL D-026 (was `#A0A0A0`, 2.61 · 2.32, failing AA) |
+| `textDisabled` | `#A0A0A0` | 2.38 · 2.61 — WCAG exempts text in an inactive control from the 4.5:1 floor, so this is by design, not a defect |
 
 Text-on-tinted-surface pairs, each checked against its own surface:
 
@@ -183,7 +184,7 @@ Text-on-tinted-surface pairs, each checked against its own surface:
 | `icon` | `#636363` | `textTertiary` |
 | `iconOnBrand` | `#F4F4F4` | `textOnBrand` |
 | `iconAccent` | `#1D546C` | `borderSelected` / `interactivePrimary` |
-| `iconDisabled` | `#A0A0A0` | `textPlaceholder` |
+| `iconDisabled` | `#A0A0A0` | `textDisabled` |
 
 **Borders** (§2.4) — meaningful borders need 3:1; decorative ones don't:
 

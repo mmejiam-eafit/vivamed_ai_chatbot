@@ -398,6 +398,8 @@ The first candidate for this one cleared 4.5:1 by itself and still failed: it la
 
 **Resolved:** the default border color measured 1.74:1 against white — fine for a decorative separator, not for any border that carries meaning. See D-016.
 
+**Resolved:** placeholder text measured 2.61:1 on the input fill and 2.32:1 on the focused chat composer. It had been treated as WCAG-exempt, which it is not; it now reads at 5.10 and 4.52. See D-026.
+
 **Dark scheme — every pair computed, all passing.** Values in `design_tokens.md` §10.4.
 
 | Pair | Ratio | |
@@ -569,3 +571,9 @@ Append-only. Each entry records what was decided, why, and what it forbids.
 **D-025 — Settings has no section index at any width.**
 *Why:* From `threePaneMinWidth` up, Settings showed a 200px index of its section titles beside the sections. It began as a switcher that showed one section at a time; once every section rendered in one scroll, all it could do was jump to a section. Settings is three short sections, and they fit within one screen at every width that showed the index: on a 1333×800 dp tablet in landscape the three cards take about 550 dp of height, with room to spare. So the index repeated titles already visible beside it and offered a jump to content already in view, a control with nothing to do on a screen that should stay quiet (§2.1). Below `threePaneMinWidth` the page never had one, so the same page took a different shape by width for no reason the task gave. Settings is a deciding task and stays generous (§7.1): one column of sections at every width, capped and centered.
 *Forbids:* An in-page index or table of contents for a page whose sections fit within about one screen at the widths where it would appear. If Settings grows past that, an index is a new decision, and one to take at every width where the sections no longer fit, not only the wide ones.
+
+---
+
+**D-026 — Placeholder text meets the 4.5:1 text floor; only inactive controls are exempt.**
+*Why:* `design_tokens.md` gave `textPlaceholder` and `textDisabled` one value, `#A0A0A0`, on the grounds that WCAG exempts "inactive/placeholder text" from 4.5:1. Only half of that holds. WCAG's own explanation of SC 1.4.3 exempts text in an inactive user-interface component, and names placeholder text as text the criterion covers. Here the gap is wider than usual, because the sign-in fields have no label besides their placeholders ("Username", "Password"). Measured, the placeholder read 2.61:1 on the input fill (`surface`) and 2.32:1 on the focused chat composer (`surfaceAccent`). It moves to `#6E6E6E`, the existing `textMuted` step, which is the lightest gray in the palette that clears 4.5:1 on both fills (5.10 and 4.52). It still reads as a placeholder beside entered text (`textPrimary`, 3.41:1 between them). Dark mode already made this choice: its placeholder has always been `textMuted` (5.64 and 4.92), so the two modes now agree.
+*Forbids:* Treating placeholder text as exempt from the text floor. A placeholder below 4.5:1 on any fill an input takes. The exemption stays where WCAG puts it: `textDisabled`, `iconDisabled` and `interactiveDisabledForeground` mark inactive controls and keep their lower contrast on purpose.
